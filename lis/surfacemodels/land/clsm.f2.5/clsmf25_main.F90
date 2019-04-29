@@ -1460,6 +1460,19 @@ subroutine clsmf25_main(nid)
                         lai(n),                                        &
                         vlevel=1,unit="-",direction="-",               &
                         surface_type=LIS_rc%lsm_index)
+! HKB add soil depth
+        call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SOILDEPTH1,value=&
+                        (clsmf25_struc(nid)%cat_param(n)%dzsf),  &
+                        vlevel=1,unit="mm",direction="-",               &
+                        surface_type=LIS_rc%lsm_index)
+        call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SOILDEPTH2,value=&
+                        (clsmf25_struc(nid)%cat_param(n)%dzrz),  &
+                        vlevel=1,unit="mm",direction="-",               &
+                        surface_type=LIS_rc%lsm_index)
+        call LIS_diagnoseSurfaceOutputVar(nid,n,LIS_MOC_SOILDEPTH3,value=&
+                        (clsmf25_struc(nid)%cat_param(n)%dzpr),  &
+                        vlevel=1,unit="mm",direction="-",               &
+                        surface_type=LIS_rc%lsm_index)
 
 ! ALMA Other/Miscellaneous Variables
 

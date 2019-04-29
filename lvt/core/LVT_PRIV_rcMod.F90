@@ -462,6 +462,7 @@ module LVT_PRIV_rcMod
      real,          allocatable :: stdepth(:)
      
      real,          allocatable :: vic_depth(:,:)
+     real,          allocatable :: clsm_depth(:,:)  !HKB
 
 
   end type lisrcdec

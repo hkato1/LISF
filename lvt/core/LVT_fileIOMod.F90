@@ -28,6 +28,8 @@ module LVT_fileIOMod
 !
 ! !REVISION HISTORY: 
 !  02 Oct 2008  Sujay Kumar;  Initial Specification
+!  30 Jan 2019  Hiroko Beaudoing; Added GRIB2 format support for 
+!                                 4 level hierarchy
 ! 
 !EOP
 !------------------------------------------------------------------------------
@@ -359,6 +361,8 @@ subroutine create_output_filename(n, source, fname, model_name, writeint, &
               out_fname = trim(out_fname)//'.nc'
            case ( "ascii" )
               out_fname = trim(out_fname)//'.txt'
+           case ( "grib2" )
+              out_fname = trim(out_fname)//'.gr2'
            case default
               call lvt_log_msg('ERR: create_output_filename -- '// &
                    'Unrecognized output format')
@@ -734,6 +738,8 @@ subroutine create_output_filename_with_timestamp(&
               out_fname = trim(out_fname)//'.nc'
            case ( "ascii" )
               out_fname = trim(out_fname)//'.txt'
+           case ( "grib2" )
+              out_fname = trim(out_fname)//'.gr2'
            case default
               call lvt_log_msg('ERR: create_output_filename -- '// &
                    'Unrecognized output format')

@@ -190,6 +190,9 @@ module LIS_histDataMod
   public :: LIS_MOC_MXSNALBEDO
   public :: LIS_MOC_GREENNESS 
   public :: LIS_MOC_TEMPBOT  
+  public :: LIS_MOC_SOILDEPTH1   ! HKB
+  public :: LIS_MOC_SOILDEPTH2   ! HKB
+  public :: LIS_MOC_SOILDEPTH3   ! HKB
 
   public :: LIS_MOC_CCOND
   public :: LIS_MOC_RELSMC
@@ -583,6 +586,9 @@ module LIS_histDataMod
    integer :: LIS_MOC_MXSNALBEDO = -9999
    integer :: LIS_MOC_GREENNESS  = -9999
    integer :: LIS_MOC_TEMPBOT   = -9999
+   integer :: LIS_MOC_SOILDEPTH1   = -9999    ! HKB
+   integer :: LIS_MOC_SOILDEPTH2   = -9999    ! HKB
+   integer :: LIS_MOC_SOILDEPTH3   = -9999    ! HKB
 
    ! NLDAS OUTPUT
    integer :: LIS_MOC_CCOND    = -9999
@@ -2798,6 +2804,40 @@ contains
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_TEMPBOT,&
             LIS_histData(n)%head_lsm_list,&
             n,1,ntiles,(/"K"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+! HKB
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Soildepth1:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Soildepth1",&
+         "soillayer_depth1",&
+         "soillayer_depth1",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SOILDEPTH1,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Soildepth2:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Soildepth2",&
+         "soillayer_depth2",&
+         "soillayer_depth2",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SOILDEPTH2,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
+            model_patch=.true.)
+    endif
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Soildepth3:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "Soildepth3",&
+         "soillayer_depth3",&
+         "soillayer_depth3",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_SOILDEPTH3,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"mm"/),1,(/"-"/),1,1,1,&
             model_patch=.true.)
     endif
 

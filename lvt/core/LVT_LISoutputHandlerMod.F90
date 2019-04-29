@@ -630,6 +630,10 @@ contains
     character*100        :: vic_d3file(2)
     real, allocatable    :: vic_depth(:,:)
     integer              :: j,lis_gid
+    logical              :: clsm_flag(2)    ! HKB
+    character*100        :: clsm_dfile(2)   ! HKB
+    real, allocatable    :: clsm_depth(:,:) ! HKB
+    integer              :: ios,nid,depth1id,depth2id,depth3id    !HKB
     
     integer           :: grib_depthlvl
     integer           :: grib_snowlvl
@@ -3759,11 +3763,16 @@ contains
 
        enddo
 
+!HKB: added CLSM soil layer depth handling
        vic_flag = .false. 
+       clsm_flag = .false. 
        do k=1,source
           if((LVT_LIS_rc(k)%model_name.eq."VIC.4.1.1").or.&
              (LVT_LIS_rc(k)%model_name.eq."VIC.4.1.2")) then 
              vic_flag(k) = .true. 
+          endif
+          if(LVT_LIS_rc(k)%model_name.eq."CLSM F2.5") then 
+             clsm_flag(k) = .true. 
           endif
        enddo
        if(vic_flag(1).and.vic_flag(2)) then 
@@ -3963,6 +3972,255 @@ contains
                 endif
              enddo
           enddo
+!HKB added below
+       elseif(clsm_flag(1).and.clsm_flag(2)) then 
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output CLSM soil depth file:",rc=rc)
+          do k=1,source
+             call ESMF_ConfigGetAttribute(LVT_config,clsm_dfile(k),rc=rc)
+             call LVT_verify(rc,&
+                  'LIS output CLSM soil depth file: not defined')
+          enddo
+
+          do k=1,source
+
+             allocate(LVT_LIS_rc(k)%clsm_depth(3,LVT_rc%npts))
+             allocate(clsm_depth(LVT_LIS_rc(k)%lnc, LVT_LIS_rc(k)%lnr))
+             
+             write(LVT_logunit,*)'[INFO] Reading soildepth file...'
+             ios = nf90_open(path=clsm_dfile(k),&
+                   mode=NF90_NOWRITE,ncid=nid)
+             call LVT_verify(ios,'Error in nf90_open in read_soildepth')
+             ios = nf90_inq_varid(nid,'Soildepth1_tavg',depth1id)
+             call LVT_verify(ios,'Soildepth1_tavg field not found in the LVT param file')
+             ios = nf90_get_var(nid,depth1id,clsm_depth)
+             call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+             do r=1,LVT_LIS_rc(k)%lnr
+                do c=1,LVT_LIS_rc(k)%lnc
+                   lis_gid = LVT_LIS_domain(k)%gindex(c,r)
+                   if(lis_gid.ne.-1) then 
+                      LVT_LIS_rc(k)%clsm_depth(1,lis_gid) = clsm_depth(c,r)
+                   endif
+                enddo
+             enddo
+
+             ios = nf90_inq_varid(nid,'Soildepth2_tavg',depth2id)
+             call LVT_verify(ios,'Soildepth2_tavg field not found in the LVT param file')
+             ios = nf90_get_var(nid,depth2id,clsm_depth)
+             call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+             do r=1,LVT_LIS_rc(k)%lnr
+                do c=1,LVT_LIS_rc(k)%lnc
+                   lis_gid = LVT_LIS_domain(k)%gindex(c,r)
+                   if(lis_gid.ne.-1) then 
+                      LVT_LIS_rc(k)%clsm_depth(2,lis_gid) = clsm_depth(c,r)
+                   endif
+                enddo
+             enddo
+
+             ios = nf90_inq_varid(nid,'Soildepth3_tavg',depth3id)
+             call LVT_verify(ios,'Soildepth3_tavg field not found in the LVT param file')
+             ios = nf90_get_var(nid,depth3id,clsm_depth)
+             call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+             ios = nf90_close(nid)
+             call LVT_verify(ios,'Error in nf90_close in read_soildepth')
+
+             do r=1,LVT_LIS_rc(k)%lnr
+                do c=1,LVT_LIS_rc(k)%lnc
+                   lis_gid = LVT_LIS_domain(k)%gindex(c,r)
+                   if(lis_gid.ne.-1) then 
+                      LVT_LIS_rc(k)%clsm_depth(3,lis_gid) = clsm_depth(c,r)
+                   endif
+                enddo
+             enddo
+             deallocate(clsm_depth)
+          enddo
+
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output number of soil temperature layers:",rc=rc)
+          do k=1,source
+             call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(k)%nstlayers,rc=rc)
+             call LVT_verify(rc,&
+            'LIS output number of soil temperature layers: not defined')
+          enddo
+
+          do k=1,source
+             allocate(LVT_LIS_rc(k)%stthick(LVT_LIS_rc(k)%nstlayers))
+             allocate(LVT_LIS_rc(k)%stdepth(LVT_LIS_rc(k)%nstlayers))
+          enddo
+
+          call ESMF_ConfigFindLabel(LVT_config, 'LIS output soil temperature layer thickness:',rc=rc)
+          call LVT_verify(rc,'LIS output soil temperature layer thickness: not defined')
+          do k=1,source
+             do j=1,LVT_LIS_rc(k)%nstlayers
+                call ESMF_ConfigGetAttribute(LVT_config, LVT_LIS_rc(k)%stthick(j),rc=rc)
+             enddo
+          enddo
+
+          do k=1,source
+             LVT_LIS_rc(k)%stdepth(1) = LVT_LIS_rc(k)%stthick(1)
+             do j=2,LVT_LIS_rc(k)%nstlayers
+                LVT_LIS_rc(k)%stdepth(j) = LVT_LIS_rc(k)%stdepth(j-1)+LVT_LIS_rc(k)%stthick(j)
+             enddo
+          enddo
+       elseif(clsm_flag(1)) then 
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output CLSM soil depth file:",rc=rc)
+          call ESMF_ConfigGetAttribute(LVT_config,clsm_dfile(1),rc=rc)
+          call LVT_verify(rc,&
+               'LIS output CLSM soil depth file: not defined')
+
+          allocate(LVT_LIS_rc(1)%clsm_depth(3,LVT_rc%npts))
+          allocate(clsm_depth(LVT_LIS_rc(1)%lnc, LVT_LIS_rc(1)%lnr))
+             
+          write(LVT_logunit,*)'[INFO] Reading soildepth file1...'
+          ios = nf90_open(path=clsm_dfile(1),&
+                mode=NF90_NOWRITE,ncid=nid)
+          call LVT_verify(ios,'Error in nf90_open in read_soildepth')
+          ios = nf90_inq_varid(nid,'Soildepth1_tavg',depth1id)
+          call LVT_verify(ios,'Soildepth1_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth1id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+          do r=1,LVT_LIS_rc(1)%lnr
+             do c=1,LVT_LIS_rc(1)%lnc
+                lis_gid = LVT_LIS_domain(1)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(1)%clsm_depth(1,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+
+          ios = nf90_inq_varid(nid,'Soildepth2_tavg',depth2id)
+          call LVT_verify(ios,'Soildepth2_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth2id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+          do r=1,LVT_LIS_rc(1)%lnr
+             do c=1,LVT_LIS_rc(1)%lnc
+                lis_gid = LVT_LIS_domain(1)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(1)%clsm_depth(2,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+
+          ios = nf90_inq_varid(nid,'Soildepth3_tavg',depth3id)
+          call LVT_verify(ios,'Soildepth3_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth3id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+          ios = nf90_close(nid)
+          call LVT_verify(ios,'Error in nf90_close in read_soildepth')
+
+          do r=1,LVT_LIS_rc(1)%lnr
+             do c=1,LVT_LIS_rc(1)%lnc
+                lis_gid = LVT_LIS_domain(1)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(1)%clsm_depth(3,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+          deallocate(clsm_depth)
+
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output number of soil temperature layers:",rc=rc)
+          call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(1)%nstlayers,rc=rc)
+          call LVT_verify(rc,&
+            'LIS output number of soil temperature layers: not defined')
+
+          allocate(LVT_LIS_rc(1)%stthick(LVT_LIS_rc(1)%nstlayers))
+          allocate(LVT_LIS_rc(1)%stdepth(LVT_LIS_rc(1)%nstlayers))
+
+          call ESMF_ConfigFindLabel(LVT_config, 'LIS output soil temperature layer thickness:',rc=rc)
+          call LVT_verify(rc,'LIS output soil temperature layer thickness: not defined')
+          do j=1,LVT_LIS_rc(1)%nstlayers
+             call ESMF_ConfigGetAttribute(LVT_config, LVT_LIS_rc(1)%stthick(j),rc=rc)
+          enddo
+
+          LVT_LIS_rc(1)%stdepth(1) = LVT_LIS_rc(1)%stthick(1)
+          do j=2,LVT_LIS_rc(1)%nstlayers
+             LVT_LIS_rc(1)%stdepth(j) = LVT_LIS_rc(1)%stdepth(j-1)+LVT_LIS_rc(1)%stthick(j)
+          enddo
+       elseif(clsm_flag(2)) then 
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output CLSM soil depth file:",rc=rc)
+          call ESMF_ConfigGetAttribute(LVT_config,clsm_dfile(2),rc=rc)
+          call LVT_verify(rc,&
+               'LIS output CLSM soil depth file: not defined')
+
+          allocate(LVT_LIS_rc(2)%clsm_depth(3,LVT_rc%npts))
+          allocate(clsm_depth(LVT_LIS_rc(2)%lnc, LVT_LIS_rc(2)%lnr))
+             
+          write(LVT_logunit,*)'[INFO] Reading soildepth file2...'
+          ios = nf90_open(path=clsm_dfile(2),&
+                mode=NF90_NOWRITE,ncid=nid)
+          call LVT_verify(ios,'Error in nf90_open in read_soildepth')
+          ios = nf90_inq_varid(nid,'Soildepth1_tavg',depth1id)
+          call LVT_verify(ios,'Soildepth1_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth1id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+          do r=1,LVT_LIS_rc(2)%lnr
+             do c=1,LVT_LIS_rc(2)%lnc
+                lis_gid = LVT_LIS_domain(2)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(2)%clsm_depth(1,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+
+          ios = nf90_inq_varid(nid,'Soildepth2_tavg',depth2id)
+          call LVT_verify(ios,'Soildepth2_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth2id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+
+          do r=1,LVT_LIS_rc(2)%lnr
+             do c=1,LVT_LIS_rc(2)%lnc
+                lis_gid = LVT_LIS_domain(2)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(2)%clsm_depth(2,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+
+          ios = nf90_inq_varid(nid,'Soildepth3_tavg',depth3id)
+          call LVT_verify(ios,'Soildepth3_tavg field not found in the LVT param file')
+          ios = nf90_get_var(nid,depth3id,clsm_depth)
+          call LVT_verify(ios,'Error in nf90_get_var in read_soildepth')
+          ios = nf90_close(nid)
+          call LVT_verify(ios,'Error in nf90_close in read_soildepth')
+
+          do r=1,LVT_LIS_rc(2)%lnr
+             do c=1,LVT_LIS_rc(2)%lnc
+                lis_gid = LVT_LIS_domain(2)%gindex(c,r)
+                if(lis_gid.ne.-1) then 
+                   LVT_LIS_rc(2)%clsm_depth(3,lis_gid) = clsm_depth(c,r)
+                endif
+             enddo
+          enddo
+          deallocate(clsm_depth)
+
+          call ESMF_ConfigFindLabel(LVT_config, &
+               label="LIS output number of soil temperature layers:",rc=rc)
+          call ESMF_ConfigGetAttribute(LVT_config,LVT_LIS_rc(2)%nstlayers,rc=rc)
+          call LVT_verify(rc,&
+            'LIS output number of soil temperature layers: not defined')
+
+          allocate(LVT_LIS_rc(2)%stthick(LVT_LIS_rc(2)%nstlayers))
+          allocate(LVT_LIS_rc(2)%stdepth(LVT_LIS_rc(2)%nstlayers))
+
+          call ESMF_ConfigFindLabel(LVT_config, 'LIS output soil temperature layer thickness:',rc=rc)
+          call LVT_verify(rc,'LIS output soil temperature layer thickness: not defined')
+          do j=1,LVT_LIS_rc(2)%nstlayers
+             call ESMF_ConfigGetAttribute(LVT_config, LVT_LIS_rc(2)%stthick(j),rc=rc)
+          enddo
+
+          LVT_LIS_rc(2)%stdepth(1) = LVT_LIS_rc(2)%stthick(1)
+          do j=2,LVT_LIS_rc(2)%nstlayers
+             LVT_LIS_rc(2)%stdepth(j) = LVT_LIS_rc(2)%stdepth(j-1)+LVT_LIS_rc(2)%stthick(j)
+          enddo
+!HKB addition done
        else    
           call ESMF_ConfigFindLabel(LVT_config, &
                label="LIS output number of soil moisture layers:",rc=rc)
@@ -4483,6 +4741,24 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 #endif
 
     elseif(trim(wout).eq."grib2") then 
+!HKB added read in section below
+       if(LVT_masterproc) then
+
+          call grib_open_file(ftn,trim(lsmoutfile),'r',iret)
+          if(iret.gt.0) then
+             write(LVT_logunit,*) '[ERR] Opening file ',trim(lsmoutfile), ' failed',iret
+             call LVT_endrun()
+          endif
+
+       endif
+       call readGrib2Output(ftn,source,lisdataEntry)
+       if(LVT_masterproc) then
+          call grib_close_file(ftn,iret)
+          if(iret.ne.0) then
+             write(LVT_logunit,*) '[ERR] Closing file ',trim(lsmoutfile), ' failed',iret
+             call LVT_endrun()
+          endif
+       endif
 
     endif
 
@@ -5879,7 +6155,8 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
           endif
           
        endif
-    endif
+
+    endif  !LVT_LIS_rc(source)%anlys_data_class.eq."LSM"
   end subroutine readLISModelOutput
 
 
@@ -7750,6 +8027,292 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
        deallocate(lo)
     endif
   end subroutine LVT_readSingleGrib1Var
+
+!BOP
+!
+! !ROUTINE: readGrib2Output
+! \label{readGrib2Output}
+!
+! !INTERFACE:
+  subroutine readGrib2Output(ftn,source,lisdataEntry)
+!
+! !USES:
+
+    implicit none
+
+! !ARGUMENTS:
+    integer                    :: ftn
+    integer, intent(in)        :: source
+    type(LVT_LISmetadataEntry), pointer :: lisdataEntry
+!
+! !INPUT PARAMETERS:
+!
+! !OUTPUT PARAMETERS:
+!
+! !DESCRIPTION:
+!  This routine reads a GRIB2 output file based on the list of selected
+!  output variables.
+!  The arguments are:
+!  \begin{description}
+!  \begin{description}
+!    \item[n] index of the nest \newline
+!    \item[ftn] file unit for the output file \newline
+!  \end{description}
+!
+!   The routines invoked are:
+!   \begin{description}
+!   \item[LVT\_readSingleGrib2Var](\ref{LVT_readSingleGrib2Var}) \newline
+!     reads a single variable from a GRIB2 file.
+!   \end{description}
+!
+! !FILES USED:
+!
+! !REVISION HISTORY:
+!
+!EOP
+
+    integer          :: nvars
+    integer          :: index
+    integer          :: igrib
+    integer, allocatable :: pid(:)  ! parameterNumber (grib_id)
+    integer, allocatable :: did(:)  ! discipline (grib_dicid)
+    integer, allocatable :: cid(:)  ! parameterCategory (grib_catid)
+    integer, allocatable :: tid(:)
+    integer, allocatable :: lid(:)
+    integer          :: iret
+    real             :: undef_v
+    real, allocatable    :: var(:,:)
+
+
+    call grib_count_in_file(ftn,nvars)
+    allocate(var(nvars,LVT_LIS_rc(source)%lnc*LVT_LIS_rc(source)%lnr))
+    allocate(pid(nvars))
+    allocate(did(nvars))
+    allocate(cid(nvars))
+    allocate(tid(nvars))
+    allocate(lid(nvars))
+
+    do index = 1, nvars
+       call grib_new_from_file(ftn,igrib,iret)
+       call LVT_verify(iret,&
+            'grib_new_from_file failed in LVT_histDataMod')
+
+       call grib_get(igrib,"parameterNumber",pid(index),iret)
+       call LVT_verify(iret,'grib_get failed for parameterNumber')
+       call grib_get(igrib,"discipline",did(index),iret)
+       call LVT_verify(iret,'grib_get failed for discipline')
+       call grib_get(igrib,"parameterCategory",cid(index),iret)
+       call LVT_verify(iret,'grib_get failed for parameterCategory')
+
+       call grib_get(igrib, "productDefinitionTemplateNumber",tid(index),iret)
+       call LVT_verify(iret,'grib_get failed for productDefinitionTemplateNumber')
+
+       call grib_get(igrib, "scaledValueOfSecondFixedSurface",lid(index),iret)
+       call LVT_verify(iret,'grib_get failed for typeOfFirstFixedSurface')
+
+       call grib_get(igrib,"values",var(index,:),iret)
+       call LVT_verify(iret,'grib_get failed for values')
+
+       call grib_get(igrib,"missingValue",undef_v,iret)
+       call LVT_verify(iret,'grib_get failed for values')
+
+       call grib_release(igrib,iret)
+       call LVT_verify(iret,'grib_release failed in LVT_histDataMod')
+    enddo
+
+    do while(associated(lisdataEntry))
+       call LVT_readSingleGrib2Var(ftn,source,lisdataEntry, &
+            nvars, var,undef_v,pid,did,cid,tid,lid)
+       lisdataEntry => lisdataEntry%next
+    enddo
+
+    deallocate(var)
+    deallocate(pid)
+    deallocate(did)
+    deallocate(cid)
+    deallocate(tid)
+    deallocate(lid)
+
+  end subroutine readGrib2Output
+
+!BOP
+!
+! !ROUTINE: LVT_readSingleGrib2Var
+! \label{LVT_readSingleGrib2Var}
+!
+! !INTERFACE:
+  subroutine LVT_readSingleGrib2Var(ftn, source, dataEntry,nvars,gvar,&
+       undef_v,pid,did,cid,tid,lid)
+!
+! !USES:
+
+    implicit none
+!
+! !INPUT PARAMETERS:
+!
+! !OUTPUT PARAMETERS:
+!
+! !DESCRIPTION:
+!   This routine reads a single variable from the LIS output file in the
+!   grib2 format. Based on the external datamask, the routine also filters
+!   each variable.
+!
+! !FILES USED:
+!
+! !REVISION HISTORY:
+!
+!EOP
+!BOP
+! !ARGUMENTS:
+    integer :: ftn
+    integer :: source
+    type(LVT_LISmetadataEntry) :: dataEntry
+    integer :: nvars
+    real    :: undef_v
+    integer :: pid(nvars)
+    integer :: did(nvars)
+    integer :: cid(nvars)
+    integer :: tid(nvars)
+    integer :: lid(nvars)
+    real    :: gvar(nvars,LVT_LIS_rc(source)%lnc*LVT_LIS_rc(source)%lnr)
+    integer :: local_tid
+!
+!
+!EOP
+    real, allocatable :: value1d(:)
+    real, allocatable :: value2d(:,:)
+    real, allocatable :: value2d_ip(:,:)
+    logical*1, allocatable :: lo(:)
+    integer :: unit_id
+    integer :: k,i,c,r,t,gid,kk,index,v
+    integer :: j,lubi, nsize, iret
+    integer :: jpds(200), jgds(200)
+    integer :: kf,kpds(200),gridDesc(200)
+
+    unit_id = -1
+    if(dataEntry%selectOpt.eq.1) then
+       do i=1,dataEntry%nunits
+          if(trim(dataEntry%units).eq.trim(dataEntry%unittypes(i))) then
+             unit_id = i
+             exit
+          endif
+       enddo
+       if(unit_id.eq.-1) then
+          write(LVT_logunit,*) '[ERR] routine to diagnose ',trim(dataEntry%standard_name),&
+               ' in units of ',trim(dataEntry%units),' is not defined'
+          write(LVT_logunit,*) '[ERR] for diagnostic output...'
+          call LVT_endrun()
+       endif
+
+       nsize = LVT_LIS_rc(source)%lnc*LVT_LIS_rc(source)%lnr
+       allocate(value1d(nsize))
+       allocate(value2d(LVT_LIS_rc(source)%lnc, LVT_LIS_rc(source)%lnr))
+       allocate(value2d_ip(LVT_rc%lnc, LVT_rc%lnr))
+       allocate(lo(nsize))
+
+       iret = 1
+
+#if (defined AFWA_GRIB_CONFIGS)
+       if(dataEntry%timeAvgOpt.eq.0) then !instantaneous only
+          local_tid = 1
+       elseif(dataEntry%timeAvgOpt.eq.1) then !time averaged only
+          local_tid = 7
+       elseif(dataEntry%timeAvgOpt.eq.3) then !accumulated
+          local_tid = 133
+       else
+          local_tid = 1 !read only the time averaged field
+       endif
+#else
+       if(dataEntry%timeAvgOpt.eq.0) then !instantaneous only
+          local_tid = 0
+       elseif(dataEntry%timeAvgOpt.eq.1) then !time averaged only
+          local_tid = 8
+       elseif(dataEntry%timeAvgOpt.eq.3) then !accumulated
+          local_tid = 8
+       else
+          local_tid = 1 !read only the time averaged field
+       endif
+#endif
+       do k=1,dataEntry%vlevels
+         do index=1,nvars
+             if(pid(index).eq.dataEntry%varid_def.and.&
+                  tid(index).eq.local_tid.and.&
+                  did(index).eq.dataEntry%gribDis.and.&
+                  cid(index).eq.dataEntry%gribCat) then
+                if(dataEntry%vlevels.gt.1) then
+                   if(trim(dataEntry%short_name).eq."SoilMoist") then
+                       if(lid(index).eq.LVT_LIS_rc(source)%smdepth(k)*100) then !cm
+                          value1d = gvar(index,:)
+!                          print*,'here:',k,index,lid(index),LVT_LIS_rc(source)%smdepth(k)*100
+                       endif
+                   elseif(trim(dataEntry%short_name).eq."SoilTemp") then
+                       if(lid(index).eq.LVT_LIS_rc(source)%smdepth(k)*100) then
+!cm
+                          do t=1,nsize
+                            if(gvar(index,t).lt.400) then
+                               value1d(t) = gvar(index,t)
+                            else
+                               value1d(t) = LVT_rc%udef
+                            endif
+                          enddo
+                       endif
+                   else
+                     write(LVT_logunit,*) '[ERR] Please add support for ',trim(dataEntry%standard_name), ' failed'
+                     call LVT_endrun()
+                   endif
+                else  ! vlevel = 1
+                   value1d = gvar(index,:)
+                endif
+                iret = 0
+!                print*,'here-- ',index,trim(dataEntry%short_name),lid(index),did(index),cid(index),pid(index),value1d(33923)
+             endif
+         enddo   ! index
+         if(iret.ne.0) then
+          write(LVT_logunit,*) '[ERR] Reading variable ',trim(dataEntry%standard_name), ' failed'
+          call LVT_endrun()
+         else
+
+          do r=1,LVT_LIS_rc(source)%lnr
+             do c=1,LVT_LIS_rc(source)%lnc
+                if(value1d(c+(r-1)*LVT_LIS_rc(source)%lnc).ne.undef_v) then
+                   value2d(c,r) = value1d(c+(r-1)*LVT_LIS_rc(source)%lnc)
+                else
+                   value2d(c,r) = LVT_rc%udef
+                endif
+             enddo
+          enddo
+
+          call interp2lisgrid_2d(source,value2d, value2d_ip)
+
+          do r=1,LVT_rc%lnr
+             do c=1,LVT_rc%lnc
+                if(LVT_stats%datamask(c,r).eq.1) then
+                   gid = LVT_domain%gindex(c,r)
+                   if(gid.ne.-1) then
+                      if(value2d_ip(c,r).ne.LVT_rc%udef) then
+                         dataEntry%value(gid,1,k) = &
+                              dataEntry%value(gid,1,k) + &
+                              value2d_ip(c,r)
+                         dataEntry%count(gid,1,k) = &
+                              dataEntry%count(gid,1,k) + 1
+!                         if ( c.eq.83 .and. r.eq.95 .and. &
+!                              trim(dataEntry%short_name).eq."SoilMoist" )  then
+!                          print*,'gid:',gid,value2d_ip(c,r),dataEntry%value(gid,1,k)
+!                         endif
+                      endif
+                   endif
+                endif
+             enddo
+          enddo
+         endif   ! iret = 0
+       enddo  ! k
+
+       deallocate(value1d)
+       deallocate(value2d)
+       deallocate(value2d_ip)
+       deallocate(lo)
+    endif
+  end subroutine LVT_readSingleGrib2Var
 
 !BOP
 ! 
@@ -10273,8 +10836,14 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 !EOP
     integer             :: k 
     real                :: scale_f
+    real,allocatable,dimension(:,:) :: scalemap  !HKB
+    logical             :: usescalemap   !HKB
+    integer             :: nensem
 !    do k=1, dataEntry%selectNlevs
     scale_f = 1.0
+    allocate(scalemap(lvtdataEntry%vlevels,LVT_rc%npts))  !HKB
+    usescalemap = .false.
+    nensem = LVT_LIS_rc(source)%nensem
 
     do k=1, lvtdataEntry%vlevels
        if(lvtdataEntry%units.eq.lisdataEntry%units) then 
@@ -10283,6 +10852,16 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
               lisdataEntry%units.eq."kg/m2") then 
           if(LVT_LIS_rc(source)%model_name.eq."Noah.3.3") then 
              scale_f = 1/(LVT_CONST_RHOFW*LVT_LIS_rc(source)%smthick(k))
+!HKB added Noah.3.6 and CLSM F2.5
+          elseif(LVT_LIS_rc(source)%model_name.eq."Noah.3.6") then 
+             scale_f = 1/(LVT_CONST_RHOFW*LVT_LIS_rc(source)%smthick(k))
+          elseif(LVT_LIS_rc(source)%model_name.eq."CLSM F2.5") then 
+           usescalemap = .true.
+           scalemap(k,:) = 1/LVT_LIS_rc(source)%clsm_depth(k,:)  ! mm
+          else
+           write(LVT_logunit,*) '[ERR] Add soil moisture units conversion '
+           write(LVT_logunit,*) '[ERR] support for LIS output from' ,trim(LVT_LIS_rc(source)%model_name)
+           call LVT_endrun()
           endif
        elseif(lvtdataEntry%units.eq."kg/m2s".and.&
               lisdataEntry%units.eq."W/m2") then 
@@ -10299,10 +10878,18 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, &
 
           call LVT_endrun()
        endif
-       lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
+!HKB
+       if (usescalemap) then
+          lvtdataEntry%value(:,nensem,k) = lisdataEntry%value(:,nensem,k)*scalemap(k,:)
+       else
+          lvtdataEntry%value(:,:,k) = lisdataEntry%value(:,:,k)*scale_f
+       endif
        lvtdataEntry%count(:,:,k) = lisdataEntry%count(:,:,k)
+!       print*,'scale:',scale_f,k,lvtdataEntry%value(6744,1,k),lisdataEntry%value(6744,1,k)
+       usescalemap = .false.
 
     enddo
+    if (allocated(scalemap)) deallocate(scalemap)  ! HKB
   end subroutine mapLISdataToLVT
 
 
