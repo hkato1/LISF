@@ -14,6 +14,8 @@
 !  This process results in the land water storage (LWS), which is consistent with the LSM water storage. 
 !  Getirana, A., et al., 2017b. Rivers and floodplains as key components of global terrestrial water storage variability. 
 !  Geophysical Research Letters, 44. DOI: 10.1002/2017GL074684.
+!
+!  20 Aug 2019: Bailing Li, Added 0.25 degree input resolution for GRACE-RL06-FO
 ! 
 ! !INTERFACE: 
 subroutine readGRACEtwsObs(n)
@@ -425,7 +427,9 @@ subroutine readGRACEtwsObs(n)
      
      dt = float((currTime-GRACEtwsobs%refTime))/24.0
 
-    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
+    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.25 deg") then 
+       md_nc=720
+    elseif(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
        md_nc=360
     elseif(GRACEtwsobs%datasource.eq."GRACE TWS Original 1 deg") then 
        md_nc=180
