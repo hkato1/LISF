@@ -15,6 +15,9 @@
 ! 02 Feb 2004: Sujay Kumar; Initial Specification
 ! 24 Aug 2007: Chuck Alonge; Modified for use with NLDAS-2 data
 ! 14 Mar 2014: David Mocko: Added CAPE and PET forcing from NLDAS-2
+! 27 Aug 2019: Hiroko Beaudoing; ensure that NLDAS fields are missing when files
+!                                are not avaiable, so they will be overwritten
+!                                by base forcings (ECMWF for USDM run)
 !
 ! !INTERFACE:
 subroutine timeinterp_nldas2(n,findex)
@@ -218,6 +221,8 @@ subroutine timeinterp_nldas2(n,findex)
              swd(t) = nldas2_struc(n)%metdata1(kk,3,index1)*swt1+ & 
                       nldas2_struc(n)%metdata2(kk,3,index1)*swt2
           endif
+        else
+          swd(t) = LIS_rc%udef
         endif
         
         if (swd(t).gt.LIS_CONST_SOLAR) then
@@ -243,6 +248,8 @@ subroutine timeinterp_nldas2(n,findex)
         if(nldas2_struc(n)%metdata2(kk,8,index1).ne.LIS_rc%udef) then 
           pcp(t)=nldas2_struc(n)%metdata2(kk,8,index1)
           pcp(t)  = pcp(t)/(60.0*60.0)
+        else
+          pcp(t) = LIS_rc%udef
         endif
      end do
   enddo
@@ -264,6 +271,8 @@ subroutine timeinterp_nldas2(n,findex)
           else
              cpcp(t) = cpcp(t)*pcp(t)
           endif
+        else
+          cpcp(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -282,6 +291,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,1,index1).ne.LIS_rc%udef)) then 
           tmp(t) = nldas2_struc(n)%metdata1(kk,1,index1)*wt1+ & 
                    nldas2_struc(n)%metdata2(kk,1,index1)*wt2
+        else
+          tmp(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -298,6 +309,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,2,index1).ne.LIS_rc%udef)) then 
           q2(t) =nldas2_struc(n)%metdata1(kk,2,index1)*wt1+ & 
                  nldas2_struc(n)%metdata2(kk,2,index1)*wt2
+        else
+          q2(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -314,6 +327,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,4,index1).ne.LIS_rc%udef)) then 
            lwd(t) =nldas2_struc(n)%metdata1(kk,4,index1)*wt1+ & 
                    nldas2_struc(n)%metdata2(kk,4,index1)*wt2
+        else
+          lwd(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -330,6 +345,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,5,index1).ne.LIS_rc%udef)) then 
           uwind(t) = nldas2_struc(n)%metdata1(kk,5,index1)*wt1+ & 
                      nldas2_struc(n)%metdata2(kk,5,index1)*wt2
+        else
+          uwind(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -346,6 +363,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,6,index1).ne.LIS_rc%udef)) then 
           vwind(t) = nldas2_struc(n)%metdata1(kk,6,index1)*wt1+ & 
                      nldas2_struc(n)%metdata2(kk,6,index1)*wt2
+        else
+          vwind(t) = LIS_rc%udef
         endif
      enddo
   enddo
@@ -362,6 +381,8 @@ subroutine timeinterp_nldas2(n,findex)
             (nldas2_struc(n)%metdata2(kk,7,index1).ne.LIS_rc%udef)) then 
           psurf(t) =nldas2_struc(n)%metdata1(kk,7,index1)*wt1+ & 
                     nldas2_struc(n)%metdata2(kk,7,index1)*wt2
+        else
+          psurf(t) = LIS_rc%udef
         endif
      enddo
   enddo

@@ -38,6 +38,9 @@
 !  25 Jan 2012: Sujay Kumar; Switched to the use of grib-api library
 !  14 Mar 2014: David Mocko: Added CAPE and PET forcing from NLDAS-2
 !  16 Oct 2017: Bailing LI modified interp_nldas2 to read climatology ratios
+!  27 Aug 2019: Hiroko Beaudoing; reset NLDAS fields to be missing when files
+!                                 are not avaiable, so they will be overwritten
+!                                 by the base forcing (ECMWF for USDM run)
 ! 
 ! !INTERFACE:
 subroutine read_nldas2a(n, kk, findex, order, month, name,ferror)
@@ -258,6 +261,12 @@ subroutine read_nldas2a(n, kk, findex, order, month, name,ferror)
      write(LIS_logunit,*) &
           '[ERR] Could not find file: ',trim(name)
      ferror = 0
+! hiroko added: reset to missing NLDAS2 is not avaiable
+     if(order.eq.1) then 
+       nldas2_struc(n)%metdata1 = LIS_rc%udef
+     elseif(order.eq.2) then 
+       nldas2_struc(n)%metdata2 = LIS_rc%udef
+     endif
   endif
 #endif     
 

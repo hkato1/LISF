@@ -13,6 +13,8 @@
 ! !REVISION HISTORY:
 !  18 Jun 2003: Urszula Jambor; original code based on getreanlecmwf.F90
 !  20 Feb 2006: Sujay Kumar; Modified with nesting options
+!   2 Oct 2015: Hiroko Beaudoing; extended number of days to look back
+!                                 when current data is missing (for DA)
 ! 
 ! !INTERFACE:
 subroutine get_ecmwf(n,findex)
@@ -54,7 +56,7 @@ subroutine get_ecmwf(n,findex)
 !    for topographic adjustments to the forcing
 !  \end{description}
 !EOP
-  integer, parameter :: ndays = 10  ! # days to look back for forcing data
+  integer, parameter :: ndays = 30  ! # days to look back for forcing data
   integer :: try, ferror
   integer :: c,f,order
   integer :: yr1,mo1,da1,hr1,mn1,ss1,doy1
@@ -199,7 +201,7 @@ subroutine get_ecmwf(n,findex)
            call LIS_tick(dumbtime1,doy1,gmt1,yr1,mo1,da1,hr1,mn1,ss1,ts1)
         end if
         if ( try > ndays ) then 
-           write(LIS_logunit,*) 'ERROR: ECMWF data gap exceeds 10 days'
+           write(LIS_logunit,*) 'ERROR: ECMWF data gap exceeds ',ndays,'  days'
            STOP
         end if
      end do
@@ -239,7 +241,7 @@ subroutine get_ecmwf(n,findex)
            call LIS_tick(dumbtime2,doy2,gmt2,yr2,mo2,da2,hr2,mn2,ss2,ts2)
         end if
         if ( try > ndays ) then
-           write(LIS_logunit,*)'ERROR: ECMWF data gap exceeds 10 days'
+           write(LIS_logunit,*)'ERROR: ECMWF data gap exceeds ',ndays,'  days'
            STOP
         end if
      end do
