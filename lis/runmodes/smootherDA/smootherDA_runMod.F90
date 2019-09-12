@@ -17,6 +17,7 @@ module smootherDA_runMod
 !   
 ! !REVISION HISTORY: 
 !  21Oct05    Sujay Kumar  Initial Specification
+!  10 June 2015: Augusto Getirana; Add scaling factor
 ! 
 !
   use ESMF
@@ -49,6 +50,7 @@ contains
     use LIS_irrigationMod
     use LIS_routingMod
     use LIS_logMod
+    use LIS_LMSFMod,           only : LIS_LMSF_init
 
 ! !DESCRIPTION:
 !  This is the initialize method for LIS in a retrospective running mode. 
@@ -82,6 +84,7 @@ contains
 !EOP
     call LIS_domain_init
     call LIS_param_init
+    call LIS_LMSF_init
     call LIS_perturb_init
     call LIS_surfaceModel_init
     call LIS_metforcing_init
@@ -115,6 +118,7 @@ contains
     use LIS_routingMod
     use LIS_irrigationMod
     use LIS_logMod
+    use LIS_LMSFMod,           only : LIS_LMSF_apply
 
 !
 ! !DESCRIPTION:
@@ -140,6 +144,7 @@ contains
              if(LIS_timeToRunNest(n)) then
                 call LIS_setDynparams(n)
                 call LIS_get_met_forcing(n)
+                call LIS_LMSF_apply(n)
                 call LIS_perturb_forcing(n)
                 if(LIS_rc%DAincrMode(n).eq.1) then
                    call LIS_irrigation_run(n)
@@ -212,6 +217,7 @@ contains
     use LIS_surfaceModelMod
     use LIS_paramsMod
     use LIS_metforcingMod
+    use LIS_LMSFMod,         only : LIS_LMSF_finalize
 
 
 ! !DESCRIPTION:
@@ -232,6 +238,7 @@ contains
 !EOP
 
     call lis_finalize()
+    call LIS_LMSF_finalize()
     call LIS_surfaceModel_finalize
     call LIS_param_finalize()
     call LIS_metforcing_finalize()

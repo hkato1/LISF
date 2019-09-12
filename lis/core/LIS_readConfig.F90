@@ -24,6 +24,7 @@
 !               and added parameter output option (wparm)
 !  29 Dec 2007: Marv Freimund; Used trim on filenames
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!  04 May 2015: Augusto Getirana; Added read for forcing scale factor
 !
 ! !INTERFACE:
 subroutine LIS_readConfig()
@@ -236,6 +237,34 @@ subroutine LIS_readConfig()
   call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%zterp_correction, &
        label="Enable new zterp correction (met forcing):",default=.false.,rc=rc)
   
+  !ag - 4 May 2015
+  allocate(LIS_rc%scalingfactorfile(LIS_rc%nnest))
+  allocate(LIS_rc%scalingfactorType(LIS_rc%nnest))
+  allocate(LIS_rc%scalingfactorInterval(LIS_rc%nnest))
+  LIS_rc%scalingfactorfile(:) = "none"
+  LIS_rc%scalingfactorType(:) = "climo"
+  LIS_rc%scalingfactorInterval(:) = 0
+
+  do i=1,LIS_rc%nnest
+     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%scalingfactorfile(i), &
+       label="Scaling factor file:",default="none", rc=rc)
+     call LIS_verify(rc,"Scaling factor file: please provide a valid file or &
+       enter 'none' for no forcing bias correction")
+     write(LIS_logunit,*) 'Scaling factor file :',&
+                         LIS_rc%scalingfactorfile(i)
+  !hb - 30 Mar 2016
+     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%scalingfactorType(i), &
+       label="Scaling factor type:",default="none", rc=rc)
+     call LIS_verify(rc,"Scaling factor type: please provide monthly, &
+       annualy, or aclimo")
+     write(LIS_logunit,*) 'Scaling factor type :',&
+                         LIS_rc%scalingfactorType(i)
+     if(LIS_rc%scalingfactorType(i).eq."monthly") then
+        LIS_rc%scalingfactorInterval(i) = 2592000
+     endif
+     write(LIS_logunit,*) 'Scaling factor interval :',&
+                         LIS_rc%scalingfactorInterval(i)
+  enddo
 
   allocate(LIS_rc%nts(LIS_rc%nnest))
 

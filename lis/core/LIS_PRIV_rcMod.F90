@@ -940,6 +940,24 @@ module LIS_PRIV_rcMod
      real                   :: irrigation_thresh !BZ
      integer                :: irrigation_mxsoildpth
 
+!ag - 15 Apr 2015
+!Scaling factor variables
+     character*200, allocatable :: scalingfactorfile(:)
+     integer                    :: nscaling_factors
+     integer                    :: SF_Tair
+     integer                    :: SF_Qair
+     integer                    :: SF_SWdown
+     integer                    :: SF_LWdown
+     integer                    :: SF_UWind
+     integer                    :: SF_VWind
+     integer                    :: SF_Psurf
+     integer                    :: SF_Rainf
+     integer                    :: SF_CRainf
+!hb - 30 Mar 2016
+!added more variables for scaling factor
+     real, allocatable          :: scalingfactorInterval(:)
+     character*50, allocatable  :: scalingfactorType(:)
+
      integer                :: forecastMode
      logical                :: zterp_correction
      
