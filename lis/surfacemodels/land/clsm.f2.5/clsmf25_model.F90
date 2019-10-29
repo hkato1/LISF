@@ -1506,7 +1506,12 @@
       DUM2 = (RHO4 * EKAT + ONE) / (RHO4 + ONE)
       DUM3 = ZK * VGRST3(ITYP(ChNo))
 
+!HKB added check to avoid floating invalid
+      if ( DUM3 .NE. 0 ) then
       RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / DUM3         
+      else
+      RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / (DUM3 + 1.E-10)
+      endif
       rcinv = amax1(rcinv,0.)
 
       RCUN(ChNo) = ONE / (RCINV * GREEN(ChNo) + 1.E-10)
