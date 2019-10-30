@@ -1507,10 +1507,11 @@
       DUM3 = ZK * VGRST3(ITYP(ChNo))
 
 !HKB added check to avoid floating invalid
-      if ( DUM3 .NE. 0 ) then
-      RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / DUM3         
+      if ( DUM2 .LE. 0 ) then
+      RCINV = 0.0
+      print*,'bad DUM2 setting RCINV=0...at ',ChNo,DUM2
       else
-      RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / (DUM3 + 1.E-10)
+      RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / DUM3         
       endif
       rcinv = amax1(rcinv,0.)
 
