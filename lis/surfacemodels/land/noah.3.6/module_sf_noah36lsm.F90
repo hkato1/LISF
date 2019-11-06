@@ -902,6 +902,17 @@ CONTAINS
            SOILW = SOILWW / SOILWM
          END IF
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !!!Added this similar to NOAH-MP to fix low SWE values at Southern US.
+    !!! Jossy Jacob (April 19, 2018) recommended by David Mocko
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          IF (T1 >= TFREEZ+2.0) THEN   ! TFREEZ=273.15
+             IF (SNOWH <= 1.E-6 .OR. SNEQV <= 1.E-3) THEN
+               SNOWH = 0.0
+               SNEQV = 0.0
+             END IF
+          END IF
+    !!!!end!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ! ----------------------------------------------------------------------
   END SUBROUTINE SFLX
 ! ----------------------------------------------------------------------
