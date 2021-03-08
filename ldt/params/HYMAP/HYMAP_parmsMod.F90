@@ -728,6 +728,8 @@ contains
     ! by Augusto GETIRANA
     ! on 13th Mar 2012
     ! at HSL/GSFC/NASA
+    ! 6 Mar 2021 Hiroko Beaudoing: fix for global domain having missing
+    !                              along 180W longitude  
     ! ================================================   
     
     implicit none       
@@ -754,25 +756,39 @@ contains
     where(i2nextx>0)i2nextx=i2nextx-idx
     where(i2nexty>0)i2nexty=i2nexty-idy
 
-    i2nexty(1,:)=imis
-    i2nexty(nx,:)=imis
-    i2nexty(:,1)=imis
-    i2nexty(:,ny)=imis
+!HKB if subset domain, apply boundary around local domain
+    if ( idx.eq.0 .and. idy.eq.0 ) then
+     print*,'HYMAP parameter global'
+     where(i2nextx<1.and.i2nextx/=imis.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
     
-    i2nextx(1,:)=imis
-    i2nextx(nx,:)=imis
-    i2nextx(:,1)=imis
-    i2nextx(:,ny)=imis
-
-    where(i2nextx<=1.and.i2nextx/=imis.and.i2mask>0)
-       i2nextx=ibound
-       i2nexty=ibound
-    endwhere
+     where(i2nextx>nx.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
+    else
+     i2nexty(1,:)=imis
+     i2nexty(nx,:)=imis
+     i2nexty(:,1)=imis
+     i2nexty(:,ny)=imis
+     
+     i2nextx(1,:)=imis
+     i2nextx(nx,:)=imis
+     i2nextx(:,1)=imis
+     i2nextx(:,ny)=imis
+ 
+     where(i2nextx<=1.and.i2nextx/=imis.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
     
-    where(i2nextx>=nx.and.i2mask>0)
-       i2nextx=ibound
-       i2nexty=ibound
-    endwhere
+     where(i2nextx>=nx.and.i2mask>0)
+        i2nextx=ibound
+        i2nexty=ibound
+     endwhere
+    endif
     
     where(i2nexty<=1.and.i2nexty/=imis.and.i2mask>0)
        i2nextx=ibound
