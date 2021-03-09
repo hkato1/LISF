@@ -14,6 +14,7 @@
 ! !REVISION HISTORY:
 ! 16 May 2016; Shugong Wang; initial implementation for JULES 4.3
 ! 01 Feb 2018; Shugong Wang; updated for JULES 5.0 
+! 27 Feb 2020; Shugong Wang; updated for automated container 
 !
 ! !ROUTINE: jules50_main.F90
 ! 
@@ -153,7 +154,9 @@ subroutine jules50_main(n)
             dt = LIS_rc%nts(n)
             lat = LIS_domain(n)%grid(cur_grid)%lat
             lon = LIS_domain(n)%grid(cur_grid)%lon
-
+            
+            lat_d = lat
+            lon_d = lon
             ! compute gridbox average for tstar
             tstar_box=0.0
             do t=start_k, end_k

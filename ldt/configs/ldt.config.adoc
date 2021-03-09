@@ -19,6 +19,7 @@ Not all options described here are available in the public version of LDT.
 |"`DA preprocessing`" |Data Assimilation Preprocessing Option
 |"`Ensemble restart processing`" |Deriving an ensemble restart file Option
 |"`Restart preprocessing`" |LSM Restart File Preprocessing Option
+|"`Restart transformation processing`" | LSM restart file transformation option
 |"`Metforce processing`" |Meteorological forcing processing Option (similar to LIS)
 |"`Metforce temporal downscaling`" |Meteorological forcing temporal downscaling
 |"`Statistical downscaling of met forcing`" |Statistical options to downscale or generate forcing climatologies
@@ -179,6 +180,7 @@ endif::devonly[]
 |"`TRMM 3B42RTV7`" |TRMM-based 3B42 real-time rainfall
 |"`TRMM 3B42V6`" |TRMM-based 3B42 V6 rainfall
 |"`TRMM 3B42V7`" |TRMM-based 3B42 V7 rainfall
+|"`ERA5`" |ERA5 reanalysis
 |===
 
 .Example _ldt.config_ entry
@@ -388,6 +390,46 @@ LDT output directory:       OUTPUT
 ....
 Undefined value:             -9999.0
 ....
+
+`Add buffer to parameter grid domain:` adds a set buffer around a parameter file target domain. 
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1" |Buffer included
+|===
+
+The default value is 0.
+
+.Example _ldt.config_ entry
+....
+Add buffer to parameter grid domain:     0
+....
+
+`Buffer count in x-direction:` adds a set number of pixels that buffer 
+around a parameter file target domain, both in the x- and y-directions.
+Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|"0" |No buffer added
+|"1 (or greater)" |Buffer points included
+|===
+
+The default value is 5, and only activated if buffer option is selected.
+
+.Example _ldt.config_ entry
+....
+Buffer count in x-direction:   10 
+Buffer count in y-direction:   10
+....
+
+
 
 `Number of ensembles per tile:` specifies the number of ensembles of tiles to be used. The value should be greater than or equal to 1.
 
@@ -1216,6 +1258,7 @@ Irrigation type spatial transform:    mode
 
 |MODIS_OG |Irrigation area fraction map by Ozdogan and Gutman (2008)
 |GRIPC |Irrigation area fraction map by Salmon (2013)
+!UserDerived |User derived irrigation fraction map
 |===
 
 .Example _ldt.config_ entry
@@ -1238,12 +1281,41 @@ Irrigation fraction map:  ../irrigation/irrig.percent.eighth.1gd4r
 
 |none |Data is on same grid as LIS output domain
 |average |Upscale by averaging values for each gridcell
+|neighbor |Upscale or downscale using nearest neighbor values
 |===
 
 .Example _ldt.config_ entry
 ....
-Irrigation fraction spatial transform:     none
+Irrigation fraction map projection:   laton 
 ....
+
+`Irrigation fraction map projection:` indicates the grid projection defines an input irrigation maps. Options include:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|latlon |Lat/Lon projection with SW to NE data ordering
+|===
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction map projection:    latlon
+....
+
+
+If the map projection of parameter data is specified to be lat/lon, the following configuration should be used for specifying irrigation data, if the data source option has a "`_LIS`" in the name. See Appendix <<sec-d_latlon_example>> for more details about setting these values.
+
+.Example _ldt.config_ entry
+....
+Irrigation fraction lower left lat:      -59.87500
+Irrigation fraction lower left lon:     -179.87500
+Irrigation fraction upper right lat:      89.87500
+Irrigation fraction upper right lon:     179.87500
+Irrigation fraction resolution (dx):       0.2500
+Irrigation fraction resolution (dy):       0.2500
+....
+
 
 [[ssec-soilspecparams]]
 === Soil Parameters
@@ -1590,6 +1662,7 @@ Current options include:
 |SRTM_Native |The SRTM elevation map native source. See: http://dds.cr.usgs.gov/srtm/version2_1/SRTM30
 |SRTM_LIS |Similar dataset as to the above one but processed by LIS-team.
 |CONSTANT |User can set a constant elevation, slope or aspect class.
+|MERIT_1K |The MERIT elevation map, but processed by LIS-team to have a resolution '0.008333'. See: http://hydro.iis.u-tokyo.ac.jp/~yamadai/MERIT_DEM/index.html
 |===
 
 .Example _ldt.config_ entry
@@ -2940,6 +3013,23 @@ ECMWF Reanalysis elevation spatial transform:   "average"
 ECMWF Reanalysis maskfile:
 ....
 
+==== ERA5 Reanalysis Forcing based parameter inputs
+
+`ERA5 forcing directory:` specifies the location of the ERA5 Reanalysis forcing data files.
+
+`ERA5 forcing tile to grid mapping file:` specifies the file
+that maps the 1-d forcing to a 2-d format
+
+`ERA5 forcing terrain height file:` specifies the ERA5 reanalysis elevation file
+
+.Example _ldt.config_ entry
+....
+ERA5 forcing directory:              ./ERA5/
+ERA5 forcing tile to grid mapping file: ../ERA5/mapping.nc
+ERA5 forcing terrain height file: ../ERA5/era5_elev.nc
+....
+
+
 ==== MERRA-2 Forcing based parameter inputs
 
 `MERRA2 geopotential terrain height file:` specifies the MERRA-2 geopotential height file, which gets converted to terrain height (in meters) in LDT.
@@ -3076,6 +3166,29 @@ Input restart model timestep used:              15mn
 Input restart file format:                      netcdf
 Output restart file generation mode:            "climatology average"
 Output restart file averaging interval type:    "monthly"
+....
+
+[[ssec-rsttransformopts]]
+=== LIS restart transformation processing options
+
+`LIS restart source:` specifices the land surface model restart file. Acceptable values are:
+
+[cols="<,<",]
+|===
+|Value |Description
+
+|LSM   |LSM restart file type
+|===
+
+`Input restart filename:` specifies the name of the input restart file.
+
+`Output restart filename:` specifies the name of the output restart file.
+
+.Example _ldt.config_ entry
+....
+LIS restart source:      "LSM"
+Input restart filename:  LIS_RST_NOAHMP401_201907010000.d01.coarse.nc
+Output restart filename: LIS_RST_NOAHMP401_201907010000.d01.fine.nc
 ....
 
 [[ssec-ensrstopts]]

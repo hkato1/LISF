@@ -26,6 +26,8 @@
 !  17 Feb 2004;   Sujay Kumar  Initial Specification
 !  17 Oct 2018  Mahdi Navari  Enhanced the LVT reader to read the 
 !               Veg. Water Content (VWC) from SMAP SM dataset ! 
+!  19 Nov 2018  Mahdi Navari added suport to read SMAP_L3 brightness temperature
+!
 !EOP
 module LVT_datastream_pluginMod
 
@@ -106,6 +108,7 @@ contains
     use NLDAS2_dataMod,         only : NLDAS2_dataInit
     use GHCN_obsMod,            only : GHCN_obsInit
     use ALEXI_obsMod,           only : ALEXI_obsInit
+    use ALEXIesi_obsMod,        only : ALEXIesi_obsInit
     use GRACE_obsMod,           only : GRACE_obsInit
     use simGRACE_obsMod,        only : simGRACE_obsInit
     use USGSGWwell_obsMod,      only : USGSGWwell_obsInit
@@ -134,7 +137,10 @@ contains
     use JULES2D_obsMod,         only : JULES2D_obsinit
     use LVTbenchmarkOUT_obsMod, only : LVTbenchmarkOUT_obsInit
     use SMAP_smobsMod,          only : SMAP_smobsinit
-    !use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
+    use SMAP_vwcobsMod,         only : SMAP_vwcobsinit !MN
+    use SMAP_vodobsMod,         only : SMAP_vodobsinit
+    use LPRM_vodobsMod,         only : LPRM_vodobsinit 
+    use SMAP_L3TBMod,           only : SMAP_L3TBinit  !MN   
     use SMAP_TBobsMod,          only : SMAP_TBobsinit
     use GOME2_SIFobsMod,        only : GOME2_SIFobsinit
     use Daymet_obsMod,          only : Daymet_obsInit
@@ -159,6 +165,7 @@ contains
     use GDASforc_dataMod,       only : GDASforc_datainit    
     use ASOSWE_obsMod,          only : ASOSWE_obsinit
     use IMERG_dataMod,          only : IMERG_datainit
+    use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
 
@@ -205,6 +212,7 @@ contains
     external readNLDAS2data
     external readGHCNObs
     external readALEXIobs
+    external readALEXIesiobs
     external readGRACEObs
     external readsimGRACEObs
     external readUSGSGWwellobs
@@ -233,7 +241,10 @@ contains
     external readGIMMSMODIS_NDVIobs
     external readLVTbenchmarkOUTobs
     external readSMAPsmobs
+    external readSMAPvodobs
+    external readLPRMvodobs 
     external readSMAPvwcobs ! MN vegwtation water content
+    external readSMAP_L3TB ! MN Tb from SMAP SM data       
     external readSMAPTBobs
     external readGOME2_SIFobs
     external readDaymetObs
@@ -258,6 +269,7 @@ contains
     external readGDASforcdata
     external readASOSWEObs
     external readIMERGdata
+    external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
 
@@ -403,6 +415,9 @@ contains
     call registerobssetup(trim(LVT_ALEXIobsId)//char(0), ALEXI_obsinit)
     call registerobsread(trim(LVT_ALEXIobsId)//char(0),readALEXIobs)
 
+    call registerobssetup(trim(LVT_ALEXIesiobsId)//char(0), ALEXIesi_obsinit)
+    call registerobsread(trim(LVT_ALEXIesiobsId)//char(0),readALEXIesiobs)
+
     call registerobssetup(trim(LVT_GRACEobsId)//char(0), GRACE_obsinit)
     call registerobsread(trim(LVT_GRACEobsId)//char(0),readGRACEObs)
 
@@ -537,12 +552,27 @@ contains
     call registerobsread(trim(LVT_SMAPsmobsId)//char(0),&
          readSMAPsmobs)
 
+    call registerobssetup(trim(LVT_SMAPvodobsId)//char(0), &
+         SMAP_vodobsInit)
+    call registerobsread(trim(LVT_SMAPvodobsId)//char(0),&
+         readSMAPvodobs)
+
+    call registerobssetup(trim(LVT_LPRMvodobsId)//char(0), &
+         LPRM_vodobsInit)
+    call registerobsread(trim(LVT_LPRMvodobsId)//char(0),&
+         readLPRMvodobs)
+
 ! MN: SMAP vegetation water content
 !    call registerobssetup(trim(LVT_SMAPvwcobsId)//char(0), &
 !         SMAP_vwcobsInit)
 !    call registerobsread(trim(LVT_SMAPvwcobsId)//char(0),&
 !         readSMAPvwcobs)
 
+! MN: SMAP L3 Tb
+    call registerobssetup(trim(LVT_SMAP_L3TbId)//char(0), &
+            SMAP_L3TBinit)
+    call registerobsread(trim(LVT_SMAP_L3TbId)//char(0),&
+            readSMAP_L3TB)
 
     call registerobssetup(trim(LVT_SMAPTBobsId)//char(0), &
          SMAP_TBobsInit)
@@ -648,6 +678,9 @@ contains
 
     call registerobssetup(trim(LVT_IMERGdataId)//char(0), IMERG_datainit)
     call registerobsread(trim(LVT_IMERGdataId)//char(0) , readIMERGdata)
+
+    call registerobssetup(trim(LVT_UASNOWdataId)//char(0), UASNOW_obsinit)
+    call registerobsread(trim(LVT_UASNOWdataId)//char(0) , readUASNOWObs)
 
     call registerobssetup(trim(LVT_OzFluxdataId)//char(0), OzFlux_obsinit)
     call registerobsread(trim(LVT_OzFluxdataId)//char(0) , readOzFluxObs)
