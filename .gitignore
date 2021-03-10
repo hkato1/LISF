@@ -1,9 +1,14 @@
 *.o
 *.mod
 *.d
-ldt/**/LDT*
-lis/**/LIS*
-lvt/**/LVT*
+ldt/LDT*
+lis/LIS*
+ldt/make/LDT
+lis/make/LIS
 **/**/configure*
 lis/make/Filepath
 lis/make/user.cfg
+**/make/*_NetCDF_inc.h
+**/make/*_misc.h
+lis/make/LIS_plugins.h
+

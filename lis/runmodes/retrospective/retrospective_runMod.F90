@@ -22,6 +22,7 @@ module retrospective_runMod
 !   
 ! !REVISION HISTORY: 
 !  21Oct05    Sujay Kumar  Initial Specification
+! 12 May 2015: Augusto Getirana; Add scaling factor
 ! 
 !
   implicit none
@@ -57,6 +58,7 @@ contains
     use LIS_irrigationMod,     only : LIS_irrigation_init
     use LIS_RTMMod,            only : LIS_RTM_init
     use LIS_appMod,            only : LIS_appModel_init
+    use LIS_LMSFMod,           only : LIS_LMSF_init
 
     use LIS_tbotAdjustMod,     only : LIS_createTmnUpdate
 ! !DESCRIPTION:
@@ -67,6 +69,8 @@ contains
 !    initialize the LIS domains
 !  \item[LIS\_param\_init] (\ref{LIS_param_init}) \newline
 !    initialize parameters
+!  \item[LIS\_LMSF\_init] (\ref{LIS_LMSF_init}) \newline
+!    initialize forcing scale factor parameters
 !  \item[LIS\_lsm\_init] (\ref{LIS_lsm_init}) \newline
 !    initialize the land surface model. 
 !  \item[LIS\_metforcing\_init] (\ref{LIS_metforcing_init}) \newline
@@ -84,6 +88,7 @@ contains
     call LIS_domain_init
     call LIS_createTmnUpdate
     call LIS_param_init
+    call LIS_LMSF_init
     call LIS_perturb_init
     call LIS_surfaceModel_init
     call LIS_metforcing_init
@@ -124,6 +129,7 @@ contains
     use LIS_appMod,            only : LIS_runAppModel, LIS_outputAppModel
     use LIS_RTMMod,            only : LIS_RTM_run, LIS_RTM_output
     use LIS_logMod,            only : LIS_flush, LIS_logunit
+    use LIS_LMSFMod, only : LIS_LMSF_apply
 !
 ! !DESCRIPTION:
 ! 
@@ -140,6 +146,8 @@ contains
 !    set the time dependent parameters
 !  \item[LIS\_get\_met\_forcing] (\ref{LIS_get_met_forcing}) \newline
 !    retrieve the met forcing
+!  \item[LIS\_LMSF\_apply] (\ref{LIS_LMSF_apply}) \\
+!    apply the forcing scaling factors
 !  \item[LIS\_perturb\_forcing] (\ref{LIS_perturb_forcing}) \newline
 !    perturbs the met forcing
 !  \item[LIS\_irrigation\_run] (\ref{LIS_irrigation_run}) \newline
@@ -190,6 +198,7 @@ contains
           if(LIS_timeToRunNest(n)) then 
              call LIS_setDynparams(n)
              call LIS_get_met_forcing(n)
+             call LIS_LMSF_apply(n)
              call LIS_perturb_forcing(n)
              call LIS_irrigation_run(n)
              call LIS_surfaceModel_f2t(n)  
@@ -229,6 +238,7 @@ contains
     use LIS_metforcingMod,   only : LIS_metforcing_finalize
     use LIS_RTMMod,          only : LIS_RTM_finalize
     use LIS_appMod,          only : LIS_appModel_finalize ! SY
+    use LIS_LMSFMod, only : LIS_LMSF_finalize
 
 ! !DESCRIPTION:
 ! 
@@ -239,6 +249,8 @@ contains
 !    cleanup LIS generic structures
 !  \item[LIS\_lsm\_finalize] (\ref{LIS_lsm_finalize}) \newline
 !    cleanup land surface model specific structures
+!  \item[LIS\_LMSF_finalize] (\ref{LIS_LMSF_finalize}) \newline
+!    cleanup forcing scaling factor specific structures
 !  \item[LIS\_param\_finalize] (\ref{LIS_param_finalize}) \newline
 !    cleanup parameter specific structures
 !  \item[LIS\_metforcing\_finalize] (\ref{LIS_metforcing_finalize}) \newline
@@ -252,6 +264,7 @@ contains
 !EOP
 
     call lis_finalize()
+    call LIS_LMSF_finalize()
     call LIS_surfaceModel_finalize()
     call LIS_param_finalize()
     call LIS_metforcing_finalize()

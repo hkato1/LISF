@@ -611,6 +611,7 @@ module LIS_PRIV_rcMod
 !  14 Oct 2003; Sujay Kumar; Removed LSM specific variables. 
 !  19 Jan 2007; Chuck Alonge; Added Flag to output parameters
 !  17 Jan 2011: David Mocko, added max/min greenness & slope type
+!  15 Apr 2015; Augusto Gtirana; added forcing scaling fator 
 !
 !EOP
   implicit none
@@ -955,6 +956,25 @@ module LIS_PRIV_rcMod
 
      logical, allocatable       :: LSM_DAinst_valid(:)
      logical, allocatable       :: Routing_DAinst_valid(:)
+
+!ag - 15 Apr 2015
+!Scaling factor variables
+     character*200, allocatable :: scalingfactorfile(:)
+     integer                    :: nscaling_factors
+     integer                    :: SF_Tair
+     integer                    :: SF_Qair
+     integer                    :: SF_SWdown
+     integer                    :: SF_LWdown
+     integer                    :: SF_UWind
+     integer                    :: SF_VWind
+     integer                    :: SF_Psurf
+     integer                    :: SF_Rainf
+     integer                    :: SF_CRainf
+!hb - 30 Mar 2016
+!added more variables for scaling factor
+     real, allocatable          :: scalingfactorInterval(:)
+     character*50, allocatable  :: scalingfactorType(:)
+
   end type lisrcdec
   
 end module LIS_PRIV_rcMod
