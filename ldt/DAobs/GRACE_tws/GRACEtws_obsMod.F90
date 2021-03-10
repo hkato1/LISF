@@ -15,6 +15,8 @@
 !  Getirana, A., et al., 2017b. Rivers and floodplains as key components of global terrestrial water storage variability. 
 !  Geophysical Research Letters, 44. DOI: 10.1002/2017GL074684.
 !
+!  20 Aug 2019: Bailing Li, Added 0.25 degree input resolution for GRACE-RL06-FO
+!
 module GRACEtws_obsMod
 ! !USES: 
   use ESMF
@@ -373,7 +375,48 @@ contains
             LDT_rc%lnc(n)*LDT_rc%lnr(n),&
             GRACEtwsobs%n11)
     endif
-
+!Bailing: These are GRACE product descriptions which are diff
+! currently, I use LDT_rc%gridDesc(n,9) to determine if it is
+   if (LDT_rc%gridDesc(n,9).lt.0.5)then  !0.25 GRACE
+    gridDesci = 0
+    gridDesci(1) = 0
+    gridDesci(2) = 1440
+    gridDesci(3) = 720
+    gridDesci(4) = -89.875
+    gridDesci(5) = -179.875
+    gridDesci(6) = 128
+    gridDesci(7) = 89.875
+    gridDesci(8) = 179.875
+    gridDesci(9) = 0.25
+    gridDesci(10) = 0.25
+    gridDesci(20) = 64
+   elseif (LDT_rc%gridDesc(n,9).lt.1.0 .and. LDT_rc%gridDesc(n,9).gt.0.25)then  !0.5 GRACE
+    gridDesci = 0
+    gridDesci(1) = 0
+    gridDesci(2) = 720
+    gridDesci(3) = 360
+    gridDesci(4) = -89.75
+    gridDesci(5) = -179.75
+    gridDesci(6) = 128
+    gridDesci(7) = 89.75
+    gridDesci(8) = 179.75
+    gridDesci(9) = 0.5
+    gridDesci(10) = 0.5
+    gridDesci(20) = 64
+   else                                            ! 1.0 GRACE
+    gridDesci = 0
+    gridDesci(1) = 0
+    gridDesci(2) = 360
+    gridDesci(3) = 180
+    gridDesci(4) = -89.5
+    gridDesci(5) = -179.5
+    gridDesci(6) = 128
+    gridDesci(7) = 89.5
+    gridDesci(8) = 179.5
+    gridDesci(9) =  1.0
+    gridDesci(10) = 1.0
+    gridDesci(20) = 64
+   end if
 
     ! Define ASCAT Obs grid domain and resolution
     ! **NOTE: ASCAT domain longs. are actually 0 to 360 deg
@@ -382,7 +425,23 @@ contains
   
     !  Latest GRACE TWS Mascon 0.5 deg dataset (B. Li):
 !    elseif( LDT_rc%gridDesc(n,9) == 0.5 ) then
-    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
+    if(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.25 deg") then
+       GRACEtwsobs%gracenc = 1440
+       GRACEtwsobs%gracenr = 720
+
+       gridDesci = 0
+       gridDesci(1) = 0
+       gridDesci(2) = GRACEtwsobs%gracenc
+       gridDesci(3) = GRACEtwsobs%gracenr
+       gridDesci(4) = -89.875
+       gridDesci(5) = -179.875
+       gridDesci(6) = 128
+       gridDesci(7) = 89.875
+       gridDesci(8) = 179.875
+       gridDesci(9) = 0.25
+       gridDesci(10) = 0.25
+       gridDesci(20) = 64
+    elseif(GRACEtwsobs%datasource.eq."GRACE TWS Mascon 0.5 deg") then 
        GRACEtwsobs%gracenc = 720
        GRACEtwsobs%gracenr = 360
        
