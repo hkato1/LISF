@@ -150,7 +150,7 @@ subroutine USAFSI_run(n)
 
      ! Check the LDT map projection.
      ! FIXME:  Support other projections in addition to LATLON
-     if (trim(LDT_rc%lis_map_proj) .ne. LDT_latlonId) then
+     if (trim(LDT_rc%lis_map_proj(n)) .ne. LDT_latlonId) then
         write(LDT_logunit,*)'[ERR] USAFSI only supports lat/lon grid'
         call LDT_endrun()
      end if

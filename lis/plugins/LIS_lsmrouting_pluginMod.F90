@@ -105,6 +105,7 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_VIC_4_1_2 )
    external vic412_getrunoffs
    external vic412_getrunoffs_mm
+   external vic412_getsws_hymap2
 #endif
 
 #if ( defined SM_JULES_5_0 )
@@ -293,6 +294,9 @@ subroutine LIS_lsmrouting_plugin
    call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
         vic412_getrunoffs_mm)
+   call registerlsmroutinggetsws(trim(LIS_vic412Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        vic412_getsws_hymap2)
 #endif
 #endif
 
