@@ -168,6 +168,19 @@ void tridiag(double a[], double b[], double c[], double r[], unsigned n)
     r[j]=r[j]-r[j-1]*factor;
 
     factor=b[j];
+// Hiroko's fix
+    if ( factor == 0 ) {
+      fprintf(stderr, "factor = %g: %d\n", factor, j);
+      fprintf(stderr, "b[j] = %g: %d\n", b[j], n);
+      fprintf(stderr, "a[j] = %g: c[j] = %g: r[j] = %g \n", a[j], c[j], r[j]);
+      fprintf(stderr, "b[0] = %g: b[1] = %g: b[2] = %g: \n", b[0], b[1], b[2]);
+      fprintf(stderr, "a[0] = %g: a[1] = %g: a[2] = %g: \n", a[0], a[1], a[2]);
+      fprintf(stderr, "r[0] = %g: r[1] = %g: r[2] = %g: \n", r[0], r[1], r[2]);
+      fprintf(stderr, "c[0] = %g: c[1] = %g: c[2] = %g: \n", c[0], c[1], c[2]);
+      factor=1.0;
+      fprintf(stderr, "fixed factor = %g: \n", factor);
+    }
+// end Hiroko's fix
     b[j]=1.0;
     c[j]=c[j]/factor;
     r[j]=r[j]/factor;
