@@ -38,6 +38,7 @@
 !                         - moved MIN_SNOW_MASS->MINSWE, DZ1MAX, and SATCAPFR to 
 !                            catch_constants
 !                         - moved "small" back from catch_constants() into snowrt()
+! Hiroko, 2 Jul 2018   - added check to avoid floating invalid in RCUNST
         use LIS_coreMod
         use LIS_logMod
       use clsmf25_constants
@@ -1508,7 +1509,13 @@
       DUM2 = (RHO4 * EKAT + ONE) / (RHO4 + ONE)
       DUM3 = ZK * VGRST3(ITYP(ChNo))
 
+!HKB added check to avoid floating invalid
+      if ( DUM2 .LE. 0 ) then
+      RCINV = 0.0
+      print*,'bad DUM2 setting RCINV=0...at ',ChNo,DUM2
+      else
       RCINV = ( DUM1*ALOG(DUM2) + ZK*ZLAI(ChNo) ) / DUM3         
+      endif
       rcinv = amax1(rcinv,0.)
 
       RCUN(ChNo) = ONE / (RCINV * GREEN(ChNo) + 1.E-10)
