@@ -24,6 +24,7 @@ module retrospective_runMod
 !   
 ! !REVISION HISTORY: 
 !  21Oct05    Sujay Kumar  Initial Specification
+!  12 May 2015: Augusto Getirana; Add scaling factor
 ! 
 !
   implicit none
@@ -61,6 +62,7 @@ contains
     use LIS_appMod,            only : LIS_appModel_init
 
     use LIS_tbotAdjustMod,     only : LIS_createTmnUpdate
+    use LIS_LMSFMod,           only : LIS_LMSF_init
 ! !DESCRIPTION:
 !  This is the initialize method for LIS in a retrospective running mode. 
 !  The following calls are invoked from this method. 
@@ -86,6 +88,9 @@ contains
     call LIS_domain_init
     call LIS_createTmnUpdate
     call LIS_param_init
+    if ( LIS_rc%forc_scaling ) then
+     call LIS_LMSF_init
+    endif
     call LIS_perturb_init
     call LIS_surfaceModel_init
     call LIS_metforcing_init
@@ -126,6 +131,7 @@ contains
     use LIS_appMod,            only : LIS_runAppModel, LIS_outputAppModel
     use LIS_RTMMod,            only : LIS_RTM_run, LIS_RTM_output
     use LIS_logMod,            only : LIS_logunit
+    use LIS_LMSFMod,           only : LIS_LMSF_apply
 !
 ! !DESCRIPTION:
 ! 
@@ -192,6 +198,9 @@ contains
           if(LIS_timeToRunNest(n)) then 
              call LIS_setDynparams(n)
              call LIS_get_met_forcing(n)
+             if ( LIS_rc%forc_scaling ) then
+              call LIS_LMSF_apply(n)
+             endif
              call LIS_perturb_forcing(n)
              call LIS_irrigation_run(n)
              call LIS_surfaceModel_f2t(n)  
@@ -224,13 +233,14 @@ contains
 ! !INTERFACE:
   subroutine lis_final_retrospective
 ! !USES:
-    use LIS_coreMod,         only : LIS_finalize
+    use LIS_coreMod,         only : LIS_finalize, LIS_rc
     use LIS_logMod,          only : LIS_logunit
     use LIS_surfaceModelMod, only : LIS_surfaceModel_finalize
     use LIS_paramsMod,       only : LIS_param_finalize
     use LIS_metforcingMod,   only : LIS_metforcing_finalize
     use LIS_RTMMod,          only : LIS_RTM_finalize
     use LIS_appMod,          only : LIS_appModel_finalize ! SY
+    use LIS_LMSFMod,         only : LIS_LMSF_finalize
 
 ! !DESCRIPTION:
 ! 
@@ -261,6 +271,9 @@ contains
 ! SY: Begin
     call LIS_appModel_finalize()     
 ! SY: End 
+    if ( LIS_rc%forc_scaling ) then
+     call LIS_LMSF_finalize()
+    endif
 
     write(LIS_logunit,*) " LIS Run completed. "
 
