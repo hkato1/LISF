@@ -84,6 +84,8 @@ subroutine timeinterp_agrradps(n,findex)
         swd(t) = &
              wt1 * agrradps_struc(n)%metdata1(1,index) +  & 
              wt2 *agrradps_struc(n)%metdata2(1,index)
+     else
+        swd(t) = LIS_rc%udef
      endif
   enddo
   
@@ -94,6 +96,8 @@ subroutine timeinterp_agrradps(n,findex)
         lwd(t) = &
              wt1 * agrradps_struc(n)%metdata1(2,index) +  & 
              wt2 * agrradps_struc(n)%metdata2(2,index)
+     else
+        lwd(t) = LIS_rc%udef
      endif
   enddo
 
