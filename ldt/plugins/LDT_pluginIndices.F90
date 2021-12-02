@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_pluginIndices
 !BOP
@@ -18,6 +24,7 @@ module LDT_pluginIndices
 ! !REVISION HISTORY:
 !  23 Oct 2008: Sujay Kumar  -- Initial Specification
 !  17 Jul 2012: KR Arsenault -- Updated entries with capitalization rules
+!  01 Mar 2020: Yeosang Yoon -- Added MERIT DEM
 !
 !EOP
   PRIVATE
@@ -29,12 +36,17 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_LSMparamprocId   = "LSM parameter processing"
    character*50, public,  parameter :: LDT_DApreprocId      = "DA preprocessing"
    character*50, public,  parameter :: LDT_EnsRstpreprocId  = "Ensemble restart processing"
-   character*50, public,  parameter :: LDT_rstProcId        = "Restart processing"
+   character*50, public,  parameter :: LDT_climoRstProcId   = "Climatological restart processing"
+   character*50, public,  parameter :: LDT_rstTransformProcId = "Restart transformation processing"
    character*50, public,  parameter :: LDT_NUWRFpreprocId   = "NUWRF preprocessing for real"
    character*50, public,  parameter :: LDT_ANNprocId        = "ANN processing"
    character*50, public,  parameter :: LDT_MetForcprocId    = "Metforce processing"
    character*50, public,  parameter :: LDT_MetTDscaleprocId = "Metforce temporal downscaling"
    character*50, public,  parameter :: LDT_StatDscaleMetforcprocId = "Statistical downscaling of met forcing"
+   character*50, public,  parameter :: LDT_usafsiId = "USAFSI analysis"
+   character*50, public,  parameter :: LDT_OPTUEparamprocId   = "OPTUE parameter processing"
+   character*50, public,  parameter :: LDT_obsSimprocId   = "Observation simulator"
+   character*50, public,  parameter :: LDT_LISHydropreprocId  = "LISHydro preprocessing for WRFHydro"
 
 !-------------------------------------------------------------------------
 ! Domains
@@ -92,7 +104,19 @@ module LDT_pluginIndices
         = "GCOMW AMSR2 L3 snow depth"
    character*50, public,  parameter :: LDT_NASASMAPsmobsId            &
         = "NASA SMAP soil moisture"
+   character*50, public,  parameter :: LDT_THySMobsId            &
+        = "THySM soil moisture"
+   character*50, public,  parameter :: LDT_SMOSNRTNNsmobsId            &
+        = "SMOS NRT NN soil moisture"                                        !kyh20210105
+   character*50, public,  parameter :: LDT_NASASMAPvodobsId            &
+        = "NASA SMAP vegetation optical depth"
+   character*50, public,  parameter :: LDT_GLASSlaiobsId            &
+        = "GLASS LAI"
+   character*50, public,  parameter :: LDT_LPRMvodobsId            &
+        = "LPRM vegetation optical depth"
 
+   character*50, public,  parameter :: LDT_MCD15A2HlaiobsId            &
+        = "MCD15A2H LAI"
 !-------------------------------------------------------------------------
 ! Meteorological forcings
 !-------------------------------------------------------------------------
@@ -103,20 +127,19 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gdasId         = "GDAS"
    character*50, public,  parameter :: LDT_geos5fcstId    = "GEOS5 forecast"
    character*50, public,  parameter :: LDT_ecmwfId        = "ECMWF"
-   character*50, public,  parameter :: LDT_ecmwfreanalId  = "ECMWF reanalysis"
    character*50, public,  parameter :: LDT_princetonId    = "PRINCETON"
-   character*50, public,  parameter :: LDT_merralandId    = "MERRA-Land"
    character*50, public,  parameter :: LDT_merra2Id       = "MERRA2"
+   character*50, public,  parameter :: LDT_era5Id         = "ERA5"
    character*50, public,  parameter :: LDT_gswp1Id        = "GSWP1"
    character*50, public,  parameter :: LDT_gswp2Id        = "GSWP2"
-   character*50, public,  parameter :: LDT_nldas1Id       = "NLDAS1"
    character*50, public,  parameter :: LDT_nldas2Id       = "NLDAS2"
    character*50, public,  parameter :: LDT_gldasId        = "GLDAS"
-   character*50, public,  parameter :: LDT_gdas3dId       = "GDAS(3d)"
    character*50, public,  parameter :: LDT_gdasLSWGId     = "GDAS(LSWG)"
    character*50, public,  parameter :: LDT_gfsId          = "GFS"
    character*50, public,  parameter :: LDT_narrId         = "NARR"
    character*50, public,  parameter :: LDT_nam242Id       = "NAM242"
+   character*50, public,  parameter :: LDT_wrfoutv2Id     = "WRFoutv2"
+   character*50, public,  parameter :: LDT_WRFakId        = "WRF AK"
    character*50, public,  parameter :: LDT_cmapId         = "CMAP"
 !   character*50, public,  parameter :: LDT_TRMM3B42RTId   = "TRMM 3B42RT"
    character*50, public,  parameter :: LDT_TRMM3B42V6Id   = "TRMM 3B42V6"
@@ -149,10 +172,10 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_noah271Id     = "Noah.2.7.1"
    character*50, public,  parameter :: LDT_noah32Id      = "Noah.3.2"
    character*50, public,  parameter :: LDT_noah33Id      = "Noah.3.3"
-   character*50, public,  parameter :: LDT_noah34Id      = "Noah.3.4"
-   character*50, public,  parameter :: LDT_noah35Id      = "Noah.3.5"
    character*50, public,  parameter :: LDT_noah36Id      = "Noah.3.6"
-   character*50, public,  parameter :: LDT_noahmpId      = "Noah-MP.3.6"
+   character*50, public,  parameter :: LDT_noah39Id      = "Noah.3.9"
+   character*50, public,  parameter :: LDT_noahmp36Id    = "Noah-MP.3.6"
+   character*50, public,  parameter :: LDT_noahmp401Id   = "Noah-MP.4.0.1"
    character*50, public,  parameter :: LDT_clm2Id        = "CLM.2"
    character*50, public,  parameter :: LDT_clm45Id       = "CLM.4.5"
    character*50, public,  parameter :: LDT_vic411Id      = "VIC.4.1.1"
@@ -179,6 +202,11 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_gldbv1Id   = "GLDBv1"
    character*50, public,  parameter :: LDT_gldbv2Id   = "GLDBv2"
    character*50, public,  parameter :: LDT_glwdId     = "GLWD"
+
+!-------------------------------------------------------------------------
+! Snow models and data
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_Crocus81Id    = "Crocus8.1"  ! this is SURFEX version comes from surf_version.F90
 
 !-------------------------------------------------------------------------
 ! Landcover sources
@@ -225,6 +253,7 @@ module LDT_pluginIndices
    character*50, public, parameter :: LDT_gtopoNATId = "GTOPO30_Native"
    character*50, public, parameter :: LDT_srtmLISId  = "SRTM_LIS"
    character*50, public, parameter :: LDT_srtmNATId  = "SRTM_Native"
+   character*50, public, parameter :: LDT_merit1KId  = "MERIT_1K"
 
 !-------------------------------------------------------------------------
 ! Soils sources
@@ -273,6 +302,8 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_modisirrigId  = "MODIS"
    character*50, public,  parameter :: LDT_modOGirrigId  = "MODIS_OG"
    character*50, public,  parameter :: LDT_gripcirrigId  = "GRIPC"
+
+   character*50, public,  parameter :: LDT_userinputirrigId = "UserDerived"
 
 !-------------------------------------------------------------------------
 ! Albedo data sources
@@ -356,6 +387,21 @@ module LDT_pluginIndices
 !-------------------------------------------------------------------------
    character*50, public,  parameter :: LDT_forcingClimoId  = "Climatology"
    character*50, public,  parameter :: LDT_bayesianMergeId = "Bayesian merging"
+
+!-------------------------------------------------------------------------
+!  obs simulator nature run source
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutNatureRunDataId = "LIS output"
+
+!-------------------------------------------------------------------------
+!  obs simulator OSSE mask
+!-------------------------------------------------------------------------
+   character*50, public,  parameter :: LDT_LISoutOSSEmaskDataId = "LIS output"
+   character*50, public,  parameter :: LDT_AMSR2OSSEmaskDataId = "AMSR2"
+   character*50, public,  parameter :: LDT_MODISOSSEmaskDataId = "MODIS"
+   character*50, public,  parameter :: LDT_Sentinel1AOSSEmaskDataId = "Sentinel1A"
+   character*50, public,  parameter :: LDT_TSMMOSSEmaskDataId = "TSMM"
+   
 
 !EOC
  end module LDT_pluginIndices

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -70,7 +72,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUE_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc, LIS_config, LIS_vecTile
     use LIS_logMod,   only : LIS_verify, LIS_logunit
     
@@ -145,7 +146,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_objectiveFunc_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc
     
 ! 
@@ -174,7 +174,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUEAlg_init
 ! !USES: 
-    use ESMF
     use LIS_coreMod,  only : LIS_rc
     
 ! 
@@ -292,7 +291,6 @@ contains
 ! !INTERFACE:  
   subroutine LIS_optUEAlg_reset
 ! !USES: 
-    use ESMF
     use LIS_logMod
     
 ! 

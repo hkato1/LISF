@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -248,6 +250,7 @@ contains
     real,         allocatable         :: lons(:), lats(:)
     real,         allocatable         :: state_lat(:), state_lon(:)
 
+#if 0 
 !----------------------------------------------------------------------------
 !  Check if the observation state is updated or not. If it is updated,
 !  the data is then assimilated. 
@@ -384,8 +387,7 @@ contains
                LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%col,&
                LIS_surface(n, LIS_rc%lsm_index)%tile(tileid)%row)
 
-          call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
-               tileid, st_id, en_id)
+          call LIS_lsm_DAmapTileSpaceToObsSpace(n, k, tileid, st_id, en_id)
 
           if(st_id.lt.0.or.en_id.lt.0) then 
              assim = .false. 
@@ -521,7 +523,7 @@ contains
              stincrdata(t) = state_incr(v,t)
 !TBD: SVK
 #if 0 
-             call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, t, st_id, en_id)
+             call LIS_lsm_DAmapTileSpaceToObsSpace(n, k, t, st_id, en_id)
                          
              gid = st_id
 
@@ -559,7 +561,7 @@ contains
        deallocate(lons)
 
     end if
-    
+#endif    
   end subroutine ensrf_increments
 
 !BOP

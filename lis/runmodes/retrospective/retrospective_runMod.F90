@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -94,12 +96,12 @@ contains
     call LIS_metforcing_init
     call LIS_irrigation_init
     call LIS_initDAObservations
+    call LIS_routing_init
+    call LIS_routing_readrestart
     call LIS_dataassim_init
     call LIS_surfaceModel_setup
     call LIS_surfaceModel_readrestart
     call LIS_perturb_readrestart
-    call LIS_routing_init
-    call LIS_routing_readrestart
     call LIS_RTM_init
     call LIS_appModel_init
     call LIS_core_init
@@ -221,7 +223,7 @@ contains
              call LIS_outputAppModel(n)
           endif
        enddo
-       call LIS_flush(LIS_logunit)
+       flush(LIS_logunit)
     enddo
   end subroutine lis_run_retrospective
 
@@ -232,7 +234,7 @@ contains
   subroutine lis_final_retrospective
 ! !USES:
     use LIS_coreMod,         only : LIS_finalize
-    use LIS_logMod,          only : LIS_flush, LIS_logunit
+    use LIS_logMod,          only : LIS_logunit
     use LIS_surfaceModelMod, only : LIS_surfaceModel_finalize
     use LIS_paramsMod,       only : LIS_param_finalize
     use LIS_metforcingMod,   only : LIS_metforcing_finalize

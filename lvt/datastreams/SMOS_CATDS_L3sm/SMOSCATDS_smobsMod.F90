@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: SMOSCATDS_smobsMod
@@ -77,7 +83,6 @@ contains
   subroutine SMOSCATDS_smobsinit(i)
 ! 
 ! !USES: 
-    use ESMF
     use LVT_coreMod
     use LVT_histDataMod
     use LVT_timeMgrMod
@@ -135,6 +140,7 @@ contains
     SMOSCATDS_smobs(i)%gridDesci(8) = 179.8703
 
     SMOSCATDS_smobs(i)%gridDesci(9) = 1
+    SMOSCATDS_smobs(i)%gridDesci(10) = 0.25 ! MN: based on Kristi's email 1/16/2019    
     SMOSCATDS_smobs(i)%gridDesci(20) = 64
     
     SMOSCATDS_smobs(i)%gridDesci(2) = ease_nc  !nx

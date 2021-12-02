@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -162,10 +164,10 @@ subroutine RDHM356_gen_date_str(dt_str, time_option)
     if (trim(time_option) .eq. 'year') then
         write(dt_str, '(I4)') year
     elseif (trim(time_option) .eq. 'month') then
-        write(dt_str, '(I4,I2.2)'), year, month
+        write(dt_str, '(I4,I2.2)') year, month
     elseif (trim(time_option) .eq. 'day') then
-        write(dt_str, '(I4,I2.2,I2.2)'), year, month, day
+        write(dt_str, '(I4,I2.2,I2.2)') year, month, day
     elseif (trim(time_option) .eq. 'hour') then
-        write(dt_str, '(I4,I2.2,I2.2,I2.2)'), year, month, day, hour
+        write(dt_str, '(I4,I2.2,I2.2,I2.2)') year, month, day, hour
     endif
 end subroutine RDHM356_gen_date_str

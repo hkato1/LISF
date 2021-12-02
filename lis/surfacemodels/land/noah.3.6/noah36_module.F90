@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -101,6 +103,7 @@ module noah36_module
 !   7 Nov 2010: David Mocko, changes for Noah3.2 in LIS6.1
 !   9 Sep 2011: David Mocko, changes for Noah3.3 in LIS6.1
 !  30 Oct 2014: David Mocko, added Noah-3.6 into LIS-7
+!  05 Jan 2021: Augusto Getirana, 2-way coupling implementation
 ! 
 !EOP
   implicit none
@@ -240,6 +243,12 @@ module noah36_module
      real :: sigma_sm  !used for optimization/uncertainty analysis
 
      real,allocatable :: relsmc(:)  !used to export relsmc to WRF
+
+     !ag(05Jan2021) 2-way coupling variables
+     real :: rivsto
+     real :: fldsto
+     real :: fldfrc
+     
   end type noah36dec
 
 end module noah36_module

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 !BOP
@@ -11,6 +17,7 @@
 !  03 Sept 2004: Sujay Kumar; Initial Specification
 !  23  May 2012: KR Arsenault; Implemented new features to read different
 !                 resolutions and generate landmask from landcover
+!  30  Nov 2018: David Mocko; Added Bondville landcover classification
 !
 ! !INTERFACE:
 subroutine read_CONSTANT_lc(n, num_types, fgrd, maskarray)
@@ -59,10 +66,19 @@ subroutine read_CONSTANT_lc(n, num_types, fgrd, maskarray)
       LDT_rc%waterclass   = 7
     case ( "ISA" )
       LDT_rc%waterclass   = 13   ! Originally 0
+    case ( "Bondville" )
+      LDT_rc%waterclass   = 17
+      LDT_rc%urbanclass   = 13
+      LDT_rc%cropclass1   = 12
+      LDT_rc%snowclass    = 15
+      LDT_rc%bareclass    = 16
+      LDT_rc%wetlandclass = 11
+      LDT_rc%glacierclass = 15
     case default  ! Non-supported options
       write(LDT_logunit,*) "The land classification: ",trim(LDT_rc%lc_type(n)),&
                            " does not exist."
-      write(LDT_logunit,*) " -- Please select either: UMD, IGBP, IGBPNCEP, USGS, MOSAIC, ISA "
+      write(LDT_logunit,*) " -- Please select either: UMD, IGBP, "
+      write(LDT_logunit,*) " IGBPNCEP, USGS, MOSAIC, ISA, or Bondville."
       write(LDT_logunit,*) "Program stopping ..."
       call LDT_endrun
    end select

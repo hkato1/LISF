@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -329,7 +331,7 @@ contains
 
   !- Double check subsetted and global parameter number of rows and columns:
      if( subparam_nc > glpnc .or. subparam_nr > glpnr ) then
-       write(LIS_logunit,*) "ERR MSG: The number of *subsetted* row or column points"
+       write(LIS_logunit,*) "[ERR]: The number of *subsetted* row or column points"
        write(LIS_logunit,*) "          EXCEEDS the total *global* row or column points "
        write(LIS_logunit,*) "          for the input parameter file, respectively."
        write(LIS_logunit,*) " "

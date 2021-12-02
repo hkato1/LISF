@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,7 +49,7 @@ subroutine readcrd_WRFout()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF output forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] WRF output forcing directory :',WRFout_struc(n)%WRFoutdir
+     write(unit=LIS_logunit,fmt=*) '[INFO] WRF output forcing directory :',trim(WRFout_struc(n)%WRFoutdir)
 
      WRFout_struc(n)%WRFouttime1 = 3000.0
      WRFout_struc(n)%WRFouttime2 = 0.0

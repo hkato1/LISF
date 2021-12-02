@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -486,10 +488,10 @@ subroutine get_gfs(n,findex)
         endif
                
         if(status.eq.0) then 
-           write(LIS_logunit,*) 'Reading GFS file1 (I) ',name00
-           write(LIS_logunit,*) 'Reading GFS file1 (A) ',name03
+           write(LIS_logunit,*) 'Reading GFS file1 (I) ',trim(name00)
+           write(LIS_logunit,*) 'Reading GFS file1 (A) ',trim(name03)
            if(F06flag) then 
-              write(LIS_logunit,*) 'Reading GFS file1 (A)',name06
+              write(LIS_logunit,*) 'Reading GFS file1 (A)',trim(name06)
            endif
            call read_gfs( order, n, findex, name00, name03, name06, F06flag, ferror, try)
            if ( ferror == 1 ) then  
@@ -558,14 +560,14 @@ subroutine get_gfs(n,findex)
         
         if(file_exists1.and.file_exists2) then 
            status = 0 
-           write(LIS_logunit,*) 'Reading GFS file2 (I) ',name00
-           write(LIS_logunit,*) 'Reading GFS file2 (A) ',name03
+           write(LIS_logunit,*) 'Reading GFS file2 (I) ',trim(name00)
+           write(LIS_logunit,*) 'Reading GFS file2 (A) ',trim(name03)
         else
            status = 1
         endif
 
         if(F06flag) then 
-           write(LIS_logunit,*) 'Reading GFS file2 (A)',name06
+           write(LIS_logunit,*) 'Reading GFS file2 (A)',trim(name06)
         endif       
         call read_gfs( order, n, findex, name00, name03, name06, F06flag, ferror, try)    
         if ( ferror == 1 ) then  

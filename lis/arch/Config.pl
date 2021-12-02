@@ -1,9 +1,11 @@
 #!/usr/bin/perl
 
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-# NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
 #
-# Copyright (c) 2015 United States Government as represented by the
+# Copyright (c) 2020 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,7 +20,7 @@ if(defined($ENV{LIS_ARCH})){
    # The Cray/Intel environment is almost identical to the Linux/Intel
    # environment.  There are two modifications that must be made to the
    # Linux/Intel configuration settings to make them work on the Cray.
-   # So reset the sys_arch variable to "intel_ifc" and set a flag to 
+   # So reset the sys_arch variable to "intel_ifc" and set a flag to
    # enable the cray modifications.
    if($sys_arch eq "cray_ifc"){
       $sys_arch = "linux_ifc";
@@ -66,6 +68,7 @@ else{
 
 print "Parallelism (0-serial, 1-dmpar, default=1): ";
 $par_lev=<stdin>;
+$par_lev=~s/ *#.*$//;
 chomp($par_lev);
 if($par_lev eq ""){
    $par_lev=1;
@@ -93,11 +96,14 @@ $par_table{"linux_gfortran"}{"0"}  = "-DHIDE_MPI";
 $par_table{"linux_gfortran"}{"1"}  = "";
 $par_table{"AIX"}{"0"}             = "";
 $par_table{"AIX"}{"1"}             = "";
+$par_table{"cray_cray"}{"0"}       = "-DHIDE_MPI";
+$par_table{"cray_cray"}{"1"}       = "-DUSE_INCLUDE_MPI";
 
 $sys_par_d = $par_table{$sys_arch}{$par_lev};
 
 #print "Use openMP parallelism (1-yes, 0-no, default=0): ";
 #$use_omp=<stdin>;
+#$use_omp=~s/ *#.*$//;
 #chomp($use_omp);
 #if($use_omp eq "") {
 #   $use_omp=0
@@ -123,6 +129,7 @@ $sys_par_d = $par_table{$sys_arch}{$par_lev};
 
 print "Optimization level (-3=strict checks with warnings, -2=strict checks, -1=debug, 0,1,2,3, default=2): ";
 $opt_lev=<stdin>;
+$opt_lev=~s/ *#.*$//;
 chomp($opt_lev);
 if($opt_lev eq ""){
    $opt_lev=2;
@@ -163,18 +170,35 @@ if($opt_lev == -3) {
    elsif($sys_arch eq "linux_lf95") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";
       print "Using '-g'\n";
-      $sys_opt = "-g";
    }
    elsif($sys_arch eq "Darwin_gfortran" || $sys_arch eq "linux_gfortran") {
-      print "Optimization level $opt_lev is not defined for $sys_arch.\n";
-      print "Using '-g'\n";
-      $sys_opt = "-g";
+      #print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      #print "Using '-g'\n";
+      #$sys_opt = "-g";
+      $sys_opt = "-g -Wall -Wcharacter-truncation";
+      $sys_opt .= " -Wconversion-extra -Wextra -Wpedantic -Wrealloc-lhs";
+      $sys_opt .= " -Wrealloc-lhs-all";
+      # Run-time options
+      $sys_opt .= " -ffpe-trap=invalid,zero,overflow";
+      $sys_opt .= " -fcheck=all,no-array-temps";
+
+      $sys_c_opt = "-g -Wall -Wextra -Wpedantic -Wformat -Wtraditional";
+      $sys_c_opt .= " -Wconversion";
+      # Run-time flags
+      $sys_c_opt .= " -fstack-protector-all -fstack-check -ftrapv";
+
    }
    elsif($sys_arch eq "AIX") {
       print "Optimization level $opt_lev is not defined for $sys_arch.\n";
       print "Using '-g'\n";
       $sys_opt = "-g";
    }
+    elsif($sys_arch eq "cray_cray") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+	$sys_c_opt = "-g ";
+    }
 }
 elsif($opt_lev == -2) {
    # Default flags for C.
@@ -223,6 +247,12 @@ elsif($opt_lev == -2) {
       print "Using '-g'\n";
       $sys_opt = "-g";
    }
+   elsif($sys_arch eq "cray_cray") {
+	   print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      print "Using '-g'\n";
+      $sys_opt = "-g ";
+      $sys_c_opt = "-g ";
+   }
 }
 elsif($opt_lev == -1) {
    $sys_opt = "-g -O0";
@@ -245,9 +275,14 @@ elsif($opt_lev == 3) {
    $sys_c_opt = "";
 }
 
+if(($sys_arch eq "linux_ifc") && ($opt_lev gt 0)) {
+   $sys_opt .= " -fp-model precise";
+   $sys_c_opt .= "-fp-model precise";
+}
 
 print "Assume little/big_endian data format (1-little, 2-big, default=2): ";
 $use_endian=<stdin>;
+$use_endian=~s/ *#.*$//;
 chomp($use_endian);
 if($use_endian eq "") {
    $use_endian=2
@@ -276,6 +311,58 @@ $sys_endian = $end_table{$sys_arch}{$use_endian};
 if((defined($ENV{LIS_MODESMF})) && (defined($ENV{LIS_LIBESMF}))){
    $sys_esmfmod_path = $ENV{LIS_MODESMF};
    $sys_esmflib_path = $ENV{LIS_LIBESMF};
+   $sys_esmfmkfile = $sys_esmflib_path."/esmf.mk";
+}
+elsif (defined($ENV{ESMFMKFILE})) {
+   print "Environment variables LIS_MODESMF and LIS_LIBESMF not defined.\n";
+   print "However, ESMFMKFILE was defined, so it will be used to determine\n";
+   print "the ESMF library paths instead.\n\n";
+
+   $sys_esmfmkfile = $ENV{ESMFMKFILE};
+   if (not(open(ESMFMKFILE, $sys_esmfmkfile))) {
+      print "--------------ERROR---------------------\n";
+      print "Error opening ESMFMKFILE for read.";
+      print "--------------ERROR---------------------\n";
+      exit 0;
+   }
+   local $/ = undef;
+   $lines = <ESMFMKFILE>;
+   close(ESMFMKFILE);
+
+   if ($lines =~ /ESMF_LIBSDIR=(.+)\n/) {
+      $sys_esmflib_path=$1;
+      print "Using LIS_LIBESMF=$sys_esmflib_path\n";
+      # the above is not general and needs to be changed
+      # to use the ESMF_COMPILE variables instead
+   }
+   else  {
+      print "--------------ERROR---------------------\n";
+      print "Could not extract ESMF library locations\n";
+      print "from ESMF Makefile fragment.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 0;
+   }
+   if ($lines =~ /ESMF_F90COMPILEPATHS=(.+)\n/) {
+      @sys_esmfinc_paths = split / /, $1;
+      foreach $incpath (@sys_esmfinc_paths) {
+        if ($incpath =~ m/\/mod/) {
+          $sys_esmfmod_path=$incpath;
+        }
+      }
+      $sys_esmfmod_path = substr $sys_esmfmod_path, 2;
+      print "Using LIS_MODESMF=$sys_esmfmod_path\n";
+      # the above is not general and needs to be changed
+      # to use the ESMF_COMPILE variables instead
+   }
+   else  {
+      print "--------------ERROR---------------------\n";
+      print "Could not extract ESMF modules location\n";
+      print "from ESMF Makefile fragment.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 0;
+   }
 }
 else{
    print "--------------ERROR---------------------\n";
@@ -287,11 +374,12 @@ else{
 }
 
 
-print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=1): ";
+print "Use GRIBAPI/ECCODES? (0-neither, 1-gribapi, 2-eccodes, default=2): ";
 $use_gribapi=<stdin>;
+$use_gribapi=~s/ *#.*$//;
 chomp($use_gribapi);
 if($use_gribapi eq ""){
-   $use_gribapi=1;
+   $use_gribapi=2;
 }
 
 if($use_gribapi == 1) {
@@ -310,17 +398,36 @@ if($use_gribapi == 1) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
-   if(defined($ENV{LIS_JASPER})){
-      $sys_jasper_path = $ENV{LIS_JASPER};
+   if(defined($ENV{LIS_JASPER}) && defined($ENV{LIS_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+   elsif(defined($ENV{LIS_JASPER})){
+      $sys_jpeg2000_path = $ENV{LIS_JASPER};
       $inc = "/include/";
       $lib = "/lib/";
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LIS_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LIS_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LIS_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -330,7 +437,12 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LIS_ECCODES})){
       $sys_gribapi_path = $ENV{LIS_ECCODES};
       $inc = "/include/";
-      $lib = "/lib/";
+      if ($sys_arch eq "cray_cray") {
+         $lib = "/lib64/";
+      }
+      else {
+         $lib = "/lib/";
+      }
       $inc_gribapi=$sys_gribapi_path.$inc;
       $lib_gribapi=$sys_gribapi_path.$lib;
    }
@@ -342,8 +454,17 @@ elsif($use_gribapi == 2) {
       print "--------------ERROR---------------------\n";
       exit 1;
    }
+   if(defined($ENV{LIS_JASPER}) && defined($ENV{LIS_OPENJPEG})){
+      print "--------------ERROR---------------------\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable, not both.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
    if(defined($ENV{LIS_JASPER})){
-      $sys_jasper_path = $ENV{LIS_JASPER};
+      $sys_jpeg2000_path = $ENV{LIS_JASPER};
       $inc = "/include/";
       if ($cray_modifications == 1) {
          $lib = "/lib/";
@@ -351,13 +472,23 @@ elsif($use_gribapi == 2) {
       else {
          $lib = "/lib64/";
       }
-      $inc_jasper=$sys_jasper_path.$inc;
-      $lib_jasper=$sys_jasper_path.$lib;
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-ljasper";
+   }
+   elsif(defined($ENV{LIS_OPENJPEG})){
+      $sys_jpeg2000_path = $ENV{LIS_OPENJPEG};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_jpeg2000=$sys_jpeg2000_path.$inc;
+      $lib_jpeg2000=$sys_jpeg2000_path.$lib;
+      $ljpeg2000="-lopenjp2";
    }
    else {
       print "--------------ERROR---------------------\n";
-      print "Please specify the JASPER library path using\n";
-      print "the LIS_JASPER variable.\n";
+      print "Please specify the JPEG2000 library path using\n";
+      print "either the LIS_JASPER variable\n";
+      print "or the LIS_OPENJPEG variable.\n";
       print "Configuration exiting ....\n";
       print "--------------ERROR---------------------\n";
       exit 1;
@@ -365,26 +496,31 @@ elsif($use_gribapi == 2) {
 
 #    print "Grib Table Version (default = 128): ";
 #    $grib_table_version=<stdin>;
+#    $grib_table_version=~s/ *#.*$//;
 #    if($grib_table_version eq "\n"){
 #	$grib_table_version=128;
 #    }
 #    print "Grib Center Id (default = 57): ";
 #    $grib_center_id=<stdin>;
+#    $grib_center_id=~s/ *#.*$//;
 #    if($grib_center_id eq "\n"){
 #	$grib_center_id=57;
 #    }
 #    print "Grib Subcenter Id (default = 2): ";
 #    $grib_subcenter_id=<stdin>;
+#    $grib_subcenter_id=~s/ *#.*$//;
 #    if($grib_subcenter_id eq "\n"){
 #	$grib_subcenter_id =2;
 #    }
 #    print "Grib Grid Id (default = 255): ";
 #    $grib_grid_id=<stdin>;
+#    $grib_grid_id=~s/ *#.*$//;
 #    if($grib_grid_id eq "\n"){
 #	$grib_grid_id =255;
 #    }
 #    print "Grib Process Id (default = 88): ";
 #    $grib_process_id=<stdin>;
+#    $grib_process_id=~s/ *#.*$//;
 #    if($grib_process_id eq "\n"){
 #	$grib_process_id =88;
 #    }
@@ -400,6 +536,7 @@ else {
 
 print "Enable AFWA-specific grib configuration settings? (1-yes, 0-no, default=0): ";
 $use_afwagrib=<stdin>;
+$use_afwagrib=~s/ *#.*$//;
 chomp($use_afwagrib);
 if($use_afwagrib eq ""){
    $use_afwagrib=0;
@@ -408,6 +545,7 @@ if($use_afwagrib eq ""){
 
 print "Use NETCDF? (1-yes, 0-no, default=1): ";
 $use_netcdf=<stdin>;
+$use_netcdf=~s/ *#.*$//;
 chomp($use_netcdf);
 if($use_netcdf eq ""){
    $use_netcdf=1;
@@ -416,6 +554,7 @@ if($use_netcdf eq ""){
 if($use_netcdf == 1) {
    print "NETCDF version (3 or 4, default=4): ";
    $netcdf_v=<stdin>;
+   $netcdf_v=~s/ *#.*$//;
    if($netcdf_v eq "\n"){
       $netcdf_v=4;
    }
@@ -438,6 +577,7 @@ if($use_netcdf == 1) {
 
    print "NETCDF use shuffle filter? (1-yes, 0-no, default = 1): ";
    $netcdf_shuffle=<stdin>;
+   $netcdf_shuffle=~s/ *#.*$//;
    chomp($netcdf_shuffle);
    if($netcdf_shuffle eq ""){
       $netcdf_shuffle=1;
@@ -445,6 +585,7 @@ if($use_netcdf == 1) {
 
    print "NETCDF use deflate filter? (1-yes, 0-no, default = 1): ";
    $netcdf_deflate=<stdin>;
+   $netcdf_deflate=~s/ *#.*$//;
    chomp($netcdf_deflate);
    if($netcdf_deflate eq ""){
       $netcdf_deflate=1;
@@ -452,6 +593,7 @@ if($use_netcdf == 1) {
 
    print "NETCDF use deflate level? (1 to 9-yes, 0-no, default = 9): ";
    $netcdf_deflate_level=<stdin>;
+   $netcdf_deflate_level=~s/ *#.*$//;
    chomp($netcdf_deflate_level);
    if($netcdf_deflate_level eq ""){
       $netcdf_deflate_level=9;
@@ -461,6 +603,7 @@ if($use_netcdf == 1) {
 
 print "Use HDF4? (1-yes, 0-no, default=1): ";
 $use_hdf4=<stdin>;
+$use_hdf4=~s/ *#.*$//;
 chomp($use_hdf4);
 if($use_hdf4 eq ""){
    $use_hdf4=1;
@@ -487,6 +630,7 @@ if($use_hdf4 == 1) {
 
 print "Use HDF5? (1-yes, 0-no, default=1): ";
 $use_hdf5=<stdin>;
+$use_hdf5=~s/ *#.*$//;
 chomp($use_hdf5);
 if($use_hdf5 eq ""){
    $use_hdf5=1;
@@ -513,6 +657,7 @@ if($use_hdf5 == 1) {
 
 print "Use HDFEOS? (1-yes, 0-no, default=1): ";
 $use_hdfeos=<stdin>;
+$use_hdfeos=~s/ *#.*$//;
 chomp($use_hdfeos);
 if($use_hdfeos eq ""){
    $use_hdfeos=1;
@@ -549,6 +694,7 @@ if($use_hdfeos == 1) {
 
 print "Use MINPACK? (1-yes, 0-no, default=0): ";
 $use_minpack=<stdin>;
+$use_minpack=~s/ *#.*$//;
 chomp($use_minpack);
 if($use_minpack eq ""){
    $use_minpack=0;
@@ -572,6 +718,7 @@ if($use_minpack == 1) {
 
 print "Use LIS-CRTM? (1-yes, 0-no, default=0): ";
 $use_crtm=<stdin>;
+$use_crtm=~s/ *#.*$//;
 chomp($use_crtm);
 if($use_crtm eq ""){
    $use_crtm=0;
@@ -613,6 +760,7 @@ if($use_crtm == 1) {
 
 print "Use LIS-CMEM? (1-yes, 0-no, default=0): ";
 $use_cmem=<stdin>;
+$use_cmem=~s/ *#.*$//;
 chomp($use_cmem);
 if($use_cmem eq ""){
    $use_cmem=0;
@@ -638,6 +786,7 @@ if($use_cmem == 1) {
 
 print "Use LIS-LAPACK? (1-yes, 0-no, default=0): ";
 $use_lapack=<stdin>;
+$use_lapack=~s/ *#.*$//;
 chomp($use_lapack);
 if($use_lapack eq ""){
    $use_lapck=0;
@@ -659,8 +808,50 @@ if($use_lapack == 1) {
    }
 }
 
-if($ENV{ESMF_TRACE} > 0){
-   $use_esmf_trace = 1 
+print "Use LIS-MKL-LAPACK? (1-yes, 0-no, default=0): ";
+$use_mkllapack=<stdin>;
+chomp($use_mkllapack);
+if($use_mkllapack eq ""){
+   $use_mkllapck=0;
+}
+
+if($use_mkllapack == 1) {
+   if(defined($ENV{LIS_MKL_LAPACK})){
+      $sys_lapack_path = $ENV{LIS_MKL_LAPACK};
+      $lib = "/";
+      $lib_lapack=$sys_lapack_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the MKL-LAPACK path using\n";
+      print "the LIS_MKL_LAPACK variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
+
+
+if(defined($ENV{LIS_JPEG})){
+   $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
+}
+else{
+   $libjpeg = "-ljpeg";
+}
+
+# ESMF_TRACE does not prompt user
+if ($ENV{ESMF_TRACE} eq '1') {
+   $use_esmf_trace = 1;
+}
+
+# WRF_HYDRO does not prompt user
+if ($ENV{WRF_HYDRO} eq '1') {
+   $use_wrf_hydro = 1;
+}
+
+# MPDECOMP2 does not prompt user
+if ($ENV{MPDECOMP2} eq '1') {
+   $use_mpdecomp2 = 1;
 }
 
 
@@ -673,41 +864,66 @@ if($sys_arch eq "linux_ifc") {
    $fflags77= "-c ".$sys_omp." ".$sys_opt." -traceback -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
    $fflags ="-c ".$sys_omp." ".$sys_opt." -u -traceback -fpe0 -nomixed_str_len_arg -names lowercase ".$sys_endian." -assume byterecl ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DIFC -DLINUX -I\$(MOD_ESMF) ".$sys_par_d;
    $ldflags= $sys_omp." -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lrt";
+   $lib_flags= "-lesmf -lstdc++ -limf -lrt";
+   $lib_paths= "-L\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "linux_pgi") {
    $cflags = "-c -DLITTLE_ENDIAN -DPGI";
    $fflags77= "-c ".$sys_opt." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess ".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
    $fflags ="-c ".$sys_opt." -C -s -Rb -Rs -g -gopt -Mbounds -Minform=inform -Minfo=all -DHIDE_SHR_MSG  -DHIDE_MPI -DUSE_INCLUDE_MPI -DNO_SHR_VMATH -DPGI -Mbyteswapio -r4 -i4 -Mpreprocess" .$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lesmf -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
+   $lib_flags= "-lesmf -lesmf -lrt -lstd -lC -lnspgc -lpgc -lm -Mlfs";
+   $lib_paths= "-L\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "linux_absoft") {
 }
 elsif($sys_arch eq "linux_lf95") {
 }
 elsif($sys_arch eq "linux_gfortran") {
-   $cflags = "-c ".$sys_opt." -DGFORTRAN -DLINUX";
-   $fflags77= "-c ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN -DLINUX";
+   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN -DLINUX ".$sys_par_d." -I\$(MOD_ESMF)";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++ -lz";
+   $lib_flags= "-lesmf -lstdc++ -lz";
+   $lib_paths= "-L\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "Darwin_gfortran") {
-   $cflags = "-c ".$sys_opt." -DGFORTRAN";
-   $fflags77= "-c ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
-   $fflags ="-c -ffree-line-length-0 ".$sys_opt." ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
+   $cflags = "-c ".$sys_c_opt." -DGFORTRAN";
+   $fflags77= "-c ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
+   $fflags ="-c -ffree-line-length-0 ".$sys_opt." -fbacktrace ".$sys_par." ".$sys_endian." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DGFORTRAN ".$sys_par_d." -I\$(MOD_ESMF)";
    $ldflags= " -L\$(LIB_ESMF) -lesmf -lstdc++";
+   $lib_flags= "-lesmf -lstdc++";
+   $lib_paths= "-L\$(LIB_ESMF)";
 }
 elsif($sys_arch eq "AIX") {
    $cflags = "-c -w -g -qfullpath -q64 -qcpluscmt";
    $fflags77= "-c ".$sys_opt." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
    $fflags ="-c ".$sys_opt." -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX,".$sys_par." -I\$(MOD_ESMF) -DUSE_INCLUDE_MPI";
    $ldflags= "-q64 -bmap:map -bloadmap:lm -lmass -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt";
+   $lib_flags= "-lmass -lesmf -lstdc++ -limf -lm -lrt";
+   $lib_paths= "-L\$(LIB_ESMF)";
+}
+elsif($sys_arch eq "cray_cray") {
+   if($use_endian == 1) {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $ldflags= " -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+   else {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $ldflags= " -hbyteswapio -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+
+   $cflags = "-c ".$sys_c_opt." -DCRAYFTN -DLINUX ";
+
 }
 
 if($par_lev == 1) {
    if (index($sys_fc, "-mt_mpi") != -1) {
       $ldflags = $ldflags." -lmpi_mt";
    }
-   elsif ($cray_modifications == 1) {
+   elsif ($cray_modifications == 1 || $sys_arch eq "cray_cray") {
       $ldflags = $ldflags." -lmpich";
    }
    else{
@@ -718,63 +934,118 @@ if($par_lev == 1) {
 if($use_gribapi == 1) {
    $fflags77 = $fflags77." -I\$(INC_GRIBAPI)";
    $fflags = $fflags." -I\$(INC_GRIBAPI)";
-   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JASPER) -ljasper";
+   $ldflags = $ldflags." -L\$(LIB_GRIBAPI) -lgrib_api_f90 -lgrib_api -L\$(LIB_JPEG2000) ".$ljpeg2000;
+   $lib_flags = $lib_flags." -lgrib_api_f90 -lgrib_api ".$ljpeg2000;
+   $lib_paths = $lib_paths." -L\$(LIB_GRIBAPI) -L\$(LIB_JPEG2000)";
 }
 elsif($use_gribapi == 2) {
    $fflags77 = $fflags77." -I\$(INC_ECCODES)";
    $fflags = $fflags." -I\$(INC_ECCODES)";
-   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JASPER) -ljasper";
+   $ldflags = $ldflags." -L\$(LIB_ECCODES) -leccodes_f90 -leccodes -L\$(LIB_JPEG2000) ".$ljpeg2000;
+   $lib_flags = $lib_flags." -leccodes_f90 -leccodes ".$ljpeg2000;
+   $lib_paths = $lib_paths." -L\$(LIB_ECCODES) -L\$(LIB_JPEG2000)";
 }
 if($use_netcdf == 1) {
    $fflags77 = $fflags77." -I\$(INC_NETCDF)";
    $fflags = $fflags." -I\$(INC_NETCDF)";
    if($netcdf_v == 3) {
-      $ldflags = $ldflags." -L\$(LIB_NETCDF) -lnetcdff -lnetcdf -lz"
+      $ldflags = $ldflags." -L\$(LIB_NETCDF) -lnetcdff -lnetcdf -lz";
+      $lib_flags = $lib_flags." -lnetcdff -lnetcdf -lz";
    }
    else{
       $ldflags = $ldflags." -L\$(LIB_NETCDF) -lnetcdff -lnetcdf";
+      $lib_flags = $lib_flags." -lnetcdff -lnetcdf";
    }
+    $lib_paths= $lib_paths." -L\$(LIB_NETCDF)";
 }
 if($use_hdfeos == 1){
    $fflags77 = $fflags77." -I\$(INC_HDFEOS)";
    $fflags = $fflags." -I\$(INC_HDFEOS)";
    $ldflags = $ldflags." -L\$(LIB_HDFEOS) -lhdfeos -lGctp";
+   $lib_flags= $lib_flags." -lhdfeos -lGctp";
+   $lib_paths= $lib_paths." -L\$(LIB_HDFEOS)";
 }
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf -ljpeg -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
+   $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
+   $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5)";
    $fflags = $fflags." -I\$(INC_HDF5)";
    $ldflags = $ldflags." -L\$(LIB_HDF5) -lhdf5_fortran -lhdf5_hl -lhdf5";
+   $lib_flags= $lib_flags." -lhdf5_fortran -lhdf5_hl -lhdf5";
    if ( $cray_modifications == 1 ) {
       $ldflags = $ldflags." -lz";
+      $lib_flags= $lib_flags." -lz";
    }
+   $lib_paths= $lib_paths." -L\$(LIB_HDF5)";
 }
 if($use_crtm == 1){
    $fflags77 = $fflags77." -I\$(INC_CRTM) -I\$(INC_PROF_UTIL)";
    $fflags = $fflags." -I\$(INC_CRTM) -I\$(INC_PROF_UTIL)";
    $ldflags = $ldflags." -L\$(LIB_CRTM) -lCRTM -L\$(LIB_PROF_UTIL) -lProfile_Utility";
+   $lib_flags= $lib_flags." -lCRTM -lProfile_Utility";
+   $lib_paths= $lib_paths." -L\$(LIB_CRTM) -L\$(LIB_PROF_UTIL)";
 }
 
 if($use_cmem == 1){
    $fflags77 = $fflags77." -I\$(INC_CMEM)";
    $fflags = $fflags." -I\$(INC_CMEM)";
    $ldflags = $ldflags." -L\$(LIB_CMEM) -llis_mem";
+   $lib_flags= $lib_flags." -llis_mem";
+   $lib_paths= $lib_paths." -L\$(LIB_CMEM)";
 }
 
 if($use_minpack == 1){
    $ldflags = $ldflags." -L\$(LIB_MINPACK) -lminpack";
+   $lib_flags= $lib_flags." -lminpack";
+   $lib_paths= $lib_paths." -L\$(LIB_MINPACK)";
 }
 
 if($use_lapack == 1){
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -llapack -lblas";
+   $lib_flags= $lib_flags." -llapack -lblas";
+   $lib_paths= $lib_paths." -L\$(LIB_LAPACK)";
+}
+
+if($use_mkllapack == 1){
+   #Changed to be able to use mkl Wendy Sharples
+   $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
 }
 
 if($use_esmf_trace == 1){
+   $fflags77 = $fflags77." -DESMF_TRACE";
    $fflags = $fflags." -DESMF_TRACE";
+   if (not(open(ESMFMKFILE, $sys_esmfmkfile))) {
+      print "--------------ERROR---------------------\n";
+      print "Error opening ESMFMKFILE for read.";
+      print "--------------ERROR---------------------\n";
+      exit 0;
+   }
+   local $/ = undef;
+   $lines = <ESMFMKFILE>;
+   close(ESMFMKFILE);
+   if ($lines =~ /ESMF_TRACE_STATICLINKOPTS=(.+)\n/) {
+#     $ldflags= $1." ".$ldflags;
+#     $lib_flags= $1." ".$lib_flags;
+   }
+   if ($lines =~ /ESMF_TRACE_STATICLINKLIBS=(.+)\n/) {
+#     $ldflags= $ldflags." ".$1;
+#     $lib_paths= $lib_paths." ".$1;
+   }
+}
+
+if ($use_wrf_hydro == 1) {
+   $fflags77 = $fflags77." -DWRF_HYDRO";
+   $fflags = $fflags." -DWRF_HYDRO";
+}
+
+if ($use_mpdecomp2 == 1) {
+   $fflags77 = $fflags77." -DMPDECOMP2";
+   $fflags = $fflags." -DMPDECOMP2";
 }
 
 #
@@ -784,6 +1055,14 @@ if($use_esmf_trace == 1){
 $cflags = $cflags." -DLIS_JULES";
 $fflags77 = $fflags77." -DLIS_JULES";
 $fflags = $fflags." -DLIS_JULES";
+
+#
+# Kluge for SPORTDaily gfrac and VIIRSDaily gfrac readers
+# These readers require ZLIB, but this requirement is not captured by the
+# above library checks.
+#
+
+$ldflags = $ldflags." -lz";
 
 #
 # Write configure.lis and related files
@@ -797,8 +1076,8 @@ printf conf_file "%s%s\n","CC              = $sys_cc";
 printf conf_file "%s%s\n","AR              = ar";
 printf conf_file "%s%s\n","MOD_ESMF        = $sys_esmfmod_path";
 printf conf_file "%s%s\n","LIB_ESMF        = $sys_esmflib_path";
-printf conf_file "%s%s\n","INC_JASPER      = $inc_jasper";
-printf conf_file "%s%s\n","LIB_JASPER      = $lib_jasper";
+printf conf_file "%s%s\n","INC_JPEG2000      = $inc_jpeg2000";
+printf conf_file "%s%s\n","LIB_JPEG2000      = $lib_jpeg2000";
 if($use_gribapi == 2) {
 printf conf_file "%s%s\n","INC_ECCODES     = $inc_gribapi";
 printf conf_file "%s%s\n","LIB_ECCODES     = $lib_gribapi";
@@ -827,6 +1106,8 @@ printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
 printf conf_file "%s%s\n","LDFLAGS         = $ldflags";
+printf conf_file "%s%s\n","LIS_LIB_FLAGS   = $lib_flags";
+printf conf_file "%s%s\n","LIS_LIB_PATHS   = $lib_paths";
 close(conf_file);
 
 print "-----------------------------------------------------\n";
@@ -873,6 +1154,13 @@ else{
    printf misc_file "%s\n","#undef USE_HDF4 ";
 }
 
+if($use_hdfeos == 1) {
+   printf misc_file "%s\n","#define USE_HDFEOS2 ";
+}
+else{
+   printf misc_file "%s\n","#undef USE_HDFEOS2 ";
+}
+
 if($use_hdf5 == 1) {
    printf misc_file "%s\n","#define USE_HDF5 ";
 }
@@ -900,6 +1188,14 @@ if($use_lapack == 1) {
 else{
    printf misc_file "%s\n","#undef LAPACK ";
 }
+
+if($use_mkllapack == 1) {
+   printf misc_file "%s\n","#define MKL_LAPACK ";
+}
+else{
+   printf misc_file "%s\n","#undef MKL_LAPACK ";
+}
+
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

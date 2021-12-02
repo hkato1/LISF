@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -38,7 +40,7 @@ subroutine readcrd_gswp1()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using GSWP1 forcing'
-     write(LIS_logunit,*)'GSWP1 forcing directory: ',gswp1_struc(n)%GSWP1DIR
+     write(LIS_logunit,*)'GSWP1 forcing directory: ',trim(gswp1_struc(n)%GSWP1DIR)
   enddo
 
 end subroutine readcrd_gswp1

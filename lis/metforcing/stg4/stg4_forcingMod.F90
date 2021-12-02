@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -50,6 +52,8 @@ module stg4_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -69,7 +73,7 @@ module stg4_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*40       :: stg4dir              ! STAGE IV Directory
+     character(len=LIS_CONST_PATH_LEN) :: stg4dir ! STAGE IV Directory
      real*8             :: stg4time             ! Nearest hourly instance of incoming file
      real*8             :: griduptime1          ! Designated time of STAGEIV grid change
      logical            :: gridchange1          ! Flag for when grid change occurs

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -349,7 +351,7 @@ contains
        do i=1,LIS_rc%npatch(n,LIS_rc%lsm_index)/LIS_rc%nensem(n)
           tileid = (i-1)*LIS_rc%nensem(n)+1
 
-          call LIS_mapTileSpaceToObsSpace(n, k, LIS_rc%lsm_index, &
+          call LIS_lsm_DAmapTileSpaceToObsSpace(n, k, &
                tileid, st_id, en_id)
 
 !          call getSelectedObsNumber(trim(LIS_rc%daset(k))//char(0),n,&
@@ -457,19 +459,6 @@ contains
 
           do t=1,LIS_rc%npatch(n,LIS_rc%lsm_index)
 
-#if 0 
-             gid = LIS_domain(n)%gindex(LIS_surface(n,LIS_rc%lsm_index)%tile(t)%col,&
-                  LIS_surface(n,LIS_rc%lsm_index)%tile(t)%row)        
-             m = t-(gid-1)*LIS_rc%nensem(n)
-
-             if((enksgrace_struc(n,k)%innov(gid).ne.LIS_rc%udef).and.&
-                  enksgrace_struc(n,k)%innov(gid).ne.0) then 
-                enksgrace_struc(n,k)%k_gain(t,v) = state_incr(v,t)/&
-                     enksgrace_struc(n,k)%innov(gid)
-             else
-                enksgrace_struc(n,k)%k_gain(t,v) = LIS_rc%udef
-             endif
-#endif
              stdata(t) =  stvar(v,t)
              !BZ divide by number of days in month
 !             if((mod(LIS_rc%yr,4) .eq. 0 .and. &
@@ -801,81 +790,6 @@ end subroutine enksgrace_update
                'nf90_close failed in enksgrace_mod')
        endif
 
-!--------------------------------------------------------------------------
-! Write gain file with the following entries, for all state variables 
-! in each data assimilation instance. 
-!
-! 1. Kalman gain
-!--------------------------------------------------------------------------
-
-#if 0 
-       if(LIS_masterproc) then 
-          call LIS_create_gain_filename(n,gainfile,&
-               'EnKF')
-          
-#if (defined USE_NETCDF4)
-          status = nf90_create(path=gainfile,cmode=nf90_hdf5,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in enksgrace_Mod')
-#endif
-#if (defined USE_NETCDF3)
-          status = nf90_create(path=gainfile,cmode=nf90_clobber,&
-               ncid = ftn)
-          call LIS_verify(status,&
-               'creating netcdf file '//trim(gainfile)//&
-               ' failed in enksgrace_Mod')
-#endif
-          
-          call LIS_verify(nf90_def_dim(ftn,'ntiles',&
-               LIS_rc%glbnpatch(n,LIS_rc%lsm_index),&
-               dimID(1)),&
-               'nf90_def_dim for ntiles failed in enksgrace_mod')
-          call LIS_verify(nf90_put_att(ftn,&
-               NF90_GLOBAL,"missing_value", LIS_rc%udef),&
-               'nf90_put_att for missing_value failed in enksgrace_mod')
-          
-!--------------------------------------------------------------------------
-!  Kalman gain -meta data
-!--------------------------------------------------------------------------
-          write(unit=finst, fmt='(i2.2)') k
-          varname = "kgain_"//trim(finst)
-          vardimname = "kgain_"//trim(finst)//"_levels"
-          standard_name = "Kalman_gain_for_DA_instance_"//&
-               trim(finst)
-          
-          call LIS_verify(nf90_def_dim(ftn,&
-               vardimname,LIS_rc%nstvars(k),dimId(2)),&
-               'nf90_def_dim failed for kgain_'//trim(finst))
-          
-          call LIS_verify(nf90_def_var(ftn,varname,&
-               nf90_float,&
-               dimids = dimID(1:2), varID=kgain_Id),&
-               'nf90_def_var for kgain failed in enksgrace_mod')
-          
-#if(defined USE_NETCDF4)
-          call LIS_verify(nf90_def_var_deflate(ftn,&
-               kgain_Id,&
-               shuffle, deflate, deflate_level),&
-               'nf90_def_var_deflate for kgain failed in enksgrace_mod')             
-#endif
-          call LIS_verify(nf90_put_att(ftn,kgain_Id,&
-               "standard_name",standard_name),&
-               'nf90_put_att for kgain failed in enksgrace_mod')
-          call LIS_verify(nf90_enddef(ftn),&
-               'nf90_enddef failed in enksgrace_mod')
-       endif
-       do v=1,LIS_rc%nstvars(k)
-          call LIS_writevar_restart(ftn,n,LIS_rc%lsm_index,&
-               enksgrace_struc(n,k)%k_gain(:,v),kgain_id, &                  
-               dim=v,wformat="netcdf")
-       enddo
-       if(LIS_masterproc) then 
-          call LIS_verify(nf90_close(ftn),&
-               'nf90_close failed in enksgrace_mod')
-       endif
-#endif
     endif
   end subroutine writeInnovationOutput
 

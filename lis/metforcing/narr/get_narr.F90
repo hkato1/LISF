@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,6 +23,7 @@ subroutine get_narr(n, findex)
   use LIS_timeMgrMod,     only : LIS_get_nstep, LIS_tick
   use LIS_logMod,         only : LIS_logunit
   use narr_forcingMod,  only : narr_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -38,7 +41,7 @@ subroutine get_narr(n, findex)
   real                :: gmt1, gmt2,ts1,ts2
   integer             :: order
   integer             :: nstep
-  character*100       :: narrfile
+  character(len=LIS_CONST_PATH_LEN) :: narrfile
 
   narr_struc(n)%findtime1 = 0 
   narr_struc(n)%findtime2 = 0 

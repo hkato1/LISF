@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,8 +28,8 @@
    integer,       intent(in)  :: fcstmo          ! Forecast month - Need to convert to "3-letter month"
    integer,       intent(in)  :: ensnum          ! Forecast ensemble number
    integer,       intent(in)  :: yr, mo          ! Lead-time year, month
-   character*100, intent(in)  :: directory       ! Dataset Directory
-   character*140, intent(out) :: filename        
+   character(len=*), intent(in)  :: directory       ! Dataset Directory
+   character(len=*), intent(out) :: filename        
 !
 ! !DESCRIPTION:
 !   This subroutine puts together ensemble forecast 

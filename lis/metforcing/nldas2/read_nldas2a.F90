@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -60,7 +62,7 @@ subroutine read_nldas2a(n, kk, findex, order, month, name,ferror)
   integer, intent(in)       :: findex  ! Forcing index
   integer, intent(in)       :: order
   integer, intent(out)      :: month
-  character*100, intent(in) :: name
+  character(len=*), intent(in) :: name
   integer, intent(out)      :: ferror
 !
 ! !DESCRIPTION:

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -65,6 +67,7 @@ subroutine HYMAP_routing_run(n)
   integer               :: status
   logical               :: alarmCheck
   integer               :: c,r,t
+  logical               :: dummy
   integer               :: ios, nid,qsid,qsbid
 
   real,   allocatable   :: rnfsto_mm(:,:,:),bsfsto_mm(:,:,:)
@@ -126,8 +129,8 @@ subroutine HYMAP_routing_run(n)
               surface_runoff = 0.0
               baseflow = 0.0
 
-              call LIS_tile2grid(n,m,surface_runoff,surface_runoff_t)
-              call LIS_tile2grid(n,m,baseflow,baseflow_t)
+              call LIS_tile2grid(n,m,surface_runoff,surface_runoff_t,1)
+              call LIS_tile2grid(n,m,baseflow,baseflow_t,1)
               
               call model(LIS_rc%udef,&
                    LIS_rc%gnc(n),&
@@ -470,51 +473,51 @@ subroutine HYMAP_routing_run(n)
         endif
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%rivsto(:,:,1),&
-             rivsto_lvec)
+             rivsto_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%rivdph(:,:,1),&
-             rivdph_lvec)
+             rivdph_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%rivvel(:,:,1),&
-             rivvel_lvec)
+             rivvel_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%rivout(:,:,1),&
-             rivout_lvec)
+             rivout_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%evpout(:,:,1),&
-             evpout_lvec)
+             evpout_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%fldout(:,:,1),&
-             fldout_lvec)
+             fldout_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%fldsto(:,:,1),&
-             fldsto_lvec)
+             fldsto_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%flddph(:,:,1),&
-             flddph_lvec)
+             flddph_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%fldvel(:,:,1),&
-             fldvel_lvec)
+             fldvel_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%fldfrc(:,:,1),&
-             fldfrc_lvec)
+             fldfrc_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%fldare(:,:,1),&
-             fldare_lvec)
+             fldare_lvec,dummy)
         
         call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%sfcelv(:,:,1),&
-             sfcelv_lvec)
+             sfcelv_lvec,dummy)
         
         !ag (26Oct2017) - converting surface runoff and baseflow storage units from m3 to mm
         !call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%rnfsto(:,:,1),&
-        !     rnfsto_lvec)
+        !     rnfsto_lvec,dummy)
         !
         !call LIS_grid2patch(n,LIS_rc%lsm_index,HYMAP_routing_struc(n)%bsfsto(:,:,1),&
-        !     bsfsto_lvec)
+        !     bsfsto_lvec,dummy)
 
-        call LIS_grid2patch(n,LIS_rc%lsm_index,rnfsto_mm(:,:,1),rnfsto_lvec)
+        call LIS_grid2patch(n,LIS_rc%lsm_index,rnfsto_mm(:,:,1),rnfsto_lvec,dummy)
       
-        call LIS_grid2patch(n,LIS_rc%lsm_index,bsfsto_mm(:,:,1),bsfsto_lvec)
+        call LIS_grid2patch(n,LIS_rc%lsm_index,bsfsto_mm(:,:,1),bsfsto_lvec,dummy)
 
         do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)
            

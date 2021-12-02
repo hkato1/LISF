@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +20,7 @@ subroutine HYMAP2_routing_output(n)
   use LIS_fileIOMod
   use HYMAP2_routingMod
 
+  use LIS_mpiMod
   implicit none
   
   integer, intent(in)   :: n 
@@ -30,6 +33,7 @@ subroutine HYMAP2_routing_output(n)
   integer               :: mo, da
   logical               :: open_stats
   logical               :: alarmCheck
+  integer               :: status
 
   alarmCheck = .false. 
   if ( LIS_rc%time >= LIS_histData(n)%time ) then
@@ -70,9 +74,6 @@ subroutine HYMAP2_routing_output(n)
            if(LIS_masterproc) then 
               HYMAP2_routing_struc(n)%numout=HYMAP2_routing_struc(n)%numout+1    
               call LIS_create_output_directory('ROUTING')
-              call LIS_create_output_filename(n, filename, &
-                   model_name='ROUTING', &
-                   writeint=HYMAP2_routing_struc(n)%outInterval)
 
 !-----------------------------------------------------------------------
 ! Open statistical output file
@@ -83,18 +84,20 @@ subroutine HYMAP2_routing_output(n)
                  open_stats = .true.
               endif
            endif
-     
+
+           call LIS_create_output_filename(n, filename, &
+                model_name='ROUTING', &
+                writeint=HYMAP2_routing_struc(n)%outInterval)
+
 !-----------------------------------------------------------------------
 ! Write Output 
 !-----------------------------------------------------------------------
            ! Grib expects soil layers to be in cm.
            ! lyrthk = (/100.0,300.0,600.0,1000.0/) mm.
-
-           call LIS_writeModelOutput(n,filename, name, open_stats,  &
+           call LIS_writeRoutingModelOutput(n,filename, name, open_stats,  &
                 outInterval=HYMAP2_routing_struc(n)%outInterval,     &
                 nsoillayers = 1,lyrthk = (/1.0/), nsoillayers2 = 1, &
                 group=2)
-                         
         endif
      endif
   endif

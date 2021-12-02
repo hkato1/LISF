@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -57,6 +59,7 @@ module princeton_forcingMod
 !  modeling, J. Climate, 19 (13), 3088-3111 \newline
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -75,7 +78,7 @@ module princeton_forcingMod
   type, public :: princeton_type_dec
      real                   :: ts
      integer                :: ncold, nrold   
-     character*100          :: princetondir
+     character(len=LIS_CONST_PATH_LEN) :: princetondir
      character*100          :: elevfile
      character*100          :: version
      integer                :: mi
@@ -113,6 +116,7 @@ contains
 ! !REVISION HISTORY: 
 ! 26Jan2007: Hiroko Kato; Initial Specification
 ! 15 May 2017: Bailing Li; Added changes for reading in version 2.2 data
+! 22 Oct 2018: Daniel Sarmiento; Added changes to support version 3 data
 ! 
 ! !INTERFACE:
   subroutine init_PRINCETON(findex)
@@ -158,10 +162,16 @@ contains
 
     LIS_rc%met_nf(findex) = 9 
 
-    princeton_struc(:)%ncold = 360
-    princeton_struc(:)%nrold = 180
-
     do n=1,LIS_rc%nnest
+       !Set dataset dimensions
+       if (princeton_struc(n)%version == "2" .OR. princeton_struc(n)%version == "2.2") then
+          princeton_struc(:)%ncold = 360
+          princeton_struc(:)%nrold = 180
+       elseif (princeton_struc(n)%version == "3") then 
+          !Dimensions of driver data changed from versions 2.x to version 3
+          princeton_struc(:)%ncold = 1440
+          princeton_struc(:)%nrold = 600
+       endif
 
        ! Forecast mode:
        if(LIS_rc%forecastMode.eq.1) then
@@ -207,13 +217,24 @@ contains
        gridDesci(1) = 0
        gridDesci(2) = princeton_struc(n)%ncold
        gridDesci(3) = princeton_struc(n)%nrold
-       gridDesci(4) = -89.50
-       gridDesci(5) = -179.50
-       gridDesci(6) = 128
-       gridDesci(7) = 89.50
-       gridDesci(8) = 179.50
-       gridDesci(9) = 1.00
-       gridDesci(10) = 1.00
+       !Define driver data domains
+       if (princeton_struc(n)%version == "2" .OR. princeton_struc(n)%version == "2.2") then 
+          gridDesci(4) = -89.50
+          gridDesci(5) = -179.50
+          gridDesci(6) = 128
+          gridDesci(7) = 89.50
+          gridDesci(8) = 179.50
+          gridDesci(9) = 1.00
+          gridDesci(10) = 1.00
+       elseif (princeton_struc(n)%version == "3") then
+          gridDesci(4) = -59.875
+          gridDesci(5) = -179.875
+          gridDesci(6) = 128
+          gridDesci(7) = 89.875
+          gridDesci(8) = 179.875
+          gridDesci(9) = 0.25
+          gridDesci(10) = 0.25
+       endif
        gridDesci(20) = 0
        princeton_struc(n)%mi = princeton_struc(n)%ncold*princeton_struc(n)%nrold
 

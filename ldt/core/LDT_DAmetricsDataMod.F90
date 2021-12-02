@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module LDT_DAmetricsDataMod
 !BOP
@@ -124,6 +130,7 @@ module LDT_DAmetricsDataMod
      type(DAmetricsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
 
      type(DAmetricsEntry) :: tws
+     type(DAmetricsEntry) :: vod
 
      type(DAmetricsEntry) ::  windforc
      type(DAmetricsEntry) ::  rainfforc

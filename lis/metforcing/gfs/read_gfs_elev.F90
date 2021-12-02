@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -78,7 +80,7 @@ subroutine read_gfs_elev(n, findex, change)
         call LIS_endrun
      endif
 
-     write(LIS_logunit,*) 'Reading the GFS elevation ',gfs_struc(n)%elevfile
+     write(LIS_logunit,*) 'Reading the GFS elevation ',trim(gfs_struc(n)%elevfile)
      
      ftn = LIS_getNextUnitNumber()
      open(ftn,file=trim(gfs_struc(n)%elevfile),&

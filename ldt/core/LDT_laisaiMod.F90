@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_laisaiMod
@@ -316,7 +322,7 @@ contains
        do n=1,LDT_rc%nnest
           call ESMF_ConfigGetAttribute(LDT_config,laisai_gridtransform(n),&
                rc=rc)
-          call LDT_verify(rc,'LAI/SAI spatial tranform: option not specified in the config file')
+          call LDT_verify(rc,'LAI/SAI spatial transform: option not specified in the config file')
           LDT_laisai_struc(n)%laisai_gridtransform = laisai_gridtransform(n)
        enddo
 
@@ -400,9 +406,11 @@ contains
                 LDT_laisai_struc(n)%laifile = trim(laidir(n))
                 write(LDT_logunit,*) "Reading single-file, monthly climatologies for: "&
                      //trim(LDT_laisai_struc(n)%laifile)
+                !call readlai( trim(LDT_laisai_struc(n)%lai%source)//char(0),&
+                !     n, LDT_laisai_struc(n)%lai%value, &
+                !     LDT_LSMparam_struc(n)%landmask%value )
                 call readlai( trim(LDT_laisai_struc(n)%lai%source)//char(0),&
-                     n, LDT_laisai_struc(n)%lai%value, &
-                     LDT_LSMparam_struc(n)%landmask%value )
+                     n, LDT_laisai_struc(n)%lai%value)
                 write(LDT_logunit,*) "Done reading file - "//&
                      trim(LDT_laisai_struc(n)%laifile)
                 

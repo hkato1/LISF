@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !
 !BOP
 ! 
@@ -858,14 +864,15 @@ contains
        enddo
     
 ! Find the median value
-       call LVT_sort(slopes,count)
+!       call LVT_sort(slopes,count)
+       call LVT_quicksort(slopes, count, 1, count)
        if (mod(count,2).eq.0) then
           slope = (slopes(count/2)+slopes((count+2)/2))/2.0
        else
           slope = slopes((count+1)/2)
        endif
        
-! Calculate the confidence level
+! Calculate the confidence levelx
 !      z_0975 = 1.96
 !      z_0900 = 1.64
 !      z_095 = 2.00

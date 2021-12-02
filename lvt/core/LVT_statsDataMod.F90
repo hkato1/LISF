@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: LVT_statsDataMod
@@ -34,6 +40,7 @@ module LVT_statsDataMod
 !
 ! !REVISION HISTORY:
 !  02 Oct 2008: Sujay Kumar; Initial version
+!  05 Feb 2021: David Mocko; Fixed Max and Min metric time series output
 ! 
 !EOP
 
@@ -41,40 +48,54 @@ module LVT_statsDataMod
 
   type min_metric_spec 
      real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)     
      real,    allocatable :: model_value_ci(:,:)
      real,    allocatable :: model_value_ts(:,:,:)        
+     integer, allocatable :: count_model_value_ts(:,:,:)        
      real,    allocatable :: tavg_model_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_model_value_ts(:,:,:)        
      real,    allocatable :: model_value_asc(:,:,:)
+     integer, allocatable :: count_model_value_asc(:,:,:)
      real,    allocatable :: model_value_adc(:,:,:)
+     integer, allocatable :: count_model_value_adc(:,:,:)
 
      real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)     
      real,    allocatable :: obs_value_ci(:,:)
      real,    allocatable :: obs_value_ts(:,:,:)        
+     integer, allocatable :: count_obs_value_ts(:,:,:)        
      real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)        
      real,    allocatable :: obs_value_asc(:,:,:)
+     integer, allocatable :: count_obs_value_asc(:,:,:)
      real,    allocatable :: obs_value_adc(:,:,:)
-
-     integer, allocatable :: tavg_count_model_value_ts(:,:,:)
-     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     integer, allocatable :: count_obs_value_adc(:,:,:)
   end type min_metric_spec
 
   type max_metric_spec
      real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)     
      real,    allocatable :: model_value_ci(:,:)
      real,    allocatable :: model_value_ts(:,:,:)        
+     integer, allocatable :: count_model_value_ts(:,:,:)        
      real,    allocatable :: tavg_model_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_model_value_ts(:,:,:)        
      real,    allocatable :: model_value_asc(:,:,:)
+     integer, allocatable :: count_model_value_asc(:,:,:)
      real,    allocatable :: model_value_adc(:,:,:)
+     integer, allocatable :: count_model_value_adc(:,:,:)
 
      real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)     
      real,    allocatable :: obs_value_ci(:,:)
      real,    allocatable :: obs_value_ts(:,:,:)        
+     integer, allocatable :: count_obs_value_ts(:,:,:)        
      real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)        
      real,    allocatable :: obs_value_asc(:,:,:)
+     integer, allocatable :: count_obs_value_asc(:,:,:)
      real,    allocatable :: obs_value_adc(:,:,:)
-
-     integer, allocatable :: tavg_count_model_value_ts(:,:,:)
-     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     integer, allocatable :: count_obs_value_adc(:,:,:)
   end type max_metric_spec
 
   type mintime_metric_spec
@@ -197,6 +218,48 @@ module LVT_statsDataMod
      integer, allocatable :: count_obs_value_adc(:,:,:)     
   end type mean_metric_spec
 
+  type kmeans_metric_spec
+     real,    allocatable :: model_value_total(:,:,:)     
+     integer, allocatable :: count_model_value_total(:,:,:)
+     
+     real,    allocatable :: obs_value_total(:,:,:)     
+     integer, allocatable :: count_obs_value_total(:,:,:)
+
+     real,    allocatable :: model_value_total_sxsx(:,:,:)
+     real,    allocatable :: obs_value_total_sxsx(:,:,:)
+
+     real,    allocatable  :: model_stdev_total(:,:,:)
+     real,    allocatable  :: obs_stdev_total(:,:,:)
+
+!     real,    allocatable :: model_value_ts(:,:,:)        
+!     integer, allocatable :: count_model_value_ts(:,:,:)
+!     real,    allocatable :: tavg_model_value_ts(:,:,:)        
+!     integer, allocatable :: tavg_count_model_value_ts(:,:,:)   
+
+!     real,    allocatable :: obs_value_ts(:,:,:)        
+!     integer, allocatable :: count_obs_value_ts(:,:,:)
+!     real,    allocatable :: tavg_obs_value_ts(:,:,:)        
+!     integer, allocatable :: tavg_count_obs_value_ts(:,:,:)
+     
+!     real,    allocatable :: model_bincounts(:,:,:)
+!     real,    allocatable :: obs_bincounts(:,:,:)
+
+     integer, allocatable :: model_mean_cluster(:,:,:)
+     integer, allocatable :: obs_mean_cluster(:,:,:)
+
+     integer, allocatable :: model_stdev_cluster(:,:,:)
+     integer, allocatable :: obs_stdev_cluster(:,:,:)
+
+     real,    allocatable  :: model_mean_cluster_se(:,:,:)
+     real,    allocatable  :: model_stdev_cluster_se(:,:,:)
+     real,    allocatable  :: obs_mean_cluster_se(:,:,:)
+     real,    allocatable  :: obs_stdev_cluster_se(:,:,:)
+
+!     real,    allocatable :: model_value_ci(:,:)
+!     real,    allocatable :: obs_value_ci(:,:)     
+
+  end type kmeans_metric_spec
+
   type tendency_metric_spec
      real,    allocatable :: model_value_total(:,:,:)     
      integer, allocatable :: count_model_value_total(:,:,:)
@@ -268,7 +331,9 @@ module LVT_statsDataMod
      integer, allocatable :: tavg_count_model_value_ts(:,:,:)
      real,    allocatable :: model_value_asc(:,:,:)
      integer, allocatable :: count_model_value_asc(:,:,:)     
+     real,    allocatable :: sum_model_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: model_value_climo(:,:,:,:)
+     real,    allocatable :: sum_obs_value_climo(:,:,:,:) ! EMK
      real,    allocatable :: obs_value_climo(:,:,:,:)
      integer, allocatable :: count_obs_value_climo(:,:,:,:)
      integer, allocatable :: count_model_value_climo(:,:,:,:)
@@ -754,6 +819,33 @@ module LVT_statsDataMod
      integer, allocatable :: count_value_adc(:,:,:)
 
   end type rnkcorr_metric_spec
+
+
+  type arnkcorr_metric_spec
+     real,    allocatable :: obs_value_final(:,:,:,:)
+     real,    allocatable :: model_value_final(:,:,:,:)
+     real   , allocatable :: rval_r(:,:,:)
+     integer, allocatable :: count_value(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+
+     real,    allocatable :: obs_value_ts(:,:,:,:)
+     real,    allocatable :: model_value_ts(:,:,:,:)
+     real   , allocatable :: rval_ts_r(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real   , allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+
+     real,    allocatable :: model_value_climo(:,:,:,:)
+     real,    allocatable :: obs_value_climo(:,:,:,:)
+     integer, allocatable :: count_obs_value_climo(:,:,:,:)
+     integer, allocatable :: count_model_value_climo(:,:,:,:)
+
+  end type arnkcorr_metric_spec
   
   type acorr_metric_spec
      real,    allocatable :: model_value_climo(:,:,:,:)
@@ -973,6 +1065,123 @@ module LVT_statsDataMod
      real,    allocatable :: obs_value_ci(:,:)
   end type vul_metric_spec
 
+  ! Tian bias decomposition...EMK
+  type thb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type thb_metric_spec
+
+  type tmb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type tmb_metric_spec
+
+  type tfb_metric_spec
+     real,    allocatable :: value_total(:,:,:)
+     integer, allocatable :: count_value_total(:,:,:)
+     real,    allocatable :: value_ci(:,:)
+     real,    allocatable :: value_ts(:,:,:)
+     integer, allocatable :: count_value_ts(:,:,:)
+     real,    allocatable :: tavg_value_ts(:,:,:)
+     integer, allocatable :: tavg_count_value_ts(:,:,:)
+     real,    allocatable :: value_asc(:,:,:)
+     integer, allocatable :: count_value_asc(:,:,:)
+     real,    allocatable :: value_adc(:,:,:)
+     integer, allocatable :: count_value_adc(:,:,:)
+  end type tfb_metric_spec
+
+ type ie_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: px(:,:,:)
+     real,    allocatable :: py(:,:,:)
+     real,    allocatable :: model_value_total(:,:)
+     integer, allocatable :: model_count_total(:,:)
+     real,    allocatable :: model_value_ci(:)
+     real,    allocatable :: obs_value_total(:,:)
+     integer, allocatable :: obs_count_total(:,:)
+     real,    allocatable :: obs_value_ci(:)
+  end type ie_metric_spec
+
+ type re_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: px(:,:,:)
+     real,    allocatable :: py(:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type re_metric_spec
+
+  type ce_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type ce_metric_spec
+
+  type je_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: zmaxval(:,:)
+     real,    allocatable :: zminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: zdelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: pxyz(:,:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type je_metric_spec
+
+  type mi_metric_spec
+     real,    allocatable :: xmaxval(:,:)
+     real,    allocatable :: xminval(:,:)
+     real,    allocatable :: ymaxval(:,:)
+     real,    allocatable :: yminval(:,:)
+     real,    allocatable :: xdelta(:,:)
+     real,    allocatable :: ydelta(:,:)
+     real,    allocatable :: pxy(:,:,:,:)
+     real,    allocatable :: value_total(:,:)
+     integer, allocatable :: count_total(:,:)
+     real,    allocatable :: value_ci(:)
+  end type mi_metric_spec
+
   type, public :: LVT_statsEntry
      
      type(min_metric_spec)      , allocatable :: min(:)   
@@ -1010,6 +1219,7 @@ module LVT_statsDataMod
      type(ets_metric_spec)      , allocatable :: ets(:)
      type(rcorr_metric_spec)    , allocatable :: rcorr(:)
      type(rnkcorr_metric_spec)  , allocatable :: rnkcorr(:)
+     type(arnkcorr_metric_spec) , allocatable :: arnkcorr(:)
      type(acorr_metric_spec)    , allocatable :: acorr(:)
      type(armse_metric_spec)    , allocatable :: armse(:)
      type(nse_metric_spec)      , allocatable :: nse(:)
@@ -1027,6 +1237,17 @@ module LVT_statsDataMod
      type(rel_metric_spec)        , allocatable    :: rel(:)
      type(res_metric_spec)        , allocatable    :: res(:)
      type(vul_metric_spec)        , allocatable    :: vul(:)
+     type(kmeans_metric_spec)     , allocatable :: kmeans(:)
+
+     ! Tian bias decomposition...EMK
+     type(thb_metric_spec)     , allocatable :: thb(:)
+     type(tmb_metric_spec)     , allocatable :: tmb(:)
+     type(tfb_metric_spec)     , allocatable :: tfb(:)
+     type(ie_metric_spec)      , allocatable :: ie(:)
+     type(ce_metric_spec)      , allocatable :: ce(:)
+     type(re_metric_spec)      , allocatable :: re(:)
+     type(je_metric_spec)      , allocatable :: je(:)
+     type(mi_metric_spec)      , allocatable :: mi(:)
 
      integer          :: selectOpt    
      integer          :: computeVar
@@ -1043,6 +1264,16 @@ module LVT_statsDataMod
      integer, allocatable :: vid_sc_total(:,:,:)
      integer, allocatable :: vid_adc_total(:,:,:)
 
+     ! EMK For anomaly climatology
+     integer, allocatable :: vid_total_climo(:,:)
+     integer, allocatable :: vid_count_total_climo(:,:)
+     integer, allocatable :: vid_ts_climo(:,:)
+     integer, allocatable :: vid_count_ts_climo(:,:)
+     integer, allocatable :: vid_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_sc_total_climo(:,:,:)
+     integer, allocatable :: vid_adc_total_climo(:,:,:)
+     integer, allocatable :: vid_count_adc_total_climo(:,:,:)
+     
      type(LVT_statsEntry), pointer :: next
 
   end type LVT_statsEntry
@@ -1056,190 +1287,190 @@ module LVT_statsDataMod
      integer          :: prev_mo_tavg
      integer          :: prev_yr_tavg
 
-     type(LVT_statsEntry) :: swnet        ! Net shortwave radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: lwnet        ! Net longwave radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: rnet         ! Net absorbed radiation (surface) (W/m2)
-     type(LVT_statsEntry) :: qle          ! Latent Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qh           ! Sensible Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qg           ! Ground Heat Flux (W/m2)
-     type(LVT_statsEntry) :: qf           ! Energy of fusion (W/m2)
-     type(LVT_statsEntry) :: qv           ! Energy of sublimation (W/m2)
-     type(LVT_statsEntry) :: qtau         ! Momentum flux (N/m2)
-     type(LVT_statsEntry) :: qa           ! Advective flux (W/m2)
-     type(LVT_statsEntry) :: delsurfheat  ! Change in surface heat storage (J/m2)
-     type(LVT_statsEntry) :: delcoldcont  ! Change in snow water content (J/m2)
-     type(LVT_statsEntry) :: br           ! Bowen Ratio
-     type(LVT_statsEntry) :: ef           ! Evaporative Fraction
+     ! type(LVT_statsEntry) :: swnet        ! Net shortwave radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: lwnet        ! Net longwave radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: rnet         ! Net absorbed radiation (surface) (W/m2)
+     ! type(LVT_statsEntry) :: qle          ! Latent Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qh           ! Sensible Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qg           ! Ground Heat Flux (W/m2)
+     ! type(LVT_statsEntry) :: qf           ! Energy of fusion (W/m2)
+     ! type(LVT_statsEntry) :: qv           ! Energy of sublimation (W/m2)
+     ! type(LVT_statsEntry) :: qtau         ! Momentum flux (N/m2)
+     ! type(LVT_statsEntry) :: qa           ! Advective flux (W/m2)
+     ! type(LVT_statsEntry) :: delsurfheat  ! Change in surface heat storage (J/m2)
+     ! type(LVT_statsEntry) :: delcoldcont  ! Change in snow water content (J/m2)
+     ! type(LVT_statsEntry) :: br           ! Bowen Ratio
+     ! type(LVT_statsEntry) :: ef           ! Evaporative Fraction
 
-     type(LVT_statsEntry) :: snowf        ! Snowfall rate (kg/m2s)
-     type(LVT_statsEntry) :: rainf        ! Rainfall rate (kg/m2s)
-     type(LVT_statsEntry) :: evap         ! Evapotranspiration (kg/m2s)
-     type(LVT_statsEntry) :: qs           ! Surface Runoff(kg/m2s)
-     type(LVT_statsEntry) :: qrec         ! Recharge from river to the floodplain (kg/m2s)
-     type(LVT_statsEntry) :: qsb          ! Subsurface Runoff (kg/m2s)
-     type(LVT_statsEntry) :: qsm          ! Snowmelt (kg/m2s)
-     type(LVT_statsEntry) :: qfz          ! Refreezing of water in the snowpack (kg/m2s)
-     type(LVT_statsEntry) :: qst          ! Snow throughfall (kg/m2s)
-     type(LVT_statsEntry) :: delsoilmoist ! DelSoilMoist
-     type(LVT_statsEntry) :: delswe       ! DelSWE
-     type(LVT_statsEntry) :: delsurfstor  ! Change in surface water storage (kg/m2)
-     type(LVT_statsEntry) :: delintercept ! Change in interception storage (kg/m2)
+     ! type(LVT_statsEntry) :: snowf        ! Snowfall rate (kg/m2s)
+     ! type(LVT_statsEntry) :: rainf        ! Rainfall rate (kg/m2s)
+     ! type(LVT_statsEntry) :: evap         ! Evapotranspiration (kg/m2s)
+     ! type(LVT_statsEntry) :: qs           ! Surface Runoff(kg/m2s)
+     ! type(LVT_statsEntry) :: qrec         ! Recharge from river to the floodplain (kg/m2s)
+     ! type(LVT_statsEntry) :: qsb          ! Subsurface Runoff (kg/m2s)
+     ! type(LVT_statsEntry) :: qsm          ! Snowmelt (kg/m2s)
+     ! type(LVT_statsEntry) :: qfz          ! Refreezing of water in the snowpack (kg/m2s)
+     ! type(LVT_statsEntry) :: qst          ! Snow throughfall (kg/m2s)
+     ! type(LVT_statsEntry) :: delsoilmoist ! DelSoilMoist
+     ! type(LVT_statsEntry) :: delswe       ! DelSWE
+     ! type(LVT_statsEntry) :: delsurfstor  ! Change in surface water storage (kg/m2)
+     ! type(LVT_statsEntry) :: delintercept ! Change in interception storage (kg/m2)
      
-     type(LVT_statsEntry) :: snowt        ! Snow surface temperature (K)
-     type(LVT_statsEntry) :: vegt         ! Vegetation canopy temperature (K)
-     type(LVT_statsEntry) :: baresoilt    ! Temperature of bare soil (K)
-     type(LVT_statsEntry) :: avgsurft     ! Average Surface Temperature (K)
-     type(LVT_statsEntry) :: groundavgt     ! Average ground Temperature (K)
-     type(LVT_statsEntry) :: groundvegt     ! Average ground Temperature (K)
-     type(LVT_statsEntry) :: radt         ! Surface Radiative Tempearture (K)
-     type(LVT_statsEntry) :: albedo       ! Surface Albedo (-)
-     type(LVT_statsEntry) :: swe          ! Snow water equivalent (kg/m2)
-     type(LVT_statsEntry) :: snowice
-     type(LVT_statsEntry) :: sweveg       ! SWE intercepted by vegetation (kg/m2)
-     type(LVT_statsEntry) :: snowage
-     type(LVT_statsEntry) :: snowfrac     ! Grid cell snow covered fraction
-     type(LVT_statsEntry) :: snowdepth    ! Snow Depth(m)
-     type(LVT_statsEntry) :: snowcover    ! Snow cover
-     type(LVT_statsEntry) :: surfstor     ! Surface water storage (kg/m2)
+     ! type(LVT_statsEntry) :: snowt        ! Snow surface temperature (K)
+     ! type(LVT_statsEntry) :: vegt         ! Vegetation canopy temperature (K)
+     ! type(LVT_statsEntry) :: baresoilt    ! Temperature of bare soil (K)
+     ! type(LVT_statsEntry) :: avgsurft     ! Average Surface Temperature (K)
+     ! type(LVT_statsEntry) :: groundavgt     ! Average ground Temperature (K)
+     ! type(LVT_statsEntry) :: groundvegt     ! Average ground Temperature (K)
+     ! type(LVT_statsEntry) :: radt         ! Surface Radiative Tempearture (K)
+     ! type(LVT_statsEntry) :: albedo       ! Surface Albedo (-)
+     ! type(LVT_statsEntry) :: swe          ! Snow water equivalent (kg/m2)
+     ! type(LVT_statsEntry) :: snowice
+     ! type(LVT_statsEntry) :: sweveg       ! SWE intercepted by vegetation (kg/m2)
+     ! type(LVT_statsEntry) :: snowage
+     ! type(LVT_statsEntry) :: snowfrac     ! Grid cell snow covered fraction
+     ! type(LVT_statsEntry) :: snowdepth    ! Snow Depth(m)
+     ! type(LVT_statsEntry) :: snowcover    ! Snow cover
+     ! type(LVT_statsEntry) :: surfstor     ! Surface water storage (kg/m2)
 
-     type(LVT_statsEntry) :: soilmoist
-     type(LVT_statsEntry) :: soiltemp
-     type(LVT_statsEntry) :: sliqfrac   ! fraction of SWE which is in the liquid phase
-     type(LVT_statsEntry) :: smliqfrac  ! Average layer fraction of liquid
-                                          ! moisture
-     type(LVT_statsEntry) :: smfrozfrac ! Average layer fraction of liquid
-                                          ! moisture
+     ! type(LVT_statsEntry) :: soilmoist
+     ! type(LVT_statsEntry) :: soiltemp
+     ! type(LVT_statsEntry) :: sliqfrac   ! fraction of SWE which is in the liquid phase
+     ! type(LVT_statsEntry) :: smliqfrac  ! Average layer fraction of liquid
+     !                                      ! moisture
+     ! type(LVT_statsEntry) :: smfrozfrac ! Average layer fraction of liquid
+     !                                      ! moisture
           
-     type(LVT_statsEntry) :: soilwet      ! Total Soil Wetness (-)
-     type(LVT_statsEntry) :: matricpotential      ! soil matric potential
-     type(LVT_statsEntry) :: soilet       ! Plant transpiration from a particular root layer (W/m2)
-     type(LVT_statsEntry) :: z0brd        ! Background (i.e., snow-free) roughness length (m)
-     type(LVT_statsEntry) :: roughness    ! Roughness length (m)
+     ! type(LVT_statsEntry) :: soilwet      ! Total Soil Wetness (-)
+     ! type(LVT_statsEntry) :: matricpotential      ! soil matric potential
+     ! type(LVT_statsEntry) :: soilet       ! Plant transpiration from a particular root layer (W/m2)
+     ! type(LVT_statsEntry) :: z0brd        ! Background (i.e., snow-free) roughness length (m)
+     ! type(LVT_statsEntry) :: roughness    ! Roughness length (m)
 
-     type(LVT_statsEntry) :: potevap      ! Potential Evapotranspiration (kg/m2s)
-     type(LVT_statsEntry) :: ecanop       ! Interception evaporation (kg/m2s)
-     type(LVT_statsEntry) :: tveg         ! Vegetation transpiration (kg/m2s)
-     type(LVT_statsEntry) :: esoil        ! Bare soil evaporation (kg/m2s)
-     type(LVT_statsEntry) :: ewater       ! Open water evaporation (kg/m2s)
-     type(LVT_statsEntry) :: rootmoist    ! Root zone soil moisture (kg/m2)
-     type(LVT_statsEntry) :: canopint     ! Total canopy water storage (kg/m2s)
-     type(LVT_statsEntry) :: evapsnow     ! Snow evaporation (kg/m2s)
-     type(LVT_statsEntry) :: subsnow      ! Snow sublimation (kg/m2s)
-     type(LVT_statsEntry) :: subsurf      ! Sublimation of the snow free area (kg/m2s)
-     type(LVT_statsEntry) :: acond        ! Aerodynamic conductance (m/s)
+     ! type(LVT_statsEntry) :: potevap      ! Potential Evapotranspiration (kg/m2s)
+     ! type(LVT_statsEntry) :: ecanop       ! Interception evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: tveg         ! Vegetation transpiration (kg/m2s)
+     ! type(LVT_statsEntry) :: esoil        ! Bare soil evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: ewater       ! Open water evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: rootmoist    ! Root zone soil moisture (kg/m2)
+     ! type(LVT_statsEntry) :: canopint     ! Total canopy water storage (kg/m2s)
+     ! type(LVT_statsEntry) :: evapsnow     ! Snow evaporation (kg/m2s)
+     ! type(LVT_statsEntry) :: subsnow      ! Snow sublimation (kg/m2s)
+     ! type(LVT_statsEntry) :: subsurf      ! Sublimation of the snow free area (kg/m2s)
+     ! type(LVT_statsEntry) :: acond        ! Aerodynamic conductance (m/s)
 
-     type(LVT_statsEntry) :: totalprecip  ! Total precipitation rate (kg/m2/s)
-     type(LVT_statsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
+     ! type(LVT_statsEntry) :: totalprecip  ! Total precipitation rate (kg/m2/s)
+     ! type(LVT_statsEntry) :: rainfconv  ! Convective Rainfall rate (kg/m2/s)
 
-     type(LVT_statsEntry) :: autoresp   ! Autotrophic Respiration
-     type(LVT_statsEntry) :: heteroresp ! Heterotrophic Respiration
-     type(LVT_statsEntry) :: leafresp   ! Leaf Respiration
-     type(LVT_statsEntry) :: npp        ! Net primary productivity in gridbox
-     type(LVT_statsEntry) :: gpp        ! Gross primary productivity in gridbox
-     type(LVT_statsEntry) :: nee        ! Net Ecosystem Exchange
+     ! type(LVT_statsEntry) :: autoresp   ! Autotrophic Respiration
+     ! type(LVT_statsEntry) :: heteroresp ! Heterotrophic Respiration
+     ! type(LVT_statsEntry) :: leafresp   ! Leaf Respiration
+     ! type(LVT_statsEntry) :: npp        ! Net primary productivity in gridbox
+     ! type(LVT_statsEntry) :: gpp        ! Gross primary productivity in gridbox
+     ! type(LVT_statsEntry) :: nee        ! Net Ecosystem Exchange
 
-     type(LVT_statsEntry) :: t2diag
-     type(LVT_statsEntry) :: q2diag
-     type(LVT_statsEntry) :: tws
+     ! type(LVT_statsEntry) :: t2diag
+     ! type(LVT_statsEntry) :: q2diag
+     ! type(LVT_statsEntry) :: tws
 
-     type(LVT_statsEntry) ::  windforc
-     type(LVT_statsEntry) ::  rainfforc
-     type(LVT_statsEntry) ::  snowfforc
-     type(LVT_statsEntry) ::  tairforc
-     type(LVT_statsEntry) ::  qairforc
-     type(LVT_statsEntry) ::  psurfforc
-     type(LVT_statsEntry) ::  swdownforc
-     type(LVT_statsEntry) ::  lwdownforc
-     type(LVT_statsEntry) ::  directswforc 
-     type(LVT_statsEntry) ::  diffuseswforc 
-     type(LVT_statsEntry) ::  nwindforc   
-     type(LVT_statsEntry) ::  ewindforc   
-     type(LVT_statsEntry) ::  fheightforc   
-     type(LVT_statsEntry) ::  chforc   
-     type(LVT_statsEntry) ::  cmforc   
-     type(LVT_statsEntry) ::  emissforc   
-     type(LVT_statsEntry) ::  mixratioforc   
-     type(LVT_statsEntry) ::  coszenforc   
-     type(LVT_statsEntry) ::  albedoforc   
+     ! type(LVT_statsEntry) ::  windforc
+     ! type(LVT_statsEntry) ::  rainfforc
+     ! type(LVT_statsEntry) ::  snowfforc
+     ! type(LVT_statsEntry) ::  tairforc
+     ! type(LVT_statsEntry) ::  qairforc
+     ! type(LVT_statsEntry) ::  psurfforc
+     ! type(LVT_statsEntry) ::  swdownforc
+     ! type(LVT_statsEntry) ::  lwdownforc
+     ! type(LVT_statsEntry) ::  directswforc 
+     ! type(LVT_statsEntry) ::  diffuseswforc 
+     ! type(LVT_statsEntry) ::  nwindforc   
+     ! type(LVT_statsEntry) ::  ewindforc   
+     ! type(LVT_statsEntry) ::  fheightforc   
+     ! type(LVT_statsEntry) ::  chforc   
+     ! type(LVT_statsEntry) ::  cmforc   
+     ! type(LVT_statsEntry) ::  emissforc   
+     ! type(LVT_statsEntry) ::  mixratioforc   
+     ! type(LVT_statsEntry) ::  coszenforc   
+     ! type(LVT_statsEntry) ::  albedoforc   
 
-     type(LVT_statsEntry) :: landmask
-     type(LVT_statsEntry) :: landcover
-     type(LVT_statsEntry) :: soiltype
-     type(LVT_statsEntry) :: sandfrac
-     type(LVT_statsEntry) :: clayfrac
-     type(LVT_statsEntry) :: siltfrac
-     type(LVT_statsEntry) :: porosity
-     type(LVT_statsEntry) :: soilcolor
-     type(LVT_statsEntry) :: elevation
-     type(LVT_statsEntry) :: slope
-     type(LVT_statsEntry) :: lai
-     type(LVT_statsEntry) :: sai
-     type(LVT_statsEntry) :: snfralbedo
-     type(LVT_statsEntry) :: mxsnalbedo
-     type(LVT_statsEntry) :: greenness
-     type(LVT_statsEntry) :: ndvi
-     type(LVT_statsEntry) :: sif
-     type(LVT_statsEntry) :: tempbot
-     type(LVT_statsEntry) :: roottemp
-     type(LVT_statsEntry) :: ccond 
+     ! type(LVT_statsEntry) :: landmask
+     ! type(LVT_statsEntry) :: landcover
+     ! type(LVT_statsEntry) :: soiltype
+     ! type(LVT_statsEntry) :: sandfrac
+     ! type(LVT_statsEntry) :: clayfrac
+     ! type(LVT_statsEntry) :: siltfrac
+     ! type(LVT_statsEntry) :: porosity
+     ! type(LVT_statsEntry) :: soilcolor
+     ! type(LVT_statsEntry) :: elevation
+     ! type(LVT_statsEntry) :: slope
+     ! type(LVT_statsEntry) :: lai
+     ! type(LVT_statsEntry) :: sai
+     ! type(LVT_statsEntry) :: snfralbedo
+     ! type(LVT_statsEntry) :: mxsnalbedo
+     ! type(LVT_statsEntry) :: greenness
+     ! type(LVT_statsEntry) :: ndvi
+     ! type(LVT_statsEntry) :: sif
+     ! type(LVT_statsEntry) :: tempbot
+     ! type(LVT_statsEntry) :: roottemp
+     ! type(LVT_statsEntry) :: ccond 
 
-     type(LVT_statsEntry) :: relsmc 
-     type(LVT_statsEntry) :: rhmin
+     ! type(LVT_statsEntry) :: relsmc 
+     ! type(LVT_statsEntry) :: rhmin
 
-     !fldas 
-     type(LVT_statsEntry) :: petforc
-     type(LVT_statsEntry) :: refetforc
-     type(LVT_statsEntry) :: refet
-     type(LVT_statsEntry) :: sos
-     type(LVT_statsEntry) :: wrsi     
-     type(LVT_statsEntry) :: kf2     
-     type(LVT_statsEntry) :: sumWR     
-     type(LVT_statsEntry) :: sumET     
-     type(LVT_statsEntry) :: SWI   
-     type(LVT_statsEntry) :: SOSa     
-     type(LVT_statsEntry) :: TotalSurplusWater     
-     type(LVT_statsEntry) :: MaxSurplusWater     
-     type(LVT_statsEntry) :: TotalWaterDeficit     
-     type(LVT_statsEntry) :: MaxWaterDeficit     
-     type(LVT_statsEntry) :: TotalAETInitial     
-     type(LVT_statsEntry) :: TotalWRInitial     
-     type(LVT_statsEntry) :: TotalSurplusWaterInitial    
-     type(LVT_statsEntry) :: TotalWaterDeficitInitial     
-     type(LVT_statsEntry) :: TotalAETVeg
-     type(LVT_statsEntry) :: TotalWRVeg
-     type(LVT_statsEntry) :: TotalSurplusWaterVeg
-     type(LVT_statsEntry) :: TotalWaterDeficitVeg
-     type(LVT_statsEntry) :: TotalAETFlower
-     type(LVT_statsEntry) :: TotalWRFlower
-     type(LVT_statsEntry) :: TotalSurplusWaterFlower 
-     type(LVT_statsEntry) :: TotalWaterDeficitFlower
-     type(LVT_statsEntry) :: TotalAETRipe
-     type(LVT_statsEntry) :: TotalWRRipe
-     type(LVT_statsEntry) :: TotalSurplusWaterRipe
-     type(LVT_statsEntry) :: TotalWaterDeficitRipe
-     type(LVT_statsEntry) :: PermWiltDate 
-     type(LVT_statsEntry) :: Wilting1
-     type(LVT_statsEntry) :: Wilting2
-     type(LVT_statsEntry) :: WRSIa
-     type(LVT_statsEntry) :: growing_season
+     ! !fldas 
+     ! type(LVT_statsEntry) :: petforc
+     ! type(LVT_statsEntry) :: refetforc
+     ! type(LVT_statsEntry) :: refet
+     ! type(LVT_statsEntry) :: sos
+     ! type(LVT_statsEntry) :: wrsi     
+     ! type(LVT_statsEntry) :: kf2     
+     ! type(LVT_statsEntry) :: sumWR     
+     ! type(LVT_statsEntry) :: sumET     
+     ! type(LVT_statsEntry) :: SWI   
+     ! type(LVT_statsEntry) :: SOSa     
+     ! type(LVT_statsEntry) :: TotalSurplusWater     
+     ! type(LVT_statsEntry) :: MaxSurplusWater     
+     ! type(LVT_statsEntry) :: TotalWaterDeficit     
+     ! type(LVT_statsEntry) :: MaxWaterDeficit     
+     ! type(LVT_statsEntry) :: TotalAETInitial     
+     ! type(LVT_statsEntry) :: TotalWRInitial     
+     ! type(LVT_statsEntry) :: TotalSurplusWaterInitial    
+     ! type(LVT_statsEntry) :: TotalWaterDeficitInitial     
+     ! type(LVT_statsEntry) :: TotalAETVeg
+     ! type(LVT_statsEntry) :: TotalWRVeg
+     ! type(LVT_statsEntry) :: TotalSurplusWaterVeg
+     ! type(LVT_statsEntry) :: TotalWaterDeficitVeg
+     ! type(LVT_statsEntry) :: TotalAETFlower
+     ! type(LVT_statsEntry) :: TotalWRFlower
+     ! type(LVT_statsEntry) :: TotalSurplusWaterFlower 
+     ! type(LVT_statsEntry) :: TotalWaterDeficitFlower
+     ! type(LVT_statsEntry) :: TotalAETRipe
+     ! type(LVT_statsEntry) :: TotalWRRipe
+     ! type(LVT_statsEntry) :: TotalSurplusWaterRipe
+     ! type(LVT_statsEntry) :: TotalWaterDeficitRipe
+     ! type(LVT_statsEntry) :: PermWiltDate 
+     ! type(LVT_statsEntry) :: Wilting1
+     ! type(LVT_statsEntry) :: Wilting2
+     ! type(LVT_statsEntry) :: WRSIa
+     ! type(LVT_statsEntry) :: growing_season
 
-     type(LVT_statsEntry) :: ebal
-     type(LVT_statsEntry) :: wbal
-     type(LVT_statsEntry) :: evapbal
-     type(LVT_statsEntry) :: sweoverp
-     type(LVT_statsEntry) :: etoverp
-     type(LVT_statsEntry) :: qsoverp
-     type(LVT_statsEntry) :: qsboverp
-     type(LVT_statsEntry) :: runoff
-     type(LVT_statsEntry) :: dS
+     ! type(LVT_statsEntry) :: ebal
+     ! type(LVT_statsEntry) :: wbal
+     ! type(LVT_statsEntry) :: evapbal
+     ! type(LVT_statsEntry) :: sweoverp
+     ! type(LVT_statsEntry) :: etoverp
+     ! type(LVT_statsEntry) :: qsoverp
+     ! type(LVT_statsEntry) :: qsboverp
+     ! type(LVT_statsEntry) :: runoff
+     ! type(LVT_statsEntry) :: dS
 
-     type(LVT_statsEntry) :: tairforc_min
-     type(LVT_statsEntry) :: tairforc_max
+     ! type(LVT_statsEntry) :: tairforc_min
+     ! type(LVT_statsEntry) :: tairforc_max
 
-     type(LVT_statsEntry) :: streamflow
+     ! type(LVT_statsEntry) :: streamflow
      
-     type(LVT_statsEntry) :: rtm_emissivity 
-     type(LVT_statsEntry) :: rtm_tb
+     ! type(LVT_statsEntry) :: rtm_emissivity 
+     ! type(LVT_statsEntry) :: rtm_tb
 
   end type stats_struc
 
@@ -1315,6 +1546,7 @@ module LVT_statsDataMod
      type(LVT_metricEntry)   :: acorr
      type(LVT_metricEntry)   :: rcorr
      type(LVT_metricEntry)   :: rnkcorr
+     type(LVT_metricEntry)   :: arnkcorr
 
      type(LVT_metricEntry)   :: pody
      type(LVT_metricEntry)   :: podn
@@ -1359,6 +1591,18 @@ module LVT_statsDataMod
      type(LVT_metricEntry)   :: rel
      type(LVT_metricEntry)   :: res
      type(LVT_metricEntry)   :: vul
+     
+     type(LVT_metricEntry)   :: kmeans
+
+     !Tian bias decomposition...EMK
+     type(LVT_metricEntry) :: THB
+     type(LVT_metricEntry) :: TMB
+     type(LVT_metricEntry) :: TFB
+     type(LVT_metricEntry) :: ie
+     type(LVT_metricEntry) :: ce
+     type(LVT_metricEntry) :: re
+     type(LVT_metricEntry) :: je
+     type(LVT_metricEntry) :: mi
 
   end type metrics_struc
 

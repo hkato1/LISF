@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +22,7 @@ subroutine read_scan(n,ftn,findex,order)
   use LIS_logMod, only         : LIS_logunit
   use LIS_metforcingMod,  only : LIS_forc
   use LIS_coreMod, only        : LIS_rc,LIS_domain
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use scan_forcingMod,    only : scan_struc
 
   implicit none
@@ -60,7 +63,7 @@ subroutine read_scan(n,ftn,findex,order)
   real :: pcp(scan_struc(n)%nstns),tmppcp,dum
   real :: varfield(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
-  character*80 :: scan_filename
+  character(len=LIS_CONST_PATH_LEN) :: scan_filename
   character(len=500) :: line
   integer :: yr,num,hr,mon,day,mint,sec
   logical :: file_exists

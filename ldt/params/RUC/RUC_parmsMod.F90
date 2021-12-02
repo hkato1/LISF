@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module RUC_parmsMod
 !BOP
@@ -73,7 +79,7 @@ contains
 ! \label{RUCParms_init}
 ! 
 ! !INTERFACE:
-  subroutine RUCParms_init
+  subroutine RUCParms_init(flag)
 ! !USES:
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_logMod,    only : LDT_verify
@@ -93,6 +99,7 @@ contains
 !
 !EOP
    implicit none
+   integer  :: flag
    integer  :: n,i,c,r,m
    integer  :: rc
    real     :: temp
@@ -153,7 +160,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,RUC_struc(n)%slopetype_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Slope type spatial tranform: option not specified in the config file')
+         call LDT_verify(rc,'Slope type spatial transform: option not specified in the config file')
       enddo
       
     ! Read in Slope type "fill" options:
@@ -270,7 +277,7 @@ contains
       do n=1,LDT_rc%nnest
          call ESMF_ConfigGetAttribute(LDT_config,RUC_struc(n)%tbot_gridtransform,&
               rc=rc)
-         call LDT_verify(rc,'Bottom temperature tranform: option not specified in the config file')
+         call LDT_verify(rc,'Bottom temperature transform: option not specified in the config file')
       enddo
 
       RUC_struc(:)%tbot_topocorr = "none"

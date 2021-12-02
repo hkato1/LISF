@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA GSFC Land Data Toolkit (LDT) V1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LDT_misc.h"
 module LDT_glacierMod
@@ -95,7 +101,6 @@ module LDT_glacierMod
   subroutine LDT_glacier_init()
 
 ! !USES:
-    use ESMF
     use LDT_coreMod,   only : LDT_rc, LDT_config
     use LDT_fileIOMod, only : LDT_readDomainConfigSpecs
     use LDT_paramOptCheckMod, only: LDT_gridOptChecks!,&

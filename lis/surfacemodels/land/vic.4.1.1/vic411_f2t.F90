@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -156,9 +158,13 @@ subroutine vic411_f2t(n)
                 vic411_struc(n)%vic(t)%min_Tfactor ) < &
               vic411_struc(n)%MAX_SNOW_TEMP .and.      &
               rainf_temp(tid) > 0 ) then
-            call vic411_add_atmosdata(t, k, VAR, 1) ! TRUE
+            ! EMK...Last argument should be real
+            !call vic411_add_atmosdata(t, k, VAR, 1) ! TRUE
+            call vic411_add_atmosdata(t, k, VAR, 1.) ! TRUE
          else
-            call vic411_add_atmosdata(t, k, VAR, 0) ! FALSE
+            ! EMK...Last argument should be real
+            !call vic411_add_atmosdata(t, k, VAR, 0) ! FALSE
+            call vic411_add_atmosdata(t, k, VAR, 0.) ! FALSE
          endif
       enddo
    endif

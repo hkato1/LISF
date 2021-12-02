@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -38,7 +40,7 @@ subroutine readcrd_gldas()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using GLDAS forcing'
-     write(LIS_logunit,*) 'GLDAS forcing directory :',gldas_struc(n)%GLDASDIR
+     write(LIS_logunit,*) 'GLDAS forcing directory :',trim(gldas_struc(n)%GLDASDIR)
      gldas_struc(n)%GLDASTIME1  = 3000.0
      gldas_struc(n)%GLDASTIME2  = 0.0
   enddo

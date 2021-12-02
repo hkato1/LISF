@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,6 +49,8 @@ module cmorph_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -63,7 +67,7 @@ module cmorph_forcingMod
   type, public :: cmorph_type_dec
      real    :: ts
      integer :: ncold, nrold   !AWIPS 212 dimensions
-     character*100 :: cmorphdir   !CMOR Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: cmorphdir   !CMOR Forcing Directory
      real*8  :: cmorphtime
      real*8  :: griduptime1
      logical :: gridchange1

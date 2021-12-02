@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -225,8 +227,12 @@ subroutine read_ISMNsmobs(Obj_Space)
                     rzsm = rzsm + rz_wt(v)*ISMNsm_obs_struc(n)%stn(k)%sm(tind,v)
                  endif
               enddo
-              ISMNsm_obs_struc(n)%stn(k)%sfsm(tind) = sfsm
-              ISMNsm_obs_struc(n)%stn(k)%rzsm(tind) = rzsm
+              if(sfsm.gt.0.001) then 
+                 ISMNsm_obs_struc(n)%stn(k)%sfsm(tind) = sfsm
+              endif
+              if(rzsm.gt.0.001) then 
+                 ISMNsm_obs_struc(n)%stn(k)%rzsm(tind) = rzsm
+              endif
            endif
         enddo
         deallocate(depth)

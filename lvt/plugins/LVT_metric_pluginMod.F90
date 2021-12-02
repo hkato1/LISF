@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !MODULE: LVT_metric_pluginMod
@@ -153,6 +159,10 @@ contains
          LVT_computeRnkCorr, LVT_writeMetric_RnkCorr, LVT_resetMetric_RnkCorr,&
          LVT_writerestart_RnkCorr, LVT_readrestart_RnkCorr
 
+    use LVT_AnomalyRnkCorrMod, only : LVT_initAnomalyRnkCorr, LVT_diagnoseAnomalyRnkCorr, &
+         LVT_computeAnomalyRnkCorr, LVT_writeMetric_AnomalyRnkCorr, LVT_resetMetric_AnomalyRnkCorr,&
+         LVT_writerestart_AnomalyRnkCorr, LVT_readrestart_AnomalyRnkCorr
+
     use LVT_AnomalyCorrMod, only : LVT_initAnomalyCorr, &
          LVT_diagnoseAnomalyCorr, LVT_computeAnomalyCorr,&
          LVT_writeMetric_AnomalyCorr, LVT_resetMetric_AnomalyCorr,&
@@ -292,6 +302,58 @@ contains
          LVT_writeMetric_VUL, LVT_resetMetric_VUL, LVT_writerestart_VUL, &
          LVT_readrestart_VUL
 
+    use LVT_KMEANSMod, only : LVT_initKMEANS, LVT_diagnoseKMEANS, LVT_computeKMEANS,&
+         LVT_writeMetric_KMEANS, LVT_resetMetric_KMEANS, LVT_writerestart_KMEANS, &
+         LVT_readrestart_KMEANS
+
+    ! Tian decomposition of bias...EMK
+    use LVT_THBMod, only : LVT_initTHB, LVT_diagnoseTHB, LVT_computeTHB,&
+         LVT_writeMetric_THB, LVT_resetMetric_THB, LVT_writerestart_THB, &
+         LVT_readrestart_THB
+
+    use LVT_TMBMod, only : LVT_initTMB, LVT_diagnoseTMB, LVT_computeTMB,&
+         LVT_writeMetric_TMB, LVT_resetMetric_TMB, LVT_writerestart_TMB, &
+         LVT_readrestart_TMB
+
+    use LVT_TFBMod, only : LVT_initTFB, LVT_diagnoseTFB, LVT_computeTFB,&
+         LVT_writeMetric_TFB, LVT_resetMetric_TFB, LVT_writerestart_TFB, &
+         LVT_readrestart_TFB
+
+    use LVT_InformationEntropyMod, only : LVT_initInformationEntropy, &
+         LVT_diagnoseInformationEntropy, LVT_computeInformationEntropy,&
+         LVT_writeMetric_InformationEntropy, &
+         LVT_resetMetric_InformationEntropy, &
+         LVT_writerestart_InformationEntropy, &
+         LVT_readrestart_InformationEntropy
+
+    use LVT_ConditionalEntropyMod, only : LVT_initConditionalEntropy, &
+         LVT_diagnoseConditionalEntropy, LVT_computeConditionalEntropy,&
+         LVT_writeMetric_ConditionalEntropy, &
+         LVT_resetMetric_ConditionalEntropy, &
+         LVT_writerestart_ConditionalEntropy, &
+         LVT_readrestart_ConditionalEntropy
+
+
+    use LVT_RelativeEntropyMod, only : LVT_initRelativeEntropy, &
+         LVT_diagnoseRelativeEntropy, LVT_computeRelativeEntropy,&
+         LVT_writeMetric_RelativeEntropy, &
+         LVT_resetMetric_RelativeEntropy, &
+         LVT_writerestart_RelativeEntropy, &
+         LVT_readrestart_RelativeEntropy
+
+    use LVT_JointEntropyMod, only : LVT_initJointEntropy, &
+         LVT_diagnoseJointEntropy, LVT_computeJointEntropy,&
+         LVT_writeMetric_JointEntropy, &
+         LVT_resetMetric_JointEntropy, &
+         LVT_writerestart_JointEntropy, &
+         LVT_readrestart_JointEntropy
+
+
+    use LVT_MutualInformationMod, only : LVT_initMutualInformation, &
+         LVT_diagnoseMutualInformation, LVT_computeMutualInformation,&
+         LVT_writeMetric_MutualInformation, LVT_resetMetric_MutualInformation,&
+         LVT_writerestart_MutualInformation, LVT_readrestart_MutualInformation
+
 #if 0 
     use LVT_ensMEANMod, only : LVT_initensMEAN, LVT_diagnoseensMEAN, &
          LVT_computeensMEAN, LVT_writeMetric_ensMEAN, &
@@ -343,12 +405,11 @@ contains
          LVT_writeMetric_PSD, LVT_resetMetric_PSD,&
          LVT_writerestart_PSD, LVT_readrestart_PSD
 
-
-
     use LVT_KStestMod, only : LVT_initKStest, &
          LVT_diagnoseKStest, LVT_computeKStest,&
          LVT_writeMetric_KStest, LVT_resetMetric_KStest,&
          LVT_writerestart_KStest, LVT_readrestart_KStest
+
 
 #endif
 !EOP
@@ -534,6 +595,15 @@ contains
     call registermetricreset(LVT_RNKCORRid,LVT_resetMetric_RnkCorr)
     call registermetricwriterestart(LVT_RNKCORRid,LVT_writerestart_RnkCorr)
     call registermetricreadrestart(LVT_RNKCORRid,LVT_readrestart_RnkCorr)
+
+    call registermetricinit(LVT_ARNKCORRid,LVT_initAnomalyRnkCorr)
+    call registermetricdiagnose(LVT_ARNKCORRid, LVT_diagnoseAnomalyRnkCorr)
+    call registermetriccompute(LVT_ARNKCORRid, LVT_computeAnomalyRnkCorr)
+    call registermetricwriteentry(LVT_ARNKCORRid,&
+         LVT_writeMetric_AnomalyRnkCorr)
+    call registermetricreset(LVT_ARNKCORRid,LVT_resetMetric_AnomalyRnkCorr)
+    call registermetricwriterestart(LVT_ARNKCORRid,LVT_writerestart_AnomalyRnkCorr)
+    call registermetricreadrestart(LVT_ARNKCORRid,LVT_readrestart_AnomalyRnkCorr)
 
     call registermetricinit(LVT_ACORRid,LVT_initAnomalyCorr)
     call registermetricdiagnose(LVT_ACORRid, LVT_diagnoseAnomalyCorr)
@@ -806,6 +876,43 @@ contains
     call registermetricwriterestart(LVT_VULid,LVT_writerestart_VUL)
     call registermetricreadrestart(LVT_VULid,LVT_readrestart_VUL)
 
+    call registermetricinit(LVT_KMEANSid,LVT_initKMEANS)
+    call registermetricdiagnose(LVT_KMEANSid, LVT_diagnoseKMEANS)
+    call registermetriccompute(LVT_KMEANSid, LVT_computeKMEANS)
+    call registermetricwriteentry(LVT_KMEANSid,&
+         LVT_writeMetric_KMEANS)
+    call registermetricreset(LVT_KMEANSid,LVT_resetMetric_KMEANS)
+    call registermetricwriterestart(LVT_KMEANSid,LVT_writerestart_KMEANS)
+    call registermetricreadrestart(LVT_KMEANSid,LVT_readrestart_KMEANS)
+
+    ! Tian decomposition of bias...EMK
+    call registermetricinit(LVT_THBid,LVT_initTHB)
+    call registermetricdiagnose(LVT_THBid, LVT_diagnoseTHB)
+    call registermetriccompute(LVT_THBid, LVT_computeTHB)
+    call registermetricwriteentry(LVT_THBid,&
+         LVT_writeMetric_THB)
+    call registermetricreset(LVT_THBid,LVT_resetMetric_THB)
+    call registermetricwriterestart(LVT_THBid,LVT_writerestart_THB)
+    call registermetricreadrestart(LVT_THBid,LVT_readrestart_THB)
+
+    call registermetricinit(LVT_TMBid,LVT_initTMB)
+    call registermetricdiagnose(LVT_TMBid, LVT_diagnoseTMB)
+    call registermetriccompute(LVT_TMBid, LVT_computeTMB)
+    call registermetricwriteentry(LVT_TMBid,&
+         LVT_writeMetric_TMB)
+    call registermetricreset(LVT_TMBid,LVT_resetMetric_TMB)
+    call registermetricwriterestart(LVT_TMBid,LVT_writerestart_TMB)
+    call registermetricreadrestart(LVT_TMBid,LVT_readrestart_TMB)
+
+    call registermetricinit(LVT_TFBid,LVT_initTFB)
+    call registermetricdiagnose(LVT_TFBid, LVT_diagnoseTFB)
+    call registermetriccompute(LVT_TFBid, LVT_computeTFB)
+    call registermetricwriteentry(LVT_TFBid,&
+         LVT_writeMetric_TFB)
+    call registermetricreset(LVT_TFBid,LVT_resetMetric_TFB)
+    call registermetricwriterestart(LVT_TFBid,LVT_writerestart_TFB)
+    call registermetricreadrestart(LVT_TFBid,LVT_readrestart_TFB)
+
     ! EMK End of regular metrics
 
     ! EMK Start of information content metrics
@@ -853,113 +960,55 @@ contains
     call registermetricreadrestart(LVT_ecomplexityid,&
          LVT_readrestart_EffectiveComplexity)
 
+    call registermetricinit(LVT_IEid,LVT_initInformationEntropy)
+    call registermetricdiagnose(LVT_IEid, LVT_diagnoseInformationEntropy)
+    call registermetriccompute(LVT_IEid, LVT_computeInformationEntropy)
+    call registermetricwriteentry(LVT_IEid,&
+         LVT_writeMetric_InformationEntropy)
+    call registermetricreset(LVT_IEid,LVT_resetMetric_InformationEntropy)
+    call registermetricwriterestart(LVT_IEid,LVT_writerestart_InformationEntropy)
+    call registermetricreadrestart(LVT_IEid,LVT_readrestart_InformationEntropy)
+
+    call registermetricinit(LVT_CEid,LVT_initConditionalEntropy)
+    call registermetricdiagnose(LVT_CEid, LVT_diagnoseConditionalEntropy)
+    call registermetriccompute(LVT_CEid, LVT_computeConditionalEntropy)
+    call registermetricwriteentry(LVT_CEid,&
+         LVT_writeMetric_ConditionalEntropy)
+    call registermetricreset(LVT_CEid,LVT_resetMetric_ConditionalEntropy)
+    call registermetricwriterestart(LVT_CEid,LVT_writerestart_ConditionalEntropy)
+    call registermetricreadrestart(LVT_CEid,LVT_readrestart_ConditionalEntropy)
+
+
+    call registermetricinit(LVT_REid,LVT_initRelativeEntropy)
+    call registermetricdiagnose(LVT_REid, LVT_diagnoseRelativeEntropy)
+    call registermetriccompute(LVT_REid, LVT_computeRelativeEntropy)
+    call registermetricwriteentry(LVT_REid,&
+         LVT_writeMetric_RelativeEntropy)
+    call registermetricreset(LVT_REid,LVT_resetMetric_RelativeEntropy)
+    call registermetricwriterestart(LVT_REid,LVT_writerestart_RelativeEntropy)
+    call registermetricreadrestart(LVT_REid,LVT_readrestart_RelativeEntropy)
+
+    call registermetricinit(LVT_JEid,LVT_initJointEntropy)
+    call registermetricdiagnose(LVT_JEid, LVT_diagnoseJointEntropy)
+    call registermetriccompute(LVT_JEid, LVT_computeJointEntropy)
+    call registermetricwriteentry(LVT_JEid,&
+         LVT_writeMetric_JointEntropy)
+    call registermetricreset(LVT_JEid,LVT_resetMetric_JointEntropy)
+    call registermetricwriterestart(LVT_JEid,LVT_writerestart_JointEntropy)
+    call registermetricreadrestart(LVT_JEid,LVT_readrestart_JointEntropy)
+
+
+    call registermetricinit(LVT_miid,LVT_initMutualInformation)
+    call registermetricdiagnose(LVT_miid, LVT_diagnoseMutualInformation)
+    call registermetriccompute(LVT_miid, LVT_computeMutualInformation)
+    call registermetricwriteentry(LVT_miid,&
+         LVT_writeMetric_MutualInformation)
+    call registermetricreset(LVT_miid,LVT_resetMetric_MutualInformation)
+    call registermetricwriterestart(LVT_miid,&
+         LVT_writerestart_MutualInformation)
+    call registermetricreadrestart(LVT_miid,&
+         LVT_readrestart_MutualInformation)
+
     ! EMK End of information content metrics
-
-#if 0 
-    
-    call registermetricinit(LVT_ensMEANid,LVT_initensMEAN)
-    call registermetricdiagnose(LVT_ensMEANid, LVT_diagnoseensMEAN)
-    call registermetriccompute(LVT_ensMEANid, LVT_computeensMEAN)
-    call registermetricwriteentry(LVT_ensMEANid,&
-         LVT_writeMetric_ensMEAN)
-    call registermetricreset(LVT_ensMEANid,LVT_resetMetric_ensMEAN)
-    call registermetricwriterestart(LVT_ensMEANid,LVT_writerestart_ensMEAN)
-    call registermetricreadrestart(LVT_ensMEANid,LVT_readrestart_ensMEAN)
-
-    call registermetricinit(LVT_ensStdevid,LVT_initensStdev)
-    call registermetricdiagnose(LVT_ensStdevid, LVT_diagnoseensStdev)
-    call registermetriccompute(LVT_ensStdevid, LVT_computeensStdev)
-    call registermetricwriteentry(LVT_ensStdevid,&
-         LVT_writeMetric_ensStdev)
-    call registermetricreset(LVT_ensStdevid,LVT_resetMetric_ensStdev)
-    call registermetricwriterestart(LVT_ensStdevid,LVT_writerestart_ensStdev)
-    call registermetricreadrestart(LVT_ensStdevid,LVT_readrestart_ensStdev)
-
-    call registermetricinit(LVT_ensSpreadid,LVT_initensSpread)
-    call registermetricdiagnose(LVT_ensSpreadid, LVT_diagnoseensSpread)
-    call registermetriccompute(LVT_ensSpreadid, LVT_computeensSpread)
-    call registermetricwriteentry(LVT_ensSpreadid,&
-         LVT_writeMetric_ensSpread)
-    call registermetricreset(LVT_ensSpreadid,LVT_resetMetric_ensSpread)
-    call registermetricwriterestart(LVT_ensSpreadid,LVT_writerestart_ensSpread)
-    call registermetricreadrestart(LVT_ensSpreadid,LVT_readrestart_ensSpread)
-
-    call registermetricinit(LVT_ensLLid,LVT_initensLL)
-    call registermetricdiagnose(LVT_ensLLid, LVT_diagnoseensLL)
-    call registermetriccompute(LVT_ensLLid, LVT_computeensLL)
-    call registermetricwriteentry(LVT_ensLLid,&
-         LVT_writeMetric_ensLL)
-    call registermetricreset(LVT_ensLLid,LVT_resetMetric_ensLL)
-    call registermetricwriterestart(LVT_ensLLid,LVT_writerestart_ensLL)
-    call registermetricreadrestart(LVT_ensLLid,LVT_readrestart_ensLL)
-
-    call registermetricinit(LVT_ensXcorrid,LVT_initensXcorr)
-    call registermetricdiagnose(LVT_ensXcorrid, LVT_diagnoseensXcorr)
-    call registermetriccompute(LVT_ensXcorrid, LVT_computeensXcorr)
-    call registermetricwriteentry(LVT_ensXcorrid,&
-         LVT_writeMetric_ensXcorr)
-    call registermetricreset(LVT_ensXcorrid,LVT_resetMetric_ensXcorr)
-    call registermetricwriterestart(LVT_ensXcorrid,LVT_writerestart_ensXcorr)
-    call registermetricreadrestart(LVT_ensXcorrid,LVT_readrestart_ensXcorr)
-
-    call registermetricinit(LVT_ensSkillid,LVT_initensSkill)
-    call registermetricdiagnose(LVT_ensSkillid, LVT_diagnoseensSkill)
-    call registermetriccompute(LVT_ensSkillid, LVT_computeensSkill)
-    call registermetricwriteentry(LVT_ensSkillid,&
-         LVT_writeMetric_ensSkill)
-    call registermetricreset(LVT_ensSkillid,LVT_resetMetric_ensSkill)
-    call registermetricwriterestart(LVT_ensSkillid,LVT_writerestart_ensSkill)
-    call registermetricreadrestart(LVT_ensSkillid,LVT_readrestart_ensSkill)
-
-    call registermetricinit(LVT_ensMEid,LVT_initensME)
-    call registermetricdiagnose(LVT_ensMEid, LVT_diagnoseensME)
-    call registermetriccompute(LVT_ensMEid, LVT_computeensME)
-    call registermetricwriteentry(LVT_ensMEid,&
-         LVT_writeMetric_ensME)
-    call registermetricreset(LVT_ensMEid,LVT_resetMetric_ensME)
-    call registermetricwriterestart(LVT_ensMEid,LVT_writerestart_ensME)
-    call registermetricreadrestart(LVT_ensMEid,LVT_readrestart_ensME)
-
-    call registermetricinit(LVT_ensMeanBiasid,LVT_initensMeanBias)
-    call registermetricdiagnose(LVT_ensMeanBiasid, LVT_diagnoseensMeanBias)
-    call registermetriccompute(LVT_ensMeanBiasid, LVT_computeensMeanBias)
-    call registermetricwriteentry(LVT_ensMeanBiasid,&
-         LVT_writeMetric_ensMeanBias)
-    call registermetricreset(LVT_ensMeanBiasid,LVT_resetMetric_ensMeanBias)
-    call registermetricwriterestart(LVT_ensMeanBiasid,LVT_writerestart_ensMeanBias)
-    call registermetricreadrestart(LVT_ensMeanBiasid,LVT_readrestart_ensMeanBias)
-
-    call registermetricinit(LVT_ensPercentileid,LVT_initensPercentile)
-    call registermetricdiagnose(LVT_ensPercentileid, LVT_diagnoseensPercentile)
-    call registermetriccompute(LVT_ensPercentileid, LVT_computeensPercentile)
-    call registermetricwriteentry(LVT_ensPercentileid,&
-         LVT_writeMetric_ensPercentile)
-    call registermetricreset(LVT_ensPercentileid,LVT_resetMetric_ensPercentile)
-    call registermetricwriterestart(LVT_ensPercentileid,LVT_writerestart_ensPercentile)
-    call registermetricreadrestart(LVT_ensPercentileid,LVT_readrestart_ensPercentile)
-
-
-    call registermetricinit(LVT_psdid,LVT_initPSD)
-    call registermetricdiagnose(LVT_psdid, LVT_diagnosePSD)
-    call registermetriccompute(LVT_psdid, LVT_computePSD)
-    call registermetricwriteentry(LVT_psdid,&
-         LVT_writeMetric_PSD)
-    call registermetricreset(LVT_psdid,LVT_resetMetric_PSD)
-    call registermetricwriterestart(LVT_psdid,LVT_writerestart_PSD)
-    call registermetricreadrestart(LVT_psdid,LVT_readrestart_PSD)
-
-
-    call registermetricinit(LVT_KStestid,LVT_initKStest)
-    call registermetricdiagnose(LVT_KStestid, LVT_diagnoseKStest)
-    call registermetriccompute(LVT_KStestid, LVT_computeKStest)
-    call registermetricwriteentry(LVT_KStestid,&
-         LVT_writeMetric_KStest)
-    call registermetricreset(LVT_KStestid,LVT_resetMetric_KStest)
-    call registermetricwriterestart(LVT_KStestid,LVT_writerestart_KStest)
-    call registermetricreadrestart(LVT_KStestid,LVT_readrestart_KStest)
-
-
-#endif
-
   end subroutine LVT_metric_plugin
 end module LVT_metric_pluginMod

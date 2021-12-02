@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -54,7 +60,8 @@ subroutine readUSDMObs(source)
   logical*1              :: lo(LVT_rc%lnc*LVT_rc%lnr)
   real                   :: varfield(LVT_rc%lnc,LVT_rc%lnr)
   real                   :: gridDesc(6)
-  real                   :: c1,r1,lat,lon, dres
+  integer                :: c1,r1
+  real                   :: lat,lon, dres
   real                   :: udef
   real                   :: cornerlat1, cornerlat2
   real                   :: cornerlon1, cornerlon2

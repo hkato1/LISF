@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +24,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   use LIS_metforcingMod,     only : LIS_forc
   use LIS_timeMgrMod, only        : LIS_date2time,LIS_tick
   use Loobos_forcingMod, only : Loobos_struc
+  use LIS_constantsMod,  only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -59,7 +62,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   integer :: i,c,r,f,count1, k 
   real    :: rain(Loobos_struc(n)%nstns)
   real    :: snow(Loobos_struc(n)%nstns)
-  real    :: pcp(Loobos_struc(n)%nstns)
+  !real    :: pcp(Loobos_struc(n)%nstns)
   real    :: psurf(Loobos_struc(n)%nstns)
   real    :: tair(Loobos_struc(n)%nstns)
   real    :: qair(Loobos_struc(n)%nstns)
@@ -67,7 +70,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   real    :: lwdown(Loobos_struc(n)%nstns)
   real    :: u(Loobos_struc(n)%nstns)
   real    :: v(Loobos_struc(n)%nstns)
-  real    :: varfield(8,LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real    :: varfield(9,LIS_rc%lnc(n)*LIS_rc%lnr(n))
   real    :: varfield1(LIS_rc%lnc(n),LIS_rc%lnr(n))
   real*8  :: listime,loobos_time
   real    :: lisgmt,loobos_gmt
@@ -75,7 +78,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
   integer :: loobos_yr,loobos_mon,loobos_day,loobos_hr,loobos_min,loobos_sec
   real    :: loobos_tick
   logical :: file_exists
-  character*80       :: Loobos_filename
+  character(len=LIS_CONST_PATH_LEN) :: Loobos_filename
   character(len=500) :: line
 
   !      write(LIS_logunit,*) 'starting read_Loobos'
@@ -100,7 +103,7 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
            read(line,40) loobos_yr,loobos_mon,loobos_day,loobos_hr,loobos_min,         &
                 swdown(i),lwdown(i), rain(i), snow(i), tair(i),u(i),psurf(i),qair(i) 
            v(i)   = 0
-           pcp(i) = rain(i) + snow(i) 
+           !pcp(i) = rain(i) + snow(i) 
            loobos_sec = 0
            !loobos_tick = 21600
            loobos_tick = 0 
@@ -175,11 +178,18 @@ subroutine read_Loobos(n,ftn,findex,order,itime)
        Loobos_struc(n)%undef,lwdown,varfield(7,:),         &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
 
-  call normalize_stnwts(pcp,Loobos_struc(n)%nstns,             &
+  call normalize_stnwts(rain,Loobos_struc(n)%nstns,             &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%undef,  &
        Loobos_struc(n)%stnwt)
   call interp_stndata(Loobos_struc(n)%stnwt,                   &
-       Loobos_struc(n)%undef,pcp,varfield(8,:),            &
+       Loobos_struc(n)%undef,rain,varfield(8,:),            &
+       LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
+  
+  call normalize_stnwts(snow,Loobos_struc(n)%nstns,             &
+       LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%undef,  &
+       Loobos_struc(n)%stnwt)
+  call interp_stndata(Loobos_struc(n)%stnwt,                   &
+       Loobos_struc(n)%undef,snow,varfield(9,:),            &
        LIS_rc%lnc(n)*LIS_rc%lnr(n),Loobos_struc(n)%nstns)
 
   do f = 1,8

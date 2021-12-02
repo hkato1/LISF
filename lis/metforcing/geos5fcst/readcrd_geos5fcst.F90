@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -49,7 +51,7 @@ subroutine readcrd_geos5fcst()
 
   do n=1,LIS_rc%nnest
      write(unit=LIS_logunit,fmt=*) '[INFO] GEOS5 forecast forcing directory :',&
-          geos5fcst_struc(n)%geos5fcstdir
+          trim(geos5fcst_struc(n)%geos5fcstdir)
 
      geos5fcst_struc(n)%fcsttime1 = 3000.0
      geos5fcst_struc(n)%fcsttime2 = 0.0

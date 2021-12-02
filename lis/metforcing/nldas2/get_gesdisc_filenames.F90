@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,8 +33,8 @@
    integer                    :: n
    integer                    :: kk
    integer                    :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)  :: nldas2dir
    integer, intent(in)        :: yr,mo,da,doy,hr
 !
 ! !DESCRIPTION:
@@ -146,8 +148,8 @@
    integer                    :: n
    integer                    :: kk
    integer                    :: findex
-   character*100, intent(out) :: filename
-   character*40, intent(in)   :: nldas2dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in)   :: nldas2dir
    integer, intent(in)        :: yr,mo,da,doy,hr
 !
 ! !DESCRIPTION:

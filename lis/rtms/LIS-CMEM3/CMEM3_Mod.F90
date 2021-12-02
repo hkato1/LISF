@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -122,7 +124,6 @@ contains
 ! !INTERFACE:
   subroutine CMEM3_initialize()
 ! !USES:
-    use ESMF
     use LIS_coreMod,    only : LIS_rc, LIS_config
     use LIS_logMod,     only : LIS_logunit, LIS_verify, LIS_getNextUnitNumber, &
                                LIS_releaseUnitNumber
@@ -484,6 +485,9 @@ contains
        cmem3_struc(n)%tveg(t)      = land_temperature(t)
        cmem3_struc(n)%h_veg(t)     =  10.0           ! not used yet
 !       cmem3_struc(n)%veg_frac(t)  = vegetation_fraction(t)
+       IF (leaf_area_index(t) .eq. 0.00) THEN
+           leaf_area_index(t) = 0.01
+       END IF
        cmem3_struc(n)%bgf_v(t)      =  1.0*exp(-1.0*cmem3_struc(n)%k_lai2vgf(t)*(leaf_area_index(t)/(1.0-cmem3_struc(n)%bgf_fixed(t))))
        cmem3_struc(n)%bgf_total(t)  =  cmem3_struc(n)%bgf_fixed(t) + cmem3_struc(n)%bgf_v(t)*(1.0-cmem3_struc(n)%bgf_fixed(t))
        cmem3_struc(n)%lai(t)       =  leaf_area_index(t)/(1.0-cmem3_struc(n)%bgf_total(t))

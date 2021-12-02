@@ -1,5 +1,15 @@
 #!/bin/sh 
 
+#-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+# NASA Goddard Space Flight Center
+# Land Information System Framework (LISF)
+# Version 7.3
+#
+# Copyright (c) 2020 United States Government as represented by the
+# Administrator of the National Aeronautics and Space Administration.
+# All Rights Reserved.
+#-------------------------END NOTICE -- DO NOT EDIT-----------------------
+
 #-----------------------------------------------------------------------
 
 ls_offline=`find ./src/offline/ -name *.txt -print -o -name *.F90 -print`
@@ -110,7 +120,9 @@ ls_lsms=`find ./src/surfacemodels/land/cable -name *.txt -print -o -name *.F90 -
          find ./src/surfacemodels/land/noah.3.2 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noah.3.3 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noah.3.6 -name *.txt -print -o -name *.F90 -print;   \
+         find ./src/surfacemodels/land/noah.3.9 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/noahmp.3.6 -name *.txt -print -o -name *.F90 -print;   \
+         find ./src/surfacemodels/land/noahmp.4.0.1 -name *.txt -print -o -name *.F90 -print;   \
          find ./src/surfacemodels/land/rdhm.3.5.6 -name *.txt -print -o -name *.F90 -print; \
          find ./src/surfacemodels/land/sib2 -name *.txt -print -o -name *.F90 -print;       \
          find ./src/surfacemodels/land/template -name *.txt -print -o -name *.F90 -print;`

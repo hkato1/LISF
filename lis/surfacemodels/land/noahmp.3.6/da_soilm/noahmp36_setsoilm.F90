@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -192,7 +194,7 @@ subroutine noahmp36_setsoilm(n, LSM_State)
   ! MN print 
   if(i.eq.66) then !i=66  ! --> domain's center  1376
   if(LIS_rc%hr.eq.12) then
-     write(2001,'(I4, 2x, 3(I2,x), 2x, 23(L1,2x))'),&
+     write(2001,'(I4, 2x, 3(I2,x), 2x, 23(L1,2x))') &
           i, LIS_rc%mo, LIS_rc%da, LIS_rc%hr,update_flag_tile&
           ((i-1)*LIS_rc%nensem(n)+1:(i)*LIS_rc%nensem(n)),&
           update_flag_ens(i), update_flag_new(i), update_flag(i) 
@@ -215,7 +217,8 @@ subroutine noahmp36_setsoilm(n, LSM_State)
        ! 1-2- if update flag for tile is FALSE --> resample the states  
        ! 2- adjust the states
 !-----------------------------------------------------------------------------------------
-        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE        ! update_flag_tile = TRUE --> means met the both min and max threshold 
+        ! store update value for  cases that update_flag_tile & update_flag_new are TRUE
+        ! update_flag_tile = TRUE --> means met the both min and max threshold
       
         tmp1 = LIS_rc%udef
         tmp2 = LIS_rc%udef

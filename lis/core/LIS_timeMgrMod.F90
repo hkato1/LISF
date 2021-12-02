@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -417,6 +419,7 @@ contains
             rc = status)
 
     endif
+
     call LIS_timemgr_set(LIS_rc,yr,mo,da,hr,mn,ss,ms,0.0)
     
     LIS_rc%syr= yr
@@ -843,7 +846,7 @@ contains
 
     call ESMF_ClockSet(clock=LIS_clock,timestep=timeStep,rc=rc)
     call LIS_verify(rc,'ESMF_ClockSet failed in LIS_timeMgrMod')
-
+ 
   end subroutine LIS_update_clock
 
 
@@ -3746,5 +3749,4 @@ end subroutine LIS_registerAlarm
 
   end subroutine LIS_mon3char
 
-  
 end module LIS_timeMgrMod

@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v7.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
@@ -82,7 +88,8 @@ subroutine compute_grid_coord_polar(gridDesc,npts,fill,xpts,ypts,&
              nint(gridDesc(2)),nint(gridDesc(3)),proj)
         do i=1,npts
            call latlon_to_ij(proj,rlat(i),rlon(i),xpts(i),ypts(i))
-     enddo
+        enddo
+
      elseif(gridDesc(13).eq.1) then 
         im=gridDesc(2)
         jm=gridDesc(3)

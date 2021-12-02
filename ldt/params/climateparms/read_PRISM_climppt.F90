@@ -1,5 +1,11 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Data Toolkit (LDT) v1.0
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 !
@@ -145,7 +151,9 @@
    do r = 1, nrows
       do c = 1, ncols;  i = i + 1
          gi1(i) = read_input(c,r) * scale_factor
-         if( gi1(i) .ne. LDT_rc%udef ) li1(i) = .true.
+         if( gi1(i) .ne. LDT_rc%udef ) then
+           li1(i) = .true.
+         endif
       enddo
    enddo
    deallocate( read_input )

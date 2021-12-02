@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,6 +22,8 @@
 module pptEnsFcst_forcingMod
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -48,7 +52,7 @@ module pptEnsFcst_forcingMod
      real*8         :: findtime1, metforc_time1   ! File 1 flag and time (LIS)
      real*8         :: findtime2, metforc_time2   ! File 2 flag and time (LIS)
 
-     character(120) :: directory        ! Directory path of where files reside
+     character(len=LIS_CONST_PATH_LEN) :: directory ! Directory path of where files reside
      character(50)  :: proj_name        ! Projection name
      integer        :: proj_index       ! Projection type index
  
@@ -96,7 +100,7 @@ contains
   integer  :: varid
   real     :: gridDesci(50)
   logical  :: file_exists
-  character(140) :: fullfilename
+  character(LIS_CONST_PATH_LEN) :: fullfilename
 
   integer  :: da, hr, mn, ss
   character*50 :: timeInc

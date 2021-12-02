@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -48,6 +50,7 @@ subroutine LIS_glacierrouting_plugin
 
 #if ( defined SM_NOAHMP_GLACIER_3_9_1_1 )
    external noahmpglacier3911_getrunoffs_mm
+   external noahmpglacier3911_getrunoffs_hymap2
 #endif
 
 #if ( defined SM_GLACIER_TEMPLATE )
@@ -60,6 +63,10 @@ subroutine LIS_glacierrouting_plugin
    call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
         trim(LIS_HYMAProuterId)//char(0), &
         noahmpglacier3911_getrunoffs_mm)
+
+   call registerglacierroutinggetrunoff(trim(LIS_noahmpglacier3911Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        noahmpglacier3911_getrunoffs_hymap2)
 #endif
 
 #endif

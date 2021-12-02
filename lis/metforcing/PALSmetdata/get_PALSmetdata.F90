@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -30,6 +32,7 @@ subroutine get_PALSmetdata(n,findex)
   use LIS_metforcingMod,  only : LIS_forc
   use LIS_logMod
   use PALSmetdata_forcingMod,  only : PALSmetdata_struc
+  use LIS_constantsMod,        only : LIS_CONST_PATH_LEN
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
   use netcdf
 #endif
@@ -67,7 +70,7 @@ subroutine get_PALSmetdata(n,findex)
 !  \end{description}
 !
 !EOP
-  character*100                 :: name
+  character(len=LIS_CONST_PATH_LEN) :: name
   logical                       :: file_exists
   integer                       :: ftn
   integer                       :: t

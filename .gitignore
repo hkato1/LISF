@@ -11,3 +11,5 @@ lvt/LVT
 lvt/make/LVT
 lis/make/Filepath
 lis/make/user.cfg
+lis/runmodes/nuopc_cpl_mode/VERSION
+lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -19,6 +21,8 @@ module LIS_lsmrtm_pluginMod
 !  15 Sep 10    Yudong Tian; Reistered for CRTM2 
 !  20 Oct 10    Yudong Tian; Reistered for CRTM2 EMonly
 !  08 Feb 11    Yudong Tian; Reistered for CMEM3 
+!  18 Dec 18    Peter Shellito; Registered for NoahMp36 CMEM3
+!  21 Feb 19    Peter Shellito; Registered for Noah36 CMEM3
 ! 
 !EOP  
   implicit none
@@ -66,6 +70,24 @@ subroutine LIS_lsmrtm_plugin
 #endif
 #if ( defined RTMS_TAU_OMEGA )
    external noah33_sfc2tauomega
+#endif
+#endif
+
+#if ( defined SM_NOAH_3_6 )
+#if ( defined RM_RTM_FORWARD )
+   external noah36_f2t
+#endif
+#if (defined RTMS_CMEM )
+   external noah36_sfc2cmem3
+#endif
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+#if ( defined RM_RTM_FORWARD )
+   external NoahMP36_f2t
+#endif
+#if ( defined RTMS_CMEM )
+   external noahmp36_sfc2cmem3
 #endif
 #endif
 
@@ -126,6 +148,29 @@ subroutine LIS_lsmrtm_plugin
 #if ( defined RTMS_TAU_OMEGA )
    call registerlsm2rtm(trim(LIS_tauomegaRTMId)//"+"//&
         trim(LIS_noah33Id)//char(0), noah33_sfc2tauomega)
+#endif
+#endif
+
+#if ( defined SM_NOAH_3_6 )
+#if ( defined RM_RTM_FORWARD )
+   call registerlsmf2t(trim(LIS_noah36Id)//"+"//&
+        trim(LIS_RTMforwardId)//char(0), noah36_f2t)
+#endif
+#if (defined RTMS_CMEM )
+   call registerlsm2rtm(trim(LIS_cmem3Id)//"+"//&
+        trim(LIS_noah36Id)//char(0), noah36_sfc2cmem3)
+#endif
+#endif
+
+#if ( defined SM_NOAHMP_3_6 )
+#if ( defined RM_RTM_FORWARD )
+   call registerlsmf2t(trim(LIS_noahmp36Id)//"+"//&
+        trim(LIS_RTMforwardId)//char(0), NoahMP36_f2t)
+#endif
+
+#if ( defined RTMS_CMEM )
+   call registerlsm2rtm(trim(LIS_cmem3Id)//"+"//&
+        trim(LIS_noahmp36Id)//char(0), noahmp36_sfc2cmem3)
 #endif
 #endif
 

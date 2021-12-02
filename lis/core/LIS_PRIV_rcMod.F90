@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -639,12 +641,17 @@ module LIS_PRIV_rcMod
      integer, allocatable       :: glbnpatch(:,:)
      integer, allocatable       :: glbnpatch_red(:,:)
      
+     integer, allocatable       :: nroutinggrid(:)
+     integer, allocatable       :: glbnroutinggrid(:)
+     integer, allocatable       :: glbnroutinggrid_red(:)
+
      integer, allocatable       :: ngrid(:) 
      integer, allocatable       :: obs_ngrid(:) 
      integer, allocatable       :: glbngrid(:)
      integer, allocatable       :: obs_glbngrid(:)
      integer, allocatable       :: obs_glbngrid_red(:)
      integer, allocatable       :: glbngrid_red(:)
+
      integer, allocatable       :: gnc(:)
      integer, allocatable       :: gnr(:)
      integer, allocatable       :: gnc_b(:)
@@ -777,6 +784,7 @@ module LIS_PRIV_rcMod
      integer                :: waterclass
      integer                :: wetlandclass
      integer                :: glacierclass
+     integer                :: cropclass
      integer                :: laiflag  
      integer                :: saiflag       
      character*100, allocatable :: mfile(:)  
@@ -960,7 +968,16 @@ module LIS_PRIV_rcMod
 
      integer                :: forecastMode
      logical                :: zterp_correction
-     
+
+     real                   :: irrigation_GVFparam1   !WN
+     real                   :: irrigation_GVFparam2   !WN
+     integer                :: irrigation_GWabstraction !JE 
+
+     logical, allocatable       :: LSM_DAinst_valid(:)
+     logical, allocatable       :: Routing_DAinst_valid(:)
+
+     integer                   :: nSubLSMs
+     character*50, allocatable :: subLSM(:)
   end type lisrcdec
   
 end module LIS_PRIV_rcMod

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -205,7 +207,7 @@
        !Second pass to compute average MPDI if conditions met
        mpdi_sum=0.0
        mpdi_ave=LIS_rc%udef
-       if(and(nobs_sum.ge.15,platform_sum.ge.2)) then
+       if( (nobs_sum.ge.15) .and. (platform_sum.ge.2) ) then
           do i=1,3  !platform F13, 14, 15
              if (mpdi(i).ne.LIS_rc%udef) then
                 mpdi_sum=mpdi_sum+real(nobs(i))*mpdi(i)

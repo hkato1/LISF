@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.1
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +25,7 @@ subroutine clsmf25_getrunoffs_mm(n)
   
   use LIS_historyMod
   use clsmf25_lsmMod, only : clsmf25_struc
+  use LIS_mpiMod
 
   implicit none
 ! !ARGUMENTS: 
@@ -37,8 +40,8 @@ subroutine clsmf25_getrunoffs_mm(n)
   type(ESMF_Field)       :: baseflow_field
   real, pointer          :: sfrunoff(:)
   real, pointer          :: baseflow(:)
-  real, allocatable          :: gvar1(:)
-  real, allocatable          :: gvar2(:)
+!  real, allocatable          :: gvar1(:)
+!  real, allocatable          :: gvar2(:)
   integer                :: t
   integer                :: c,r
   integer                :: status
@@ -61,29 +64,29 @@ subroutine clsmf25_getrunoffs_mm(n)
   allocate(runoff1_t(LIS_rc%ntiles(n)))
   allocate(runoff2_t(LIS_rc%ntiles(n)))
 
-  call ESMF_AttributeGet(LIS_runoff_state(n),"Routing model evaporation option",&
+  call ESMF_AttributeGet(LIS_runoff_state(n),&
+       "Routing model evaporation option",&
        evapflag, rc=status)
 !if option is not defined, then assume that no evap calculations will be done
   if(status.ne.0)then 
      evapflag = 0
   endif
 
-  if(LIS_masterproc) then 
-     call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
-          sfrunoff_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
-     
-     call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
-          baseflow_field,rc=status)
-     call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
 
-     call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
-     
-     call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
-     call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
-
-  endif
+  call ESMF_StateGet(LIS_runoff_state(n),"Surface Runoff",&
+       sfrunoff_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Surface Runoff')
+  
+  call ESMF_StateGet(LIS_runoff_state(n),"Subsurface Runoff",&
+       baseflow_field,rc=status)
+  call LIS_verify(status,'ESMF_StateGet failed for Subsurface Runoff')
+  
+  call ESMF_FieldGet(sfrunoff_field,localDE=0,farrayPtr=sfrunoff,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Surface Runoff')
+  
+  call ESMF_FieldGet(baseflow_field,localDE=0,farrayPtr=baseflow,rc=status)
+  call LIS_verify(status,'ESMF_FieldGet failed for Subsurface Runoff')
+  
 
   do t=1, LIS_rc%npatch(n,LIS_rc%lsm_index)  
      runoff1(t) = clsmf25_struc(n)%cat_diagn(t)%runsrf
@@ -96,18 +99,18 @@ subroutine clsmf25_getrunoffs_mm(n)
   call LIS_patch2tile(n,1,runoff1_t, runoff1)
   call LIS_patch2tile(n,1,runoff2_t, runoff2)
 
-  call LIS_gather_tiled_vector_withhalo_output(n, gvar1, runoff1_t)
-  call LIS_gather_tiled_vector_withhalo_output(n, gvar2, runoff2_t)
+!  call LIS_gather_tiled_vector_withhalo_output(n, gvar1, runoff1_t)
+!  call LIS_gather_tiled_vector_withhalo_output(n, gvar2, runoff2_t)
 
-  if(LIS_masterproc) then
+!  if(LIS_masterproc) then
 
-     sfrunoff = gvar1
-     baseflow = gvar2
+     sfrunoff = runoff1_t
+     baseflow = runoff2_t
 
-     deallocate(gvar1)
-     deallocate(gvar2)
+!     deallocate(gvar1)
+!     deallocate(gvar2)
      
-  endif
+!  endif
   
 
 !  call gather_gridded_output(n, sfrunoff, runoff1)
@@ -147,6 +150,5 @@ subroutine clsmf25_getrunoffs_mm(n)
     deallocate(evapotranspiration1)
     deallocate(evapotranspiration1_t)
   endif  
-!  stop
 
 end subroutine clsmf25_getrunoffs_mm

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -23,6 +25,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
   use LIS_logMod,          only : LIS_logunit, LIS_verify
   use LIS_FORC_AttributesMod 
   use LIS_metforcingMod,  only : LIS_FORC_Base_State
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -61,8 +64,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
 !  \end{description}
 !EOP
 
-  character*100            :: agrradpsfileNH
-  character*100            :: agrradpsfileSH
+  character(len=LIS_CONST_PATH_LEN) :: agrradpsfileNH,  agrradpsfileSH
   logical                  :: exists1,exists2,exists3,exists4
   integer                  :: c,r
   integer                  :: t

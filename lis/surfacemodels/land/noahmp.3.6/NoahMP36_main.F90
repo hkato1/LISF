@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -30,6 +32,8 @@ subroutine NoahMP36_main(n)
     use LIS_FORC_AttributesMod 
     use NoahMP36_lsmMod
    !use other modules
+    use ESMF
+    use LIS_routingMod, only : LIS_runoff_state
   
     implicit none
 ! !ARGUMENTS:
@@ -210,6 +214,9 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_chb2               ! sensible heat exchange coefficient over bare-ground [-]
     real                 :: tmp_fpice              ! snow fraction in precipitation [-]
     real                 :: tmp_sfcheadrt          ! extra output for WRF-HYDRO [m]
+    ! Code added by Chandana Gangodagamage on 02/25/2019
+    real                 :: tmp_infxs1rt           ! variable for LISHydro coupling [mm]
+    real                 :: tmp_soldrain1rt        ! variable for LISHydro coupling [mm]
     
     ! SY: Begin for enabling OPTUE
     ! SY: Begin corresponding to REDPRM
@@ -283,6 +290,7 @@ subroutine NoahMP36_main(n)
     real                 :: tmp_WDPOOL         !     wood pool (switch 1 or 0) depending on woody or not [-]
     real                 :: tmp_WRRAT          !     wood to non-wood ratio
     real                 :: tmp_MRP            !     microbial respiration parameter [umol co2 /kg c/ s]
+    
     ! SY: End corresponding to read_mp_veg_parameters
     ! SY: End for enabling OPTUE
 
@@ -295,6 +303,23 @@ subroutine NoahMP36_main(n)
     real                 :: bdsno
     ! Code added by Rhae Sung Kim 
     real                 :: layersd
+
+    !ag (12Sep2019)
+    real                 :: tmp_rivsto         !     MNB ADD LATER
+    real                 :: tmp_fldsto         !     MNB ADD LATER
+    real                 :: tmp_fldfrc         !     MNB ADD LATER
+
+    !ag (18Sep2019)
+    real,   allocatable   :: rivsto(:)
+    real,   allocatable   :: fldsto(:)
+    real,   allocatable   :: fldfrc(:)
+    real,   allocatable   :: tmp_nensem(:,:,:)
+
+    integer               :: status
+    integer               :: c,r
+    integer               :: ios, nid,rivid,fldid
+
+    integer            :: tid
 
     allocate( tmp_sldpth( NOAHMP36_struc(n)%nsoil ) )
     allocate( tmp_shdfac_monthly( 12 ) )
@@ -309,6 +334,7 @@ subroutine NoahMP36_main(n)
     ! check NoahMP36 alarm. If alarm is ring, run model. 
     alarmCheck = LIS_isAlarmRinging(LIS_rc, "NoahMP36 model alarm")
     if (alarmCheck) Then
+
        do t = 1, LIS_rc%npatch(n, LIS_rc%lsm_index)
           dt = LIS_rc%ts
           row = LIS_surface(n, LIS_rc%lsm_index)%tile(t)%row
@@ -340,7 +366,15 @@ subroutine NoahMP36_main(n)
  
             ! prcp: precipitation Rate
             tmp_prcp       = NOAHMP36_struc(n)%noahmp36(t)%prcp   / NOAHMP36_struc(n)%forc_count
- 
+            
+            !ag(18Sep2019)
+            ! rivsto/fldsto: River storage and flood storage
+            ! NOAHMP36_struc(n)%noahmp36(t)%rivsto and NOAHMP36_struc(n)%noahmp36(t)%fldsto
+            ! are updated in noahmp36_getsws_hymap2.F90
+            tmp_rivsto = NOAHMP36_struc(n)%noahmp36(t)%rivsto
+            tmp_fldsto = NOAHMP36_struc(n)%noahmp36(t)%fldsto
+            tmp_fldfrc = NOAHMP36_struc(n)%noahmp36(t)%fldfrc
+
 !            if(t.eq.13859) write(111,fmt='(i4.4,i2.2,i2.2,i2.2,i2.2,8E14.3)') &
 !                 LIS_rc%yr,LIS_rc%mo,LIS_rc%da, LIS_rc%hr, LIS_rc%mn, &
 !                 tmp_tair, tmp_qair, tmp_swdown, tmp_lwdown,tmp_wind_n,tmp_wind_e,tmp_psurf,&
@@ -391,6 +425,25 @@ subroutine NoahMP36_main(n)
             ! check validity of prcp
             if(tmp_prcp .eq. LIS_rc%udef) then
                 write(LIS_logunit, *) "undefined value found for forcing variable prcp in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            !ag (23Sep2019)
+            ! check validity of rivsto
+            if(tmp_rivsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable rivsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldsto
+            if(tmp_fldsto .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldsto in NoahMP36"
+                write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
+                call LIS_endrun()
+            endif
+            ! check validity of fldfrc
+            if(tmp_fldfrc .eq. LIS_rc%udef) then
+                write(LIS_logunit, *) "undefined value found for forcing variable fldfrc in NoahMP36"
                 write(LIS_logunit, *) "for tile ", t, "latitude = ", lat, "longitude = ", lon
                 call LIS_endrun()
             endif
@@ -484,6 +537,9 @@ subroutine NoahMP36_main(n)
             tmp_zlvl        = NOAHMP36_struc(n)%noahmp36(t)%zlvl
             tmp_albd      = NOAHMP36_struc(n)%noahmp36(t)%albd
             tmp_albi      = NOAHMP36_struc(n)%noahmp36(t)%albi
+            !Added by Chandana Gangodagamage
+            tmp_infxs1rt    = NOAHMP36_struc(n)%noahmp36(t)%infxs1rt
+            tmp_soldrain1rt = NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt
 
             ! SY: Begin for enabling OPTUE: get calibratable parameters
             ! SY: Begin corresponding to REDPRM
@@ -551,6 +607,9 @@ subroutine NoahMP36_main(n)
             tmp_WDPOOL      = NOAHMP36_struc(n)%noahmp36(t)%WDPOOL
             tmp_WRRAT       = NOAHMP36_struc(n)%noahmp36(t)%WRRAT
             tmp_MRP         = NOAHMP36_struc(n)%noahmp36(t)%MRP
+#ifdef WRF_HYDRO
+            tmp_sfcheadrt   = NoahMP36_struc(n)%noahmp36(t)%sfcheadrt
+#endif
             ! SY: End corresponding to read_mp_veg_parameters
             ! SY: End for enabling OPTUE: get calibratable parameters
             call noahmp_driver_36(LIS_localPet, t,tmp_landuse_tbl_name  , & ! in    - Noah model landuse parameter table [-]
@@ -767,7 +826,17 @@ subroutine NoahMP36_main(n)
                                   tmp_chv2              , & ! out   - sensible heat exchange coefficient over vegetated fraction [-]
                                   tmp_chb2              , & ! out   - sensible heat exchange coefficient over bare-ground [-]
                                   tmp_fpice             , & ! out   - snow fraction in precipitation [-]
+                                  !ag (12Sep2019)
+                                  tmp_rivsto            , & ! in   - river storage [m/s] 
+                                  tmp_fldsto            , & ! in   - flood storage [m/s]
+                                  tmp_fldfrc            , & ! in   - flood storage [m/s]
+                                  
                                   tmp_sfcheadrt         )   ! out   - extra output for WRF-HYDRO [m]
+            
+            !Added by Chandana Gangodagamage
+            !obtain infiltration excess and soil drain from model physics 
+            tmp_infxs1rt = tmp_runsrf * tmp_dt      ! units in [mm]
+            tmp_soldrain1rt = tmp_runsub * tmp_dt   ! units in [mm]
             
             ! save state variables from local variables to global variables
             NOAHMP36_struc(n)%noahmp36(t)%albold      = tmp_albold
@@ -870,6 +939,9 @@ subroutine NoahMP36_main(n)
             NOAHMP36_struc(n)%noahmp36(t)%sfcheadrt    = tmp_sfcheadrt
             NOAHMP36_struc(n)%noahmp36(t)%albd       = tmp_albd
             NOAHMP36_struc(n)%noahmp36(t)%albi       = tmp_albi  
+            !Added by Chandana Gangodagamage
+            NOAHMP36_struc(n)%noahmp36(t)%infxs1rt     = tmp_infxs1rt
+            NOAHMP36_struc(n)%noahmp36(t)%soldrain1rt  = tmp_soldrain1rt
 
             ![ 1] output variable: soil_temp (unit=K). ***  soil layer temperature
             soil_temp(1:NOAHMP36_struc(n)%nsoil) = NOAHMP36_struc(n)%noahmp36(t)%sstc(NOAHMP36_struc(n)%nsnow+1 : NOAHMP36_struc(n)%nsoil+NOAHMP36_struc(n)%nsnow)

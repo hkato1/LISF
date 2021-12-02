@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 !BOP
 ! 
 ! !ROUTINE: readISMNObs
@@ -214,8 +220,12 @@ subroutine readISMNObs(source)
                     rzsm = rzsm + rz_wt(v)*ISMNobs(source)%stn(k)%sm(tind,v)
                  endif
               enddo
-              ISMNobs(source)%stn(k)%sfsm(tind) = sfsm
-              ISMNobs(source)%stn(k)%rzsm(tind) = rzsm
+              if(sfsm.gt.0.001) then 
+                 ISMNobs(source)%stn(k)%sfsm(tind) = sfsm
+              endif
+              if(rzsm.gt.0.001) then 
+                 ISMNobs(source)%stn(k)%rzsm(tind) = rzsm
+              endif
            endif
         enddo
         deallocate(depth)

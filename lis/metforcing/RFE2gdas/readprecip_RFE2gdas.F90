@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,7 +28,7 @@ subroutine readprecip_RFE2gdas( n, kk,fname, month, findex, order, ferror_RFE2gd
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: kk
-  character(len=80)   :: fname
+  character(len=*)    :: fname
   integer, intent(in) :: month
   integer, intent(in) :: findex
   integer, intent(in) :: order
@@ -67,7 +69,6 @@ subroutine readprecip_RFE2gdas( n, kk,fname, month, findex, order, ferror_RFE2gd
   REAL, ALLOCATABLE     :: rain2d(:,:)
   real, dimension(LIS_rc%lnc(n), LIS_rc%lnr(n)) :: varfield ! reprojected arrray
   integer               ::  ftn, ios, ftn2, ftn3
-  character(len=84)     :: fnametemp
 
 !=== End Variable Definition =======================
 

@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 !BOP
 ! 
@@ -305,16 +311,20 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
    integer        :: param_AMSR2, param_AMSR2_qa
    integer        :: param_SMAP, param_SMAP_qa
    integer*1,parameter :: err_threshold = 5 ! in percent
-   integer*1,parameter :: AMSR2_accept = b'00000001'
-   integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
-   integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
-   integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
-   integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
-   integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
-   integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
-   integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
-   integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
-
+   ! EMK...ISO Fortran does not allow binary integer constants in PARAMETERS,
+   ! but does allow them in DATA statements.  So we edit the code below
+   ! accordingly to pacify gfortran 10+.
+   ! integer*1,parameter :: AMSR2_accept = b'00000001'
+   ! integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   ! integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   ! integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   ! integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   ! integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   ! integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   ! integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   ! integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   integer*1 :: AMSR2_accept(1)
+   integer*2 :: SMOS_accept(8)
 
 !  INTEGER*2, PARAMETER :: FF = 255
 !  real,    parameter  :: err_threshold = 5 ! in percent
@@ -412,6 +422,29 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
 
    integer        :: ix, jx,c_s, c_e, r_s, r_e
 
+   ! EMK...ISO Fortran does not allow binary integer constants in PARAMETERS,
+   ! but does allow them in DATA statements.  So we use DATA statements below
+   ! to pacify gfortran 10+
+   !integer*1,parameter :: AMSR2_accept = b'00000001'
+   !integer*2,parameter :: SMOS_accept1 = b'0000000000000000'
+   !integer*2,parameter :: SMOS_accept2 = b'0000000000000001'
+   !integer*2,parameter :: SMOS_accept3 = b'0000000000001000'
+   !integer*2,parameter :: SMOS_accept4 = b'0000000000001001'
+   !integer*2,parameter :: SMOS_accept5 = b'0000000010000000'
+   !integer*2,parameter :: SMOS_accept6 = b'0000000010000001'
+   !integer*2,parameter :: SMOS_accept7 = b'0000000010001000'
+   !integer*2,parameter :: SMOS_accept8 = b'0000000010001001'
+   data AMSR2_accept /b'00000001'/
+   data SMOS_accept /b'0000000000000000', &
+        b'0000000000000001', &
+        b'0000000000001000', &
+        b'0000000000001001', &
+        b'0000000010000000', &
+        b'0000000010000001', &
+        b'0000000010001000', &
+        b'0000000010001001' /
+
+
 #if (defined USE_GRIBAPI)
    smDataNotAvailable = .false.
    ! Set QA values to NESDIS SMOPS undefined value.
@@ -428,11 +461,11 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
    elseif ( SMOPSsmobs(source)%version == '3.0' ) then
       timenow = SMOPSsmobs(source)%version3_time
    else
-      yr1 = LVT_rc%yr
-      mo1 = LVT_rc%mo
-      da1 = LVT_rc%da
-      hr1 = LVT_rc%hr
-      mn1 = LVT_rc%mn
+      yr1 = LVT_rc%dyr(source)
+      mo1 = LVT_rc%dmo(source)
+      da1 = LVT_rc%dda(source)
+      hr1 = LVT_rc%dhr(source)
+      mn1 = LVT_rc%dmn(source)
       ss1 = 0
       call LVT_date2time(timenow,updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1)
    endif
@@ -443,24 +476,24 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_ASCAT_B = 214; param_ASCAT_B_qa = 235
       param_SMOS  = 212; param_SMOS_qa  = 233
       if ( SMOPSsmobs(source)%useSMOS.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process SMOS ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process SMOS ' // &
             'from SMOPS version 1.3.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useAMSR2.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] AMSR2 is not available ' // &
+         write(LVT_logunit,*) '[WARN] AMSR2 is not available ' // &
             'in SMOPS version 1.3'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useSMAP.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] SMAP is not available ' // &
+         write(LVT_logunit,*) '[WARN] SMAP is not available ' // &
             'in SMOPS version 1.3.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 1.3'
    elseif ( timenow >= SMOPSsmobs(source)%version2_time .and. &
             timenow <  SMOPSsmobs(source)%version3_time ) then
@@ -470,23 +503,23 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_SMOS  = 212; param_SMOS_qa  = 233
       param_AMSR2 = 215; param_AMSR2_qa = 236
       if ( SMOPSsmobs(source)%useSMOS.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process SMOS ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process SMOS ' // &
             'from SMOPS version 2.0.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if ( SMOPSsmobs(source)%useAMSR2.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] LVT does not process AMSR2 ' // &
+         write(LVT_logunit,*) '[WARN] LVT does not process AMSR2 ' // &
             'in SMOPS version 2.0.'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
       if(SMOPSsmobs(source)%useSMAP.eq.1 ) then
-         write(LVT_logunit,*) '[Warning] SMAP is not availabe in SMOPS version 2'
+         write(LVT_logunit,*) '[WARN] SMAP is not availabe in SMOPS version 2'
          smDataNotAvailable = .true.
          smobs_ip = LVT_rc%udef
       endif
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 2.0'
    else ! ( timenow >= SMOPSsmobs(source)%version3_time ) then
       ! SMOPS version 3
@@ -495,7 +528,7 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
       param_SMOS  = 212; param_SMOS_qa  = 242
       param_AMSR2 = 215; param_AMSR2_qa = 245
       param_SMAP  = 218; param_SMAP_qa  = 248
-      write(LVT_logunit,*) '[MSG] Reading SMOPS dataset '//&
+      write(LVT_logunit,*) '[INFO] Reading SMOPS dataset '//&
          'as SMOPS version 3.0'
    endif
 
@@ -539,11 +572,6 @@ subroutine read_SMOPS_data(source, fname, smobs_ip)
      endif
      !call LVT_verify(iret, &
      !     'grib_get: parameterNumber failed in readSMOPSsmobs')
-print*, 'fname' , fname
-print*, 'param number', param_num 
-
-
-
      var_found_ascat = .false. 
      if(SMOPSsmobs(source)%useASCAT.eq.1) then 
         if(param_num.eq.param_ASCAT_A) then 
@@ -739,7 +767,7 @@ print*, 'param number', param_num
                      SMOPSsmobs(source)%smopsnc)
                   if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)'), &
+                     write(101,'(I5, 2x, I5, 2x, I8, 2x, G0, 2x)')  &
                         c, r, c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                         sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                   endif
@@ -763,7 +791,7 @@ print*, 'param number', param_num
                   sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) = &
                      int(sm_amsr2_qa(c+((SMOPSsmobs(source)%smopsnr-r+1)-1)*&
                      SMOPSsmobs(source)%smopsnc))
-                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)'), &
+                  !write(102,'(I5, 2x,I5, 2x, I8, 2x, f11.8,2x)')  &
                   !      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,      &
                   !      sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                enddo
@@ -1005,14 +1033,14 @@ print*, 'param number', param_num
         do c=1, SMOPSsmobs(source)%smopsnc
            qavalue = sm_smos_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
            if ( qavalue .ne. 9999 ) then
-              if ( qavalue == SMOS_accept1 .or. &
-                  qavalue == SMOS_accept2 .or. &
-                  qavalue == SMOS_accept3 .or. &
-                  qavalue == SMOS_accept4 .or. &
-                  qavalue == SMOS_accept5 .or. &
-                  qavalue == SMOS_accept6 .or. &
-                  qavalue == SMOS_accept7 .or. &
-                  qavalue == SMOS_accept8 ) then
+              if ( qavalue == SMOS_accept(1) .or. &
+                  qavalue == SMOS_accept(2) .or. &
+                  qavalue == SMOS_accept(3) .or. &
+                  qavalue == SMOS_accept(4) .or. &
+                  qavalue == SMOS_accept(5) .or. &
+                  qavalue == SMOS_accept(6) .or. &
+                  qavalue == SMOS_accept(7) .or. &
+                  qavalue == SMOS_accept(8) ) then
                   sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .true.
               else
                  sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .false.
@@ -1091,7 +1119,7 @@ print*, 'param number', param_num
                qavalue = sm_amsr2_qa_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                if ( qavalue .ne. 9999 ) then
                   qaflags = get_byte1(qavalue)
-                  if (qaflags == AMSR2_accept ) then
+                  if (qaflags == AMSR2_accept(1) ) then
                      sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .true.
                   else
                      sm_data_b(c+(r-1)*SMOPSsmobs(source)%smopsnc) = .false.
@@ -1104,7 +1132,7 @@ print*, 'param number', param_num
 
                if (sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .GT. 0.1 .and. &
                   sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc) .LT. 1) then
-                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)'), &
+                  write(103,'(I5, 2x, I5, 2x, I8, 2x, F10.4, 2x)')  &
                      c, r ,c+(r-1)*SMOPSsmobs(source)%smopsnc,   &
                      sm_amsr2_t(c+(r-1)*SMOPSsmobs(source)%smopsnc)
                endif

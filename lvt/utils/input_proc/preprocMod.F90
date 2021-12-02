@@ -1,3 +1,12 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 module preprocMod
   use ESMF
   use netcdf
@@ -242,7 +251,7 @@ contains
   subroutine LMLC_init()
 
 ! !USES:
-    use ESMF
+    !NONE
 ! 
 ! !DESCRIPTION:
 !
@@ -413,7 +422,7 @@ end subroutine read_maskfile
  subroutine readDomainConfigSpecs(segment_name, param_proj, domain_info)
 
 ! !USES: 
-   use ESMF
+   !NONE
 
 ! !ARGUMENTS: 
    character(len=*),  intent(in)    :: segment_name

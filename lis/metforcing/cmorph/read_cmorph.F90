@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +26,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
                           LIS_releaseUnitNumber
   use LIS_metforcingMod, only : LIS_forc
   use cmorph_forcingMod, only : cmorph_struc
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:   
@@ -73,7 +76,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
   real     :: realprecip(xd,yd)
   real     :: testout(xd,yd)
   real, allocatable :: precip_regrid(:,:)    ! Interpolated precip array
-  character(len=99) :: fname, zname          ! Filename variables
+  character(len=LIS_CONST_PATH_LEN) :: fname, zname          ! Filename variables
   logical           :: file_exists
   integer           :: ftn
 
@@ -229,7 +232,7 @@ subroutine read_cmorph (n, kk, name_cmorph, findex, order, ferror_cmorph, iflg )
 
   integer :: xd, yd, iflg
   character*1 ::  precip(xd,yd)
-  character*99 :: zname
+  character(len=*) :: zname
   character*1, allocatable :: buff(:, :, :)
   integer :: readzipf, dlen, rdlen 
   

@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2020 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -55,6 +57,7 @@ module TRMM3B42RTV7_forcingMod
 
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -74,7 +77,7 @@ module TRMM3B42RTV7_forcingMod
      real                     :: ts
      integer                  :: nc
      integer                  :: nr
-     character*40             :: directory  
+     character(len=LIS_CONST_PATH_LEN) :: directory  
      real*8                   :: time_TStepStart ! SY
      integer                  :: yr_TStepStart ! SY
      integer                  :: mo_TStepStart ! SY
@@ -140,7 +143,6 @@ contains
                             LIS_releaseUnitNumber, LIS_verify 
     use LIS_FORC_AttributesMod
     use LIS_forecastMod
-    use ESMF
 
     implicit none
 

@@ -1,6 +1,12 @@
-!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------------
-! NASA GSFC Land surface Verification Toolkit (LVT) V1.0
-!-------------------------END NOTICE -- DO NOT EDIT-----------------------------
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LVT_misc.h"
 #include "LVT_NetCDF_inc.h"
 !BOP
@@ -258,7 +264,9 @@ contains
 ! 
 !EOP
 
-    integer               :: dimID(5),dimID_t(4)
+    !integer               :: dimID(5),dimID_t(4)
+    integer,save          :: dimID(5) ! EMK preserve between calls
+    integer               :: dimID_t(4)
     integer               :: tdimID
     character*8             :: xtime_begin_date
     character*6             :: xtime_begin_time
@@ -279,6 +287,7 @@ contains
 
     if(trim(LVT_rc%lvt_out_format).eq."netcdf") then 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4) 
+
        if(entryno.eq.1) then 
           if(allocated(LVT_histData%xlat%value)) then 
              deallocate(LVT_histData%xlat%value)
@@ -586,6 +595,7 @@ contains
           endif
 
        elseif(LVT_rc%lvt_wopt.eq."2d gridspace") then 
+
           ! The following are the 3-d fields
           if(vlevels.gt.1) then 
              call LVT_verify(nf90_def_dim(ftn,trim(short_name)//'_profiles',&
@@ -603,7 +613,6 @@ contains
                 dimID_t(1) = dimID(1)
                 dimID_t(2) = dimID(2)
                 dimID_t(3) = dimID(5)
-
                 call LVT_verify(nf90_def_var(ftn,trim(short_name),nf90_float,&
                      dimids = dimID_t(1:3), varID=varId))
 #if(defined USE_NETCDF4) 
@@ -616,7 +625,6 @@ contains
                 dimID_t(1) = dimID(1)
                 dimID_t(2) = dimID(2)
                 dimID_t(3) = dimID(4)
-                
                 call LVT_verify(nf90_def_var(ftn,trim(short_name),nf90_float,&
                      dimids = dimID_t(1:3), varID=varId),&
                      'nf90_def_var failed in LVT_historyMod')
