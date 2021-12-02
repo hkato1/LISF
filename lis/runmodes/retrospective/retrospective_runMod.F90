@@ -130,7 +130,7 @@ contains
     use LIS_irrigationMod,     only : LIS_irrigation_run,LIS_irrigation_output
     use LIS_appMod,            only : LIS_runAppModel, LIS_outputAppModel
     use LIS_RTMMod,            only : LIS_RTM_run, LIS_RTM_output
-    use LIS_logMod,            only : LIS_flush, LIS_logunit
+    use LIS_logMod,            only : LIS_logunit
     use LIS_LMSFMod,           only : LIS_LMSF_apply
 !
 ! !DESCRIPTION:
