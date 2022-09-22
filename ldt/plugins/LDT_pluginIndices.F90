@@ -164,6 +164,7 @@ module LDT_pluginIndices
    character*50, public,  parameter :: LDT_coopId         = "COOP"
    character*50, public,  parameter :: LDT_rhoneAGGId     = "Rhone AGG"
    character*50, public,  parameter :: LDT_vicforcingId   = "VIC processed forcing"
+   character*50, public,  parameter :: LDT_wfde5Id        = "WFDE5"
 
 !-------------------------------------------------------------------------
 ! LSMS
@@ -240,6 +241,7 @@ module LDT_pluginIndices
 ! Global/Continent -
    character*50, public,  parameter :: LDT_modis44WmaskId = "MOD44W"
    character*50, public,  parameter :: LDT_vic411maskId   = "VIC411"
+   character*50, public,  parameter :: LDT_wfde5maskId    = "WFDE5"
 ! Regional -
    character*50, public,  parameter :: LDT_gismaskId      = "ESRI"
    character*50, public,  parameter :: LDT_wrsimaskId     = "WRSI"

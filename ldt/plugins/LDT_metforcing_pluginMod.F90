@@ -127,6 +127,7 @@ contains
     use RFE2Daily_forcingMod
     use RFE2gdas_forcingMod
     use chirps2_forcingMod
+    use wfde5_forcingMod
 !    use petusgs_forcingMod
 
 !    use scan_forcingMod
@@ -275,6 +276,11 @@ contains
     external timeinterp_chirps2
     external finalize_chirps2
     external reset_chirps2
+
+    external get_wfde5
+    external timeinterp_wfde5
+    external finalize_wfde5
+    external reset_wfde5
 
 !    external get_petusgs
 !    external timeinterp_petusgs
@@ -632,6 +638,13 @@ contains
     call registerfinalmetforc(trim(LDT_WRFoutId)//char(0),finalize_WRFout)
     call registerresetmetforc(trim(LDT_WRFoutId)//char(0),reset_WRFout)
 #endif
+
+! - WFDE5 Reanalysis Forcing:
+    call registerinitmetforc(trim(LDT_wfde5Id)//char(0),init_wfde5)
+    call registerretrievemetforc(trim(LDT_wfde5Id)//char(0),get_wfde5)
+    call registertimeinterpmetforc(trim(LDT_wfde5Id)//char(0),timeinterp_wfde5)
+    call registerresetmetforc(trim(LDT_wfde5Id)//char(0),reset_wfde5)
+    call registerfinalmetforc(trim(LDT_wfde5Id)//char(0),finalize_wfde5)
 
   end subroutine LDT_metforcing_plugin
 

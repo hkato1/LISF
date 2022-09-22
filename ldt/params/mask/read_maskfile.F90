@@ -89,6 +89,12 @@ subroutine read_maskfile(n, vegtype, fgrd, localmask )
       return
    end if
 
+   ! HKB...Special handling for WFDE5 land mask in netCDF format
+   if( LDT_rc%mask_source(n) == "WFDE5" ) then
+      call read_maskfile_WFDE5(n, vegtype, fgrd, localmask)
+      return
+   end if
+
 !- Check for and open landmask file:
    inquire(file=trim(LDT_rc%mfile(n)), exist=file_exists)
    if( file_exists ) then 

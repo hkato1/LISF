@@ -1,0 +1,73 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.3
+!
+! Copyright (c) 2020 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!BOP
+! !ROUTINE: finalize_wfde5
+! \label{finalize_wfde5}
+!
+! !REVISION HISTORY: 
+! 25 Mar 2022: Hiroko Beaudoing, initial code
+! 
+! !INTERFACE:
+
+subroutine finalize_wfde5(findex)
+
+! !USES:
+  use LIS_coreMod,     only : LIS_rc
+  use wfde5_forcingMod, only : wfde5_struc
+!
+! !DESCRIPTION:
+!  Routine to cleanup WFDE5 forcing related memory allocations.   
+! 
+!EOP
+  implicit none
+
+  integer :: findex
+  integer :: n
+
+  do n=1,LIS_rc%nnest
+    select case( wfde5_struc(n)%met_interp )
+     case( "bilinear" )
+       deallocate(wfde5_struc(n)%n111)
+       deallocate(wfde5_struc(n)%n121)
+       deallocate(wfde5_struc(n)%n211)
+       deallocate(wfde5_struc(n)%n221)
+       deallocate(wfde5_struc(n)%w111)
+       deallocate(wfde5_struc(n)%w121)
+       deallocate(wfde5_struc(n)%w211)
+       deallocate(wfde5_struc(n)%w221)
+
+     case( "budget-bilinear" )
+       deallocate(wfde5_struc(n)%n111)
+       deallocate(wfde5_struc(n)%n121)
+       deallocate(wfde5_struc(n)%n211)
+       deallocate(wfde5_struc(n)%n221)
+       deallocate(wfde5_struc(n)%w111)
+       deallocate(wfde5_struc(n)%w121)
+       deallocate(wfde5_struc(n)%w211)
+       deallocate(wfde5_struc(n)%w221)
+       deallocate(wfde5_struc(n)%n112)
+       deallocate(wfde5_struc(n)%n122)
+       deallocate(wfde5_struc(n)%n212)
+       deallocate(wfde5_struc(n)%n222)
+       deallocate(wfde5_struc(n)%w112)
+       deallocate(wfde5_struc(n)%w122)
+       deallocate(wfde5_struc(n)%w212)
+       deallocate(wfde5_struc(n)%w222)
+
+     case( "neighbor" )
+       deallocate(wfde5_struc(n)%n113)
+
+     case( "average" )
+       deallocate(wfde5_struc(n)%n111)
+    end select
+ enddo
+ deallocate(wfde5_struc)
+
+end subroutine finalize_wfde5

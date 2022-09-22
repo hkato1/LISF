@@ -290,6 +290,7 @@ subroutine noah36_main(n)
 
            write(LIS_logunit,*) " ... Forcing values at this point: ",&
                  sfctmp,q2,soldn,lwdn,uwind,vwind,sfcspd,sfcprs,prcp,cpcp
+           write(LIS_logunit,*) " ... ",LIS_domain(n)%tile(t)%elev
            write(LIS_logunit,*) " Stopping program ..."
            call LIS_endrun()
         endif

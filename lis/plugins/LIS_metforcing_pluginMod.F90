@@ -296,6 +296,10 @@ subroutine LIS_metforcing_plugin
    use gddp_forcingMod
 #endif   
 
+#if ( defined MF_WFDE5 )
+   use wfde5_forcingMod
+#endif   
+
 #if ( defined MF_MET_TEMPLATE )
    external get_metForcTemplate
    external timeinterp_metForcTemplate
@@ -634,6 +638,13 @@ subroutine LIS_metforcing_plugin
    external reset_gddp
 #endif
    
+#if ( defined MF_WFDE5 )
+   external get_wfde5
+   external timeinterp_wfde5
+   external finalize_wfde5
+   external reset_wfde5
+#endif
+
 #if ( defined MF_MET_TEMPLATE )
 ! - Meteorological Forcing Template:
    call registerinitmetforc(trim(LIS_metForcTemplateId)//char(0), &
@@ -1138,6 +1149,16 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_gddpId)//char(0),finalize_gddp)
    call registerresetmetforc(trim(LIS_gddpId)//char(0),reset_gddp)
 #endif
+
+#if ( defined MF_WFDE5)
+   call registerinitmetforc(trim(LIS_wfde5Id)//char(0),init_wfde5)
+   call registerretrievemetforc(trim(LIS_wfde5Id)//char(0),get_wfde5)
+   call registertimeinterpmetforc(trim(LIS_wfde5Id)//char(0), &
+                                  timeinterp_wfde5)
+   call registerfinalmetforc(trim(LIS_wfde5Id)//char(0),finalize_wfde5)
+   call registerresetmetforc(trim(LIS_wfde5Id)//char(0),reset_wfde5)
+#endif
+
 end subroutine LIS_metforcing_plugin
 
 end module LIS_metforcing_pluginMod

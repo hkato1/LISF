@@ -1234,6 +1234,7 @@ contains
     external read_wrfoutv2_elev
     external read_wrfak_elev
 !    external read_geos5_elev
+    external read_wfde5_elev
 
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
@@ -1277,6 +1278,10 @@ contains
 !- GEOS5 forcing:
 !    call registerreadforcelev(trim(LDT_geos5Id)//char(0),&
 !         read_geos5_elev)
+
+!- WFDE5 forcing:
+    call registerreadforcelev(trim(LDT_wfde5Id)//char(0),&
+         read_wfde5_elev)
 
   end subroutine LDT_forcingparams_plugin
 
