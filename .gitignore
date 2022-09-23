@@ -1,5 +1,9 @@
 *.o
 *.mod
 *.d
+ldt/**/LDT*
+lis/**/LIS*
+lvt/**/LVT*
+**/**/configure*
 lis/runmodes/nuopc_cpl_mode/VERSION
 lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a
