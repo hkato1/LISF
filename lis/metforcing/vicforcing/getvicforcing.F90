@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -16,6 +16,7 @@
 subroutine getvicforcing(n, findex)
 ! !USES:
   use LIS_coreMod,        only : LIS_rc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
   use vic_forcingMod,     only : vicforcing_struc
 
   implicit none
@@ -43,7 +44,7 @@ subroutine getvicforcing(n, findex)
 
    integer :: yr1, mo1, da1, hr1
    integer :: ferror
-   character(len=140) :: fname
+   character(len=LIS_CONST_PATH_LEN) :: fname
 
 
    yr1 = LIS_rc%yr
@@ -67,8 +68,8 @@ subroutine get_vicforcing_filename(filename, dir, year, month, day, hour)
 ! !USES:
   implicit none
 ! !ARGUMENTS: 
-   character(len=140), intent(out) :: filename
-   character(len=100), intent(in) :: dir
+   character(len=*), intent(out) :: filename
+   character(len=*), intent(in) :: dir
    integer, intent(in) :: year
    integer, intent(in) :: month
    integer, intent(in) :: day

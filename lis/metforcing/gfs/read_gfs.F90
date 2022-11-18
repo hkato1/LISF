@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine read_gfs( order, n, findex, name00, name03, name06, F06flag, ferror,t
   use LIS_metforcingMod, only : LIS_forc
   use LIS_logMod,         only : LIS_logunit
   use gfs_forcingMod,    only : gfs_struc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS:
@@ -71,7 +72,7 @@ subroutine read_gfs( order, n, findex, name00, name03, name06, F06flag, ferror,t
 !EOP
 !==== Local Variables=======================
 
-  character(len=80) :: fname
+  character(len=LIS_CONST_PATH_LEN) :: fname
   integer :: iv, c,r,t
   integer :: ferror1, ferror2, ferror3
   integer :: nforce

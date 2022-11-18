@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -884,8 +884,8 @@ contains
   LOGICAL                             :: FROZEN_CANOPY ! used to define latent heat pathway
   
   !ag (12Sep2019)
-  REAL                        , INTENT(IN)    :: rivsto  !river storage
-  REAL                        , INTENT(IN)    :: fldsto  !flood storage
+  REAL                        , INTENT(IN)    :: rivsto  !river storage [m -1]
+  REAL                        , INTENT(IN)    :: fldsto  !flood storage [m -1]
   REAL                        , INTENT(IN)    :: fldfrc  !flooded fraction flag (zero or 1)
 
   ! INTENT (OUT) variables need to be assigned a value.  These normally get assigned values

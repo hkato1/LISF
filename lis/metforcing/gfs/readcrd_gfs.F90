@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -83,7 +83,7 @@ subroutine readcrd_gfs()
      call ESMF_ConfigGetAttribute(LIS_config,gfs_struc(n)%nmif,rc=rc)
 
      write(LIS_logunit,*) 'Using GFS forcing'
-     write(LIS_logunit,*) 'GFS forcing directory :',gfs_struc(n)%GFSDIR
+     write(LIS_logunit,*) 'GFS forcing directory :',trim(gfs_struc(n)%GFSDIR)
      gfs_struc(n)%GFSTIME1  = 3000.0
      gfs_struc(n)%GFSTIME2  = 0.0
   enddo

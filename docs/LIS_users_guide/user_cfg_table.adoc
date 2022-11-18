@@ -24,20 +24,16 @@
 | PPTEnsFcst                             | On
 | GDAS                                   | On
 | GDAS T1534                             | On
-| GEOS                                   | On
 | GEOS5 forecast                         | On
 | GEFS forecast                          | On
 | ECMWF                                  | On
 | GSWP1                                  | On
 | GSWP2                                  | On
-| ECMWF reanalysis                       | On
 | AGRMET                                 | Off
 | PRINCETON                              | On
-| NLDAS1                                 | On
 | NLDAS2                                 | On
 | GLDAS                                  | On
 | GFS                                    | On
-| MERRA-Land                             | On
 | MERRA2                                 | On
 | ERA5                                   | On
 | CMAP                                   | On
@@ -51,42 +47,35 @@
 | CPC STAGEII                            | On
 | CPC STAGEIV                            | On
 | NARR                                   | On
-| ALMIPII forcing                        | On
 | RFE2(daily)                            | On
-| CEOP                                   | On
 | SCAN                                   | On
-| ARMS                                   | On
-| GDAS(LSWG)                             | On
-| MET RDHM.3.5.6                         | On
-| GDAS(3d)                               | On
 | AGRMET radiation (polar stereographic) | On
-| AGRMET radiation (latlon)              | On
+| PLUMBER2                               | On
 | Bondville                              | On
-| FASST test                             | On
 | TRIGRS test                            | Off
 | SNOTEL                                 | On
-| COOP                                   | On
-| Rhone AGG                              | On
 | RFE2(GDAS bias-corrected)              | On
 | VIC processed forcing                  | Off
 | PALS station forcing                   | On
-| PILDAS                                 | On
 | PET USGS                               | On
-| CaPA                                   | On
 | NAM242                                 | On
 | WRFout                                 | On
+| COAMPSout                              | On
+| WRFoutv2                               | On
+| WRF AK                                 | On
 | AWAP                                   | On
 | AWRAL                                  | On
 | HiMAT GMU                              | On
 | Loobos                                 | On
 | MRMS                                   | On
+| GDDP                                   | On
 |====
 
 .Parameters
 |====
 | Component name     | Default state
 
-| MODIS real-time    | On
+| MODIS real-time    | Off
 | ALMIPII LAI        | On
 | NESDIS weekly      | On
 | SPORT              | On
@@ -121,7 +110,7 @@
 | Component name | Default state
 
 | NLDAS router   | On
-| HYMAP router   | On
+| HYMAP router   | Off
 | HYMAP2 router  | On
 |====
 
@@ -146,6 +135,7 @@
 | PF                      | On
 | DA OBS syntheticsm      | On
 | DA OBS syntheticwl      | On
+| DA OBS HYDROWEBWL       | On
 | DA OBS syntheticsnd     | On
 | DA OBS syntheticSnowTB  | On
 | DA OBS SNODEP           | On
@@ -153,19 +143,23 @@
 | DA OBS PMW_snow         | On
 | DA OBS ANSA_SCF         | On
 | DA OBS ESACCI_sm        | On
+| DA OBS THYSM            | On
 | DA OBS LPRM_AMSREsm     | On
 | DA OBS SMMR_SNWD        | On
 | DA OBS SSMI_SNWD        | On
 | DA OBS ANSA_SNWD        | On
 | DA OBS GCOMW_AMSR2L3SND | On
+| DA OBS SNODAS           | On
 | DA OBS SMOPS_ASCATsm    | On
 | DA OBS SMOPS_SMOSsm     | Off
 | DA OBS SMOPS_AMSR2sm    | Off
 | DA OBS SMOPS_SMAPsm     | Off
 | DA OBS SMOS_NESDIS      | On
 | DA OBS NASA_SMAPsm      | On
+| DA OBS SMOS_NRTNN_L2sm  | On
 | DA OBS NASA_SMAPvod     | On
 | DA OBS ASO_SWE          | On
+| DA OBS MCD15A2H_LAI     | On
 | DA OBS GLASS_LAI        | On
 | DA OBS GLASS_Albedo     | On
 | DA OBS MODISSPORT_LAI   | On
@@ -256,6 +250,7 @@
 | GeoWRSI.2           | On
 | LSM RDHM.3.5.6      | On
 | SUMMA.1.0           | Off
+| Crocus.8.1          | Off
 | Flake.1.0           | Off
 | NoahMP-GL.3.9.1.1   | On
 | template glacier    | On

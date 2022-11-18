@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -309,10 +309,6 @@ subroutine LDT_readConfig(configfile)
                LDT_rc%metforc_parmsrc(k) = "AGRMET_radiation_latlon"
              case( "GEOS5 forecast" )
                LDT_rc%metforc_parmsrc(k) = "GEOS5_fcst"
-             case( "ECMWF reanalysis" )
-               LDT_rc%metforc_parmsrc(k) = "ECMWF_reanalysis"
-             case( "GDAS(3d)" )
-               LDT_rc%metforc_parmsrc(k) = "GDAS_3d"
              case( "GDAS(LSWG)" )
                LDT_rc%metforc_parmsrc(k) = "GDAS_LSWG"
              case( "TRMM 3B42V6" )

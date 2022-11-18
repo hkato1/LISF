@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -48,6 +48,7 @@ module chirps2_forcingMod
 
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
   PRIVATE
@@ -69,7 +70,7 @@ module chirps2_forcingMod
      integer            :: nc
      integer            :: nr
      integer            :: mi
-     character*80       :: directory  
+     character(len=LIS_CONST_PATH_LEN) :: directory  
      real*8             :: chirpstime1, chirpstime2
      logical            :: reset_flag
      integer            :: start_nc, start_nr
@@ -122,7 +123,6 @@ contains
     use LIS_gridmappingMod
     use LIS_FORC_AttributesMod
     use LIS_forecastMod
-    use ESMF
 
     implicit none
 

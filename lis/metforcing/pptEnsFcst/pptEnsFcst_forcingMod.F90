@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -22,6 +22,8 @@
 module pptEnsFcst_forcingMod
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -50,14 +52,20 @@ module pptEnsFcst_forcingMod
      real*8         :: findtime1, metforc_time1   ! File 1 flag and time (LIS)
      real*8         :: findtime2, metforc_time2   ! File 2 flag and time (LIS)
 
-     character(120) :: directory        ! Directory path of where files reside
+     character(len=LIS_CONST_PATH_LEN) :: directory ! Directory path of where files reside
      character(50)  :: proj_name        ! Projection name
      integer        :: proj_index       ! Projection type index
  
      logical        :: reset_flag       ! Reset parameters flag
      logical        :: zterp_flags      !(:) Allocatable later?
 
+     character(20)  :: fcst_type        ! Forecast type name
      integer        :: max_ens_members  ! Max number of forecast ensemble members
+
+     ! Specify forecast initialization date:
+     integer        :: fcst_inityr      ! Forecast initial year
+     integer        :: fcst_initmo      ! Forecast initial month
+     integer        :: fcst_initda      ! Forecast initial day
 
      real, allocatable :: metdata1(:,:,:)  ! Metforcing data from file/bookend 1
      real, allocatable :: metdata2(:,:,:)  ! Metforcing data from file/bookend 2
@@ -98,7 +106,7 @@ contains
   integer  :: varid
   real     :: gridDesci(50)
   logical  :: file_exists
-  character(140) :: fullfilename
+  character(LIS_CONST_PATH_LEN) :: fullfilename
 
   integer  :: da, hr, mn, ss
   character*50 :: timeInc
@@ -111,8 +119,6 @@ contains
   integer        :: numAtts
   character(40)  :: varname
   character(100) :: zterpflag_string
-
-  character(20) :: fcst_type
 
   integer :: tdel, tintv_validhr, hindex, tindex
   integer, dimension(12) :: mon_numdays
@@ -150,12 +156,14 @@ contains
    call readcrd_pptEnsFcst()
 
    write(LIS_logunit,*) "[INFO] -- Obtain ensemble forecast dataset parameters -- "
+   write(LIS_logunit,*) "[INFO] -- Base forecast dataset name: ", pptensfcst_struc%fcst_type
+!  e.g., fcst_type = "GEOS5"
 
    ! Locate starting pptEnsFcst file: 
    fullfilename = "none"
- ! MODIFY LATER ...
-   fcst_type = "GEOS5"
-   call get_pptEnsFcst_filename( fcst_type, LIS_rc%syr, LIS_rc%smo, &
+   call get_pptEnsFcst_filename( pptensfcst_struc%fcst_type, &
+        !      LIS_rc%syr, LIS_rc%smo, &    ! (Original code prior to 09-02-2022)
+              pptensfcst_struc%fcst_inityr, pptensfcst_struc%fcst_initmo, &  ! New config entry
               1, LIS_rc%syr, LIS_rc%smo, &
               pptensfcst_struc%directory, fullfilename  )
 
@@ -164,9 +172,9 @@ contains
       write(LIS_logunit,*) "[INFO] Parameters from forcing pptEnsFcst file: ", &
             trim(fullfilename)
    else
-      write(LIS_logunit,*) "[WARN] Missing ensemble forecast file: ", &
+      write(LIS_logunit,*) "[ERR] Missing ensemble forecast file: ", &
             trim(fullfilename)
-      write(LIS_logunit,*) "[WARN] LIS endrun being called."
+      write(LIS_logunit,*) "[ERR] LIS endrun being called."
       call LIS_endrun()
    endif
 
@@ -197,17 +205,14 @@ contains
    ! Determine final time index (tindex) of the point in the file to be read:
    hindex = (LIS_rc%hr/tdel)+1
    tindex = pptensfcst_struc%time_intv * (LIS_rc%sda-1) + hindex
-!   print *, "Tintv,tdel,hindex,tindex: ",pptensfcst_struc%time_intv, tdel, hindex, tindex
  ! ___
 
    ! Number of columns and rows:
    pptensfcst_struc%nc = 0
    pptensfcst_struc%nr = 0
    ios = nf90_inq_dimid(nid,"longitude",ncId)
-!   ios = nf90_inq_dimid(nid,"lon",ncId)
    call LIS_verify(ios,'Error in nf90_inq_dimid(longitude_nc) in init_pptEnsFcst')
    ios = nf90_inq_dimid(nid,"latitude",nrId)
-!   ios = nf90_inq_dimid(nid,"lat",nrId)
    call LIS_verify(ios,'Error in nf90_inq_dimid(latitude_nr) in init_pptEnsFcst')
 
    ios = nf90_inquire_dimension(nid, ncId, len=pptensfcst_struc%nc)  
@@ -222,10 +227,8 @@ contains
    allocate(lon(pptensfcst_struc%nc))
 
    ios = nf90_inq_varid(nid,'latitude',latId)
-!   ios = nf90_inq_varid(nid,'lat',latId)
    call LIS_verify(ios,'latitude var field not found in the metforcing pptEnsFcst file')
    ios = nf90_inq_varid(nid,'longitude',lonId)
-!   ios = nf90_inq_varid(nid,'lon',lonId)
    call LIS_verify(ios,'longitude var field not found in the metforcing pptEnsFcst file')
 
    ios = nf90_get_var(nid,latId,lat)

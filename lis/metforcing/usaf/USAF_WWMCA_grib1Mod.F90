@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -46,7 +46,7 @@ module USAF_WWMCA_grib1Mod
      procedure :: return_binary_fields
   end type wwmca_grib1_t
 
-  type(wwmca_grib1_t), public, protected :: wwmca_grib1
+  type(wwmca_grib1_t), public :: wwmca_grib1
 
   public :: USAF_wwmca_grib1_filename
 

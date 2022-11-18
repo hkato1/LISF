@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,6 +15,7 @@
 !
 ! !REVISION HISTORY:
 !  19 Sep 2014: K. Arsenault; Initial Specification
+!  11 Apr 2021: Wanshu Nie; add support for reading irrigation groundwater ratio
 !
 ! !INTERFACE:
 subroutine setIrrigParmsFullnames(n,datatype,source)
@@ -68,9 +69,16 @@ subroutine setIrrigParmsFullnames(n,datatype,source)
               "User Derived Irrig gridcell fraction"
       end select
 
+    case( "irriggwratio" )
+      select case ( source )
+        case( "USGS_Native" )
+          LDT_irrig_struc(n)%irriggwratio%standard_name =&
+             "USGS groundwater irrigation ratio (0.125 deg gridcell) "
+      end select
+
     case default
-      print *, "[ERR] Irrig data type not recognized: ",trim(source)
-      print *, " Program stopping ..."
+      write(LDT_logunit,*) "[ERR] Irrig data type not recognized: ",trim(source)
+      write(LDT_logunit,*) " Program stopping ..."
       stop
    end select
 

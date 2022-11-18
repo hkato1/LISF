@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -163,6 +163,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_USGSPETforcId     = "PET USGS"
    character*50, public,  parameter :: LIS_nam242Id          = "NAM242"
    character*50, public,  parameter :: LIS_WRFoutId          = "WRFout"
+   character*50, public,  parameter :: LIS_COAMPSoutId       = "COAMPSout"
    character*50, public,  parameter :: LIS_WRFoutv2Id        = "WRFoutv2"
    character*50, public,  parameter :: LIS_WRFakId           = "WRF AK"
    character*50, public,  parameter :: LIS_AWAPforcId        = "AWAP"
@@ -170,6 +171,11 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_AWRALforcId       = "AWRAL processed forcing"
    character*50, public,  parameter :: LIS_mrmsId            = "MRMS"
    character*50, public,  parameter :: LIS_era5Id            = "ERA5"
+   character*50, public,  parameter :: LIS_plumber2Id        = "PLUMBER2"
+   character*50, public,  parameter :: LIS_gddpId            = "GDDP"
+   character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
+   character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
+
 !-------------------------------------------------------------------------
 ! land surface parameters
 !-------------------------------------------------------------------------
@@ -254,6 +260,8 @@ module LIS_pluginIndices
         "GCOMW AMSR2 L3 soil moisture"
    character*50, public,  parameter :: LIS_GCOMW_AMSR2L3sndobsId = &
         "GCOMW AMSR2 L3 snow depth"
+   character*50, public,  parameter :: LIS_SNODASobsId = &
+        "SNODAS"
    character*50, public,  parameter :: LIS_SMOSL2smobsId         = &
         "SMOS L2 soil moisture"
    character*50, public,  parameter :: LIS_pildassmobsId         = &
@@ -264,6 +272,8 @@ module LIS_pluginIndices
         "SMAP(NASA) soil moisture"
    character*50, public,  parameter :: LIS_SMOSNRTNNL2smobsId    = &
         "SMOS NRT NN soil moisture"                                  !YK
+   character*50, public,  parameter :: LIS_SMAPEOPLsmobsId       = &
+        "SMAP_E_OPL soil moisture"                                   !YK
    character*50, public,  parameter :: LIS_NASASMAPvodobsId      = &
         "SMAP(NASA) vegetation optical depth"
    character*50, public,  parameter :: LIS_GLASSlaiobsId         = &
@@ -272,6 +282,10 @@ module LIS_pluginIndices
         "MODIS SPoRT LAI"
    character*50, public,  parameter :: LIS_MCD15A2HlaiobsId      = &
         "MCD15A2H LAI"
+   character*50, public,  parameter :: LIS_VIIRSgvfobsId         = &
+        "VIIRS GVF"                                                  !YK
+   character*50, public,  parameter :: LIS_CDFSgvfobsId          = &
+        "CDFS GVF"                                                   !YK
    character*50, public,  parameter :: LIS_GLASSalbedoobsId      = &
         "GLASS Albedo"
    character*50, public,  parameter :: LIS_SMAPNRTsmobsId        = &
@@ -280,6 +294,12 @@ module LIS_pluginIndices
         "ASO SWE"
    character*50, public,  parameter :: LIS_synwlId             = &
         "Synthetic water level"
+   character*50, public,  parameter :: LIS_THySMId             = &
+           "THySM"
+   character*50, public,  parameter :: LIS_hydrowebwlId        = &
+        "Hydroweb water level"
+   character*50, public,  parameter :: LIS_wusUCLAobsId        = &
+        "Western U.S. UCLA snow"
 
 !-------------------------------------------------------------------------
 ! Bias Estimation Algorithms
@@ -344,6 +364,7 @@ module LIS_pluginIndices
    character*50, public, parameter :: LIS_NLDASrouterId = "NLDAS router"
    character*50, public, parameter :: LIS_HYMAProuterId = "HYMAP router"
    character*50, public, parameter :: LIS_HYMAP2routerId = "HYMAP2 router"
+   character*50, public, parameter :: LIS_RAPIDrouterId = "RAPID router"
 !-------------------------------------------------------------------------
 ! Runoff data support
 !-------------------------------------------------------------------------

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,7 +42,7 @@ subroutine readcrd_TRMM3B42RT()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using TRMM 3B42RT forcing'
-     write(LIS_logunit,*) 'TRMM 3B42RT forcing directory :',TRMM3B42RT_struc(n)%TRMM3B42RTDIR
+     write(LIS_logunit,*) 'TRMM 3B42RT forcing directory :',trim(TRMM3B42RT_struc(n)%TRMM3B42RTDIR)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step

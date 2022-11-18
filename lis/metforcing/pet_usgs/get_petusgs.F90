@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -27,6 +27,7 @@ subroutine get_petusgs(n, findex)
   use LIS_timeMgrMod, only : LIS_tick, LIS_get_nstep
   use LIS_logMod,     only : LIS_logunit
   use petusgs_forcingMod, only : petusgs_struc
+  use LIS_constantsMod,   only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -67,7 +68,7 @@ subroutine get_petusgs(n, findex)
   real    :: gmt1, gmt2
   integer :: kk                          ! Forecast index
 
-  character(99) :: filename              ! Filename variables for PET data sources
+  character(len=LIS_CONST_PATH_LEN) :: filename              ! Filename variables for PET data sources
 
 !=== End Variable Definition =======================
 

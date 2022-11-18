@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,6 +24,7 @@ subroutine get_climatology(n, findex)
   use LIS_timeMgrMod,   only : LIS_tick, LIS_get_nstep
   use climatology_forcingMod,  only : clim_struc
   use climatology_VariablesMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 ! !ARGUMENTS: 
@@ -55,7 +56,7 @@ subroutine get_climatology(n, findex)
   integer        :: c, r
   integer        :: metforc_hrts
   integer        :: metforc_mnts
-  character(140) :: fullfilename
+  character(len=LIS_CONST_PATH_LEN) :: fullfilename
   logical        :: file_exists
 
 ! Date/time parameters for file get/read:

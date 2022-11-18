@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -151,6 +151,8 @@ module LIS_coreMod
 ! Three different types of grid objects are defined because ESMF3.1.0 does
 ! not support defining tiles on a single grid.
   public :: LIS_vecTile
+  public :: LIS_vecRoutingTile
+  public :: LIS_vecRoutingGrid
   public :: LIS_vecPatch
   public :: LIS_vecGrid
   public :: LIS_routing
@@ -220,8 +222,10 @@ module LIS_coreMod
   integer, allocatable           :: LIS_patch_deltas(:,:,:),LIS_patch_offsets(:,:,:)
 
   type(ESMF_Grid),     allocatable   :: LIS_vecTile(:)
+  type(ESMF_Grid),     allocatable   :: LIS_vecRoutingTile(:)
   type(ESMF_Grid),     allocatable   :: LIS_vecPatch(:,:)
   type(ESMF_Grid),     allocatable   :: LIS_vecGrid(:)
+  type(ESMF_Grid),     allocatable   :: LIS_vecRoutingGrid(:)
 
 !BOPI
 ! !ROUTINE: LIS_config_init
@@ -779,8 +783,10 @@ contains
     allocate(LIS_patch_deltas(nnest,nmodels,0:LIS_npes-1))
 
     allocate(LIS_vecTile(nnest))
+    allocate(LIS_vecRoutingTile(nnest))
     allocate(LIS_vecPatch(nnest,nmodels))
     allocate(LIS_vecGrid(nnest))
+    allocate(LIS_vecRoutingGrid(nnest))
 
     LIS_ews_ind = 0
     LIS_ewe_ind = 0

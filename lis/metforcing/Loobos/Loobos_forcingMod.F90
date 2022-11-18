@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -25,6 +25,8 @@ module Loobos_forcingMod
 ! !REVISION HISTORY: 
 ! 05 Oct 2010: David Mocko, Updated for Loobos test case
 ! 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -40,7 +42,7 @@ module Loobos_forcingMod
 
   type, public         :: Loobos_type_dec
      real                 :: ts
-     character*80         :: Loobosfile
+     character(len=LIS_CONST_PATH_LEN) :: Loobosfile
      real                 :: undef
      real*8               :: starttime,Loobostime1,Loobostime2
      integer              :: findtime1,findtime2,nstns

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -35,7 +35,7 @@ subroutine read_petusgs (n, kk, findex, pet_filename, ferror_petusgs )
   integer, intent(in) :: n 
   integer, intent(in) :: kk
   integer, intent(in) :: findex
-  character(99), intent(in) :: pet_filename  
+  character(len=*), intent(in) :: pet_filename  
   integer,intent(out) :: ferror_petusgs
 !
 ! !DESCRIPTION:
@@ -182,10 +182,10 @@ subroutine read_petusgs (n, kk, findex, pet_filename, ferror_petusgs )
          enddo
       enddo
     
-      write(LIS_logunit,*) "Obtained USGS PET data:: ", pet_filename
+      write(LIS_logunit,*) "Obtained USGS PET data:: ", trim(pet_filename)
 
    elseif( ferror_petusgs == 0 ) then
-      write(LIS_logunit,*) "Missing USGS PET data ", pet_filename
+      write(LIS_logunit,*) "Missing USGS PET data ", trim(pet_filename)
 
    endif
 

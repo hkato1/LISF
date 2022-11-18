@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,7 +47,7 @@ subroutine readconfig_WRF_AKdom()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using WRF AK forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] WRF AK forcing directory :',WRFAK_struc(n)%WRFAKdir
+     write(unit=LIS_logunit,fmt=*) '[INFO] WRF AK forcing directory :',trim(WRFAK_struc(n)%WRFAKdir)
 
      WRFAK_struc(n)%WRFouttime1 = 3000.0
      WRFAK_struc(n)%WRFouttime2 = 0.0

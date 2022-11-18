@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -156,10 +156,6 @@ subroutine NoahMP36_coldstart(mtype)
                 NOAHMP36_struc(n)%noahmp36(t)%sstc(NOAHMP36_struc(n)%nsnow+isnow+1:NOAHMP36_struc(n)%nsnow) = tsno(isnow+1:0) 
                 NOAHMP36_struc(n)%noahmp36(t)%isnow = isnow                
 
-                !ag (12Sep2019)
-                NOAHMP36_struc(n)%noahmp36(t)%rivsto = 0.0
-                NOAHMP36_struc(n)%noahmp36(t)%fldsto = 0.0
-                NOAHMP36_struc(n)%noahmp36(t)%fldfrc = 0.0
                 
                 ! end add
             enddo

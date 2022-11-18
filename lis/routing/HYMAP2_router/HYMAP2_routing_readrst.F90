@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -18,6 +18,7 @@
 ! 19 Jan 2016: Augusto Getirana;  Inclusion of four Local Inertia variables
 ! 10 Mar 2019: Sujay Kumar;       Added support for NetCDF and parallel 
 !                                 processing. 
+! 27 Apr 2020: Augusto Getirana;  Added support for urban drainage
 !  
 ! !INTERFACE: 
 subroutine HYMAP2_routing_readrst
@@ -27,6 +28,7 @@ subroutine HYMAP2_routing_readrst
   use LIS_coreMod
   use LIS_logMod
   use LIS_timeMgrMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use HYMAP2_routingMod, only : HYMAP2_routing_struc
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -44,7 +46,7 @@ subroutine HYMAP2_routing_readrst
   integer       :: ftn
   integer       :: i,j,k
   integer       :: ios,status
-  character*100 :: filename
+  character(len=LIS_CONST_PATH_LEN) :: filename
   logical       :: read_restart
   integer           :: yr,mo,da,hr,mn,ss,doy
   real*8            :: time
@@ -111,8 +113,9 @@ subroutine HYMAP2_routing_readrst
            call HYMAP2_readvar_restart(ftn,n,&
                 HYMAP2_routing_struc(n)%bsfsto,&
                 "BSFSTO")
-           
-           if(HYMAP2_routing_struc(n)%flowtype==3)then
+           !ag(13Jan2021)
+           !write out variables below if flowtype is not kinematic wave
+           if(HYMAP2_routing_struc(n)%flowtype/=1)then
               call HYMAP2_readvar_restart(ftn,n,&
                    HYMAP2_routing_struc(n)%rivout_pre,&
                    "RIVOUT_PRE")
@@ -125,6 +128,16 @@ subroutine HYMAP2_routing_readrst
               call HYMAP2_readvar_restart(ftn,n,&
                    HYMAP2_routing_struc(n)%flddph_pre,&
                    "FLDDPH_PRE")
+           endif
+           !ag (27Apr2020)
+           !urban drainage storage  
+           if(HYMAP2_routing_struc(n)%flowtype==4)then
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%drsto,&
+                   "DRSTO")
+              call HYMAP2_readvar_restart(ftn,n,&
+                   HYMAP2_routing_struc(n)%drout,&
+                   "DROUT")
            endif
         else
            call HYMAP2_readvar_restart_ens(ftn,n,&
@@ -139,8 +152,9 @@ subroutine HYMAP2_routing_readrst
            call HYMAP2_readvar_restart_ens(ftn,n,&
                 HYMAP2_routing_struc(n)%bsfsto,&
                 "BSFSTO")
-           
-           if(HYMAP2_routing_struc(n)%flowtype==3)then
+           !ag(13Jan2021)
+           !write out variables below if flowtype is not kinematic wave
+           if(HYMAP2_routing_struc(n)%flowtype/=1)then
               call HYMAP2_readvar_restart_ens(ftn,n,&
                    HYMAP2_routing_struc(n)%rivout_pre,&
                    "RIVOUT_PRE")
@@ -154,7 +168,16 @@ subroutine HYMAP2_routing_readrst
                    HYMAP2_routing_struc(n)%flddph_pre,&
                    "FLDDPH_PRE")
            endif
-
+           !ag (27Apr2020)
+           !urban drainage storage  
+           if(HYMAP2_routing_struc(n)%flowtype==4)then
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%drsto,&
+                   "DRSTO")
+              call HYMAP2_readvar_restart_ens(ftn,n,&
+                   HYMAP2_routing_struc(n)%drout,&
+                   "DROUT")
+           endif
         endif
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
@@ -163,7 +186,7 @@ subroutine HYMAP2_routing_readrst
 #endif
      endif
   enddo
-
+!stop
 end subroutine HYMAP2_routing_readrst
 
 !BOP

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -93,7 +93,7 @@ subroutine readcrd_nldas2()
   write(unit=LIS_logunit,fmt=*)'[INFO] Using NLDAS-2 forcing'
 
   do n=1,LIS_rc%nnest
-     write(unit=LIS_logunit,fmt=*) '[INFO] NLDAS-2 forcing directory : ',nldas2_struc(n)%nldas2dir
+     write(unit=LIS_logunit,fmt=*) '[INFO] NLDAS-2 forcing directory : ',trim(nldas2_struc(n)%nldas2dir)
 
      nldas2_struc(n)%ncold = 464
      nldas2_struc(n)%nrold = 224

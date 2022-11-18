@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -24,7 +24,8 @@ module LDT_param_pluginMod
 !  11 Feb 2013:  KR Arsenault - Updated to accommodate new parameter types and options
 !  01 Mar 2020:  Yeosang Yoon - Added MERIT DEM
 !  29 Jun 2020:  Mahdi Navari - Glacier fraction added 
-!  
+!  12 Apr 2021:  Wanshu Nie   - groundwater irrigation ratio added
+!  28 Jun 2022:  Eric Kemp    - Added NAFPA background precipitation
 !EOP
 
   use LDT_pluginIndices
@@ -76,8 +77,12 @@ contains
     use Mosaic_parmsMod
     use RUC_parmsMod
     use JULES50_parmsMod
-    use Crocus_parmsMod    
+    use Crocus_parmsMod
 
+    external :: registerlsmparamprocinit
+    external :: registerlsmparamprocwriteheader
+    external :: registerlsmparamprocwritedata
+    
   ! Noah 2.7.1 LSM:
     call registerlsmparamprocinit(trim(LDT_noah271Id)//char(0),&
          NoahParms_init)
@@ -935,8 +940,9 @@ contains
 
     external read_GRIPC_irrigtype
     external read_GRIPC_irrigfrac
-
     external read_UserDerived_irrigfrac
+
+    external read_USGSNative_irriggwratio
 
     call registerreadirrigfrac(trim(LDT_modOGirrigId)//char(0),&
          read_OzdoganGutman_irrigfrac)
@@ -946,6 +952,8 @@ contains
 
     ! Added user-derived irrigation fraction input option:
     call registerreadirrigfrac(trim(LDT_userinputirrigId)//char(0),read_UserDerived_irrigfrac)
+    ! Added irrigation groundwater ratio input option
+    call registerreadirriggwratio(trim(LDT_irriggwratioId)//char(0),read_USGSNative_irriggwratio)
 
   end subroutine LDT_irrigation_plugin
 
@@ -1175,9 +1183,13 @@ contains
 ! !INTERFACE:
   subroutine LDT_climate_plugin
 !EOP
+    use LDT_NAFPA_back_climpptMod, only: LDT_read_NAFPA_back_gfs_climppt, &
+         LDT_read_NAFPA_back_galwem_climppt
     external read_PRISM_climppt
     external read_WorldClim_climppt
     external read_NLDAS_climppt
+
+    external :: registerreadclimppt
 
 ! !USES:
 !- Precipitation downscaling:
@@ -1186,6 +1198,12 @@ contains
 
     call registerreadclimppt(trim(LDT_worldclimpptId)//char(0),&
          read_WorldClim_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgfspptId)//char(0),&
+         LDT_read_NAFPA_back_gfs_climppt)
+
+    call registerreadclimppt(trim(LDT_nafpabackgalwempptId)//char(0),&
+         LDT_read_NAFPA_back_galwem_climppt)
 
 !- Temperature downscaling:
 
@@ -1221,18 +1239,15 @@ contains
 !EOP
 
     external read_gdas_elev
-    external read_nldas1_elev
     external read_nldas2_elev
     external read_nam242_elev
     external read_princeton_elev
     external read_ecmwf_elev
-    external read_ecmwfreanal_elev
     external read_merra2_elev
     external read_era5_elev
     external read_wrfoutv2_elev
     external read_wrfak_elev
 !    external read_geos5_elev
-!    external read_merraland_elev
 
 ! !USES:
 ! - Read forcing parameter: Elevation/terrain height
@@ -1242,9 +1257,6 @@ contains
          read_gdas_elev)
 
 !- CONUS-only forcings:
-    call registerreadforcelev(trim(LDT_nldas1Id)//char(0),&
-         read_nldas1_elev)
-
     call registerreadforcelev(trim(LDT_nldas2Id)//char(0),&
          read_nldas2_elev)
 
@@ -1259,10 +1271,6 @@ contains
 !- ECMWF forcing:
     call registerreadforcelev(trim(LDT_ecmwfId)//char(0),&
          read_ecmwf_elev)
-
-!- ECMWF-Reanalysis forcing:
-    call registerreadforcelev(trim(LDT_ecmwfreanalId)//char(0),&
-         read_ecmwfreanal_elev)
 
 !- MERRA2 forcing:
     call registerreadforcelev(trim(LDT_merra2Id)//char(0),&

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -80,6 +80,8 @@ module gfs_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   
   PRIVATE
@@ -98,14 +100,14 @@ module gfs_forcingMod
      real         :: ts
      integer      :: ncold, nrold   !AWIPS 212 dimensions
      integer      :: nmif
-     character*100 :: gfsdir   !GFS Forcing Directory
-     character*100 :: elevfile
-     character*100 :: t126elevfile
-     character*100 :: t170elevfile
-     character*100 :: t254elevfile
-     character*100 :: t382elevfile
-     character*100 :: t574elevfile
-     character*100 :: t1534elevfile
+     character(len=LIS_CONST_PATH_LEN) :: gfsdir  !GFS Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t126elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t170elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t254elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t382elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t574elevfile
+     character(len=LIS_CONST_PATH_LEN) :: t1534elevfile
      real*8       :: gfstime1,gfstime2
      real*8       :: griduptime1,griduptime2,griduptime3,griduptime4,griduptime5,griduptime6
      logical      :: gridchange1,gridchange2,gridchange3,gridchange4,gridchange5,gridchange6

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -51,7 +51,9 @@ module WRF_AKdom_forcingMod
 !    for each grid point in LIS, for conservative interpolation.
 !  \end{description}
 
-! !USES: 
+! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -72,7 +74,7 @@ module WRF_AKdom_forcingMod
      real         :: ts
      integer      :: nc, nr
      integer      :: mi
-     character*80 :: WRFAKdir
+     character(len=LIS_CONST_PATH_LEN) :: WRFAKdir
      real*8       :: WRFouttime1,WRFouttime2
      integer      :: findtime1,findtime2
      integer      :: nIter, st_iterid, en_iterid

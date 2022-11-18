@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -32,7 +32,7 @@ subroutine read_HiMATGMU( n, fname,findex,order, ferror_HiMATGMU )
   implicit none
 ! !ARGUMENTS:
   integer, intent(in) :: n
-  character(len=80)   :: fname          
+  character(len=*)   :: fname          
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_HiMATGMU
@@ -85,7 +85,7 @@ subroutine read_HiMATGMU( n, fname,findex,order, ferror_HiMATGMU )
 !-- Check initially if file exists:
   inquire (file=fname, exist=file_exists ) ! Check if file exists
   if (.not. file_exists)  then 
-     write(LIS_logunit,*)"** Missing HiMAT GMU precipitation file: ", fname
+     write(LIS_logunit,*)"** Missing HiMAT GMU precipitation file: ", trim(fname)
      ferror_HiMATGMU = 1
      return
   endif

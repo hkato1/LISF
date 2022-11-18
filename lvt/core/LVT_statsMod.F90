@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -21,7 +21,6 @@ module LVT_statsMod
   use netcdf
 #endif
   use grib_api
-  use ESMF
   use LVT_coreMod
   use LVT_timeMgrMod
   use LVT_histDataMod
@@ -217,6 +216,13 @@ contains
        LVT_rc%scname(2) = 'MAM'
        LVT_rc%scname(3) = 'JJA'
        LVT_rc%scname(4) = 'SON'      
+    elseif(LVT_rc%scInterval.eq.21) then
+       LVT_rc%nasc = 4 ! =12/3
+       allocate(LVT_rc%scname(LVT_rc%nasc))
+       LVT_rc%scname(1) = 'JFM'
+       LVT_rc%scname(2) = 'AMJ'
+       LVT_rc%scname(3) = 'JAS'
+       LVT_rc%scname(4) = 'OND'
     elseif(LVT_rc%scInterval.eq.6) then 
        LVT_rc%nasc = 2 ! =12/6
        allocate(LVT_rc%scname(LVT_rc%nasc))
@@ -483,6 +489,8 @@ contains
   subroutine initMetricFiles(metric)
 ! 
 ! !USES:   
+    use ESMF
+
     implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -592,7 +600,7 @@ contains
                    call system('mv temp '//trim(filename))
 
                    open(metric%ftn_ts_loc(i,m),file=(filename),&
-                        ACCESS = 'APPEND',form='formatted')
+                        position = 'APPEND',form='formatted')
                 endif
              enddo
           end do
@@ -657,7 +665,7 @@ contains
                 call system('mv temp '//trim(filename))
 
                 open(metric%ftn_ts_loc(i,1),file=(filename),&
-                     ACCESS = 'APPEND',form='formatted')
+                     position = 'APPEND',form='formatted')
              end if
           enddo
        end if
@@ -901,6 +909,7 @@ contains
   subroutine LVT_computeStats(pass)
 ! 
 ! !USES:   
+    use ESMF
     use LVT_timeMgrMod,      only : LVT_calendar
     use LVT_DataStreamsMod  
 
@@ -1193,6 +1202,8 @@ contains
        varname, ci)
 ! 
 ! !USES:   
+   use ESMF
+
    implicit none
 !
 ! !INPUT PARAMETERS: 
@@ -1678,6 +1689,7 @@ contains
   subroutine createTSfiles(pass, metric)
 ! 
 ! !USES:   
+    use ESMF
     use LVT_timeMgrMod,  only : LVT_tick
 
 !

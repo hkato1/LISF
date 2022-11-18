@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -31,7 +31,7 @@ subroutine readprecip_RFE2Daily( n, kk, findex, fname, order, ferror_RFE2Daily)
   integer, intent(in) :: n
   integer, intent(in) :: kk
   integer, intent(in) :: findex
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: order
   integer             :: ferror_RFE2Daily
 ! 
@@ -65,7 +65,6 @@ subroutine readprecip_RFE2Daily( n, kk, findex, fname, order, ferror_RFE2Daily)
   real, allocatable     :: rain1d(:)
   REAL, ALLOCATABLE     :: rain2d(:,:)
   integer               :: ftn, ios, ftn2, ftn3
-  character(len=84)     :: fnametemp
   LOGICAL               :: file_exists
   real, dimension(LIS_rc%lnc(n), LIS_rc%lnr(n)) :: varfield ! reprojected arrray
 

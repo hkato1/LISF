@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -70,6 +70,8 @@ module ecmwf_forcingMod
 !  \end{description}
 !
 ! !USES:
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -89,7 +91,7 @@ module ecmwf_forcingMod
   type, public     :: ecmwf_type_dec
      real          :: ts
      integer       :: ncold, nrold    ! AWIPS 212 dimensions
-     character*145 :: ecmwfdir        ! ecmwf Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: ecmwfdir ! ecmwf Forcing Directory
      !character*45 :: elevfileifs23r4  ! elevation for 2001-2002
      !character*45 :: elevfileifs25r1  ! elevation for 2003-2006
      !character*45 :: elevfileifs30r1  ! elevation for 2006 - jun 2008

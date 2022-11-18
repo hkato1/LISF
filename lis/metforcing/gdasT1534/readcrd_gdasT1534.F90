@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,7 +42,7 @@ subroutine readcrd_gdasT1534()
   do n=1,LIS_rc%nnest
      gdasT1534_struc(n)%nmif = 16 
      write(LIS_logunit,*) 'Using GDAS T1534 forcing'
-     write(LIS_logunit,*) 'GDAS T1534 forcing directory :',gdasT1534_struc(n)%GDAST1534DIR
+     write(LIS_logunit,*) 'GDAS T1534 forcing directory :',trim(gdasT1534_struc(n)%GDAST1534DIR)
      gdasT1534_struc(n)%GDAST1534TIME1  = 3000.0
      gdasT1534_struc(n)%GDAST1534TIME2  = 0.0
   enddo

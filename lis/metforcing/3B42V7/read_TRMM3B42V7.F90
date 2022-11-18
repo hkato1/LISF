@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -32,7 +32,7 @@ subroutine read_TRMM3B42V7 (n, kk, fname, findex, order, ferror_TRMM3B42V7)
 ! !ARGUMENTS:
   integer, intent(in) :: n
   integer, intent(in) :: kk
-  character(len=80)   :: fname
+  character(len=*)   :: fname
   integer, intent(in) :: findex
   integer, intent(in) :: order
   integer             :: ferror_TRMM3B42V7

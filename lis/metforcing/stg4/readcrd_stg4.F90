@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -43,7 +43,7 @@ subroutine readcrd_stg4()
        call ESMF_ConfigGetAttribute(LIS_config, stg4_struc(n)%stg4dir,rc=rc)
 
        write(LIS_logunit,*) 'Using STAGEIV forcing'
-       write(LIS_logunit,*) 'STAGEIV forcing directory :', stg4_struc(n)%STG4DIR
+       write(LIS_logunit,*) 'STAGEIV forcing directory :', trim(stg4_struc(n)%STG4DIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

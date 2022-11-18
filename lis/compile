@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -116,7 +116,7 @@ fi
 # Compile standalone Fortran utilities for tuning Air Force Bratseth scheme.
 if [ "$compile_autotune" = "YES" ]; then
     echo "Compiling Air Force Bratseth tuning utilities"
-    if cd utils/afwa/retune_bratseth/src
+    if cd utils/usaf/retune_bratseth/src # EMK Fix path
     then
         echo ""
         make -f Makefile

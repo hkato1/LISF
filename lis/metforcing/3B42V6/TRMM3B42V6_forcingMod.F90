@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -52,6 +52,8 @@ module TRMM3B42V6_forcingMod
 !  \end{description}
 !
 ! !USES:
+    USE LIS_constantsMod, only: LIS_CONST_PATH_LEN
+
     implicit none
     PRIVATE
 !-----------------------------------------------------------------------------
@@ -70,7 +72,7 @@ module TRMM3B42V6_forcingMod
      real                     :: ts 
      integer                  :: ncold
      integer                  :: nrold
-     character*40             :: TRMM3B42V6dir
+     character(len=LIS_CONST_PATH_LEN) :: TRMM3B42V6dir
      real*8                   :: TRMM3B42V6time_TStepStart 
      integer                  :: TRMM3B42V6yr_TStepStart ! SY
      integer                  :: TRMM3B42V6mo_TStepStart ! SY

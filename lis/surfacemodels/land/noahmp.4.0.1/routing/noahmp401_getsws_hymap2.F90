@@ -1,7 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
-! NASA Goddard Space Flight Center Land Information System (LIS) v7.2
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
 !
-! Copyright (c) 2015 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -41,19 +43,11 @@ subroutine noahmp401_getsws_hymap2(n)
   integer                :: c,r
   integer                :: status
   integer                :: enable2waycpl
-  
+
   call ESMF_AttributeGet(LIS_runoff_state(n),"2 way coupling",&
        enable2waycpl, rc=status)
   call LIS_verify(status)
-  
-  if(enable2waycpl==1) then 
 
-     write(LIS_logunit,*) '[ERR] Two-way coupling between NoahMP401 and HYMAP2'
-     write(LIS_logunit,*) '[ERR] is not currently supported'
-     call LIS_endrun()
-  endif
-  
-#if 0 
   if(enable2waycpl==1) then 
      ! River Storage
      call ESMF_StateGet(LIS_runoff_state(n),"River Storage",rivsto_field,rc=status)
@@ -62,7 +56,7 @@ subroutine noahmp401_getsws_hymap2(n)
      call ESMF_FieldGet(rivsto_field,localDE=0,farrayPtr=rivstotmp,rc=status)
      call LIS_verify(status,'ESMF_FieldGet failed for River Storage')
      where(rivstotmp/=LIS_rc%udef) &
-          NOAHMP401_struc(n)%noahmp401(:)%rivsto=rivstotmp/NOAHMP401_struc(n)%dt
+          NOAHMP401_struc(n)%noahmp401(:)%rivsto=rivstotmp/NOAHMP401_struc(n)%ts
 
      ! Flood Storage
      call ESMF_StateGet(LIS_runoff_state(n),"Flood Storage",fldsto_field,rc=status)
@@ -71,7 +65,7 @@ subroutine noahmp401_getsws_hymap2(n)
      call ESMF_FieldGet(fldsto_field,localDE=0,farrayPtr=fldstotmp,rc=status)
      call LIS_verify(status,'ESMF_FieldGet failed for Flood Storage')
      where(fldstotmp/=LIS_rc%udef)&
-          NOAHMP401_struc(n)%noahmp401(:)%fldsto=fldstotmp/NOAHMP401_struc(n)%dt
+          NOAHMP401_struc(n)%noahmp401(:)%fldsto=fldstotmp/NOAHMP401_struc(n)%ts
 
      ! Flooded Fraction Flag
      call ESMF_StateGet(LIS_runoff_state(n),"Flooded Fraction",fldfrc_field,rc=status)
@@ -81,6 +75,4 @@ subroutine noahmp401_getsws_hymap2(n)
      call LIS_verify(status,'ESMF_FieldGet failed for Flooded Fraction')
      NOAHMP401_struc(n)%noahmp401(:)%fldfrc=fldfrctmp
   endif  
-#endif
-
 end subroutine noahmp401_getsws_hymap2

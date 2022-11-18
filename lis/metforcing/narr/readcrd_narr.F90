@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -66,7 +66,7 @@ subroutine readcrd_narr()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using NARR forcing'
-     write(LIS_logunit,*) 'NARR forcing directory :',narr_struc(n)%NARRDIR
+     write(LIS_logunit,*) 'NARR forcing directory :',trim(narr_struc(n)%NARRDIR)
      narr_struc(n)%NARRTIME1  = 3000.0
      narr_struc(n)%NARRTIME2  = 0.0
   enddo

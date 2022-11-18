@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -55,7 +55,7 @@ subroutine read_HYMAP_flow_type(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%flowtypefile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Flow type map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP river flow type map, ',&
            trim(HYMAP_struc(n)%flowtypefile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

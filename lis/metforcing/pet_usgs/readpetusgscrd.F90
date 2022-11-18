@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -59,7 +59,7 @@ subroutine readpetusgscrd()
   do n=1, LIS_rc%nnest
      
     write(LIS_logunit,*) "Using USGS PET forcing"
-    write(LIS_logunit,*) "USGS PET forcing directory :: ",petusgs_struc(n)%petdir
+    write(LIS_logunit,*) "USGS PET forcing directory :: ",trim(petusgs_struc(n)%petdir)
     write(LIS_logunit,*) "USGS PET forcing file type :: ",petusgs_struc(n)%pettype
     write(LIS_logunit,*) " "
 

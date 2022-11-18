@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -65,6 +65,7 @@ module RFE2Daily_forcingMod
 !
 ! !USES:
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
   implicit none
 
@@ -83,7 +84,7 @@ module RFE2Daily_forcingMod
 
   type, public :: RFE2Daily_type_dec
      real                    :: ts
-     character*40            :: RFE2DailyDir
+     character(len=LIS_CONST_PATH_LEN) :: RFE2DailyDir
      real*8                  :: RFE2DailyEndTime
      type(ESMF_Time)         :: startTime
      real*8                  :: st_real

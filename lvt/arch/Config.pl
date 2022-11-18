@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -37,8 +37,9 @@ else{
    exit 1;
 }
 
-$sys_fc = $ENV{LVT_FC};
+
 if(defined($ENV{LVT_FC})){
+   $sys_fc = $ENV{LVT_FC};
 }
 else{
    print "--------------ERROR---------------------\n";
@@ -131,11 +132,29 @@ if($opt_lev == -3) {
 	print "Using '-g'\n";
 	$sys_opt = "-g ";
     }
+    elsif($sys_arch eq "cray_cray") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+	$sys_c_opt = "-g ";
+    }
 }
 
 if($opt_lev == -2) {
-   $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
-   $sys_c_opt = "-g ";
+   if($sys_arch eq "linux_ifc") {
+      $sys_opt = "-g -check bounds,format,output_conversion,pointers,stack,uninit -fp-stack-check -ftrapuv ";
+      $sys_c_opt = "-g ";
+   }
+   elsif($sys_arch eq "linux_gfortran") {
+      $sys_opt = "-g -Wall -fbounds-check ";
+      $sys_c_opt = "-g ";
+   }
+   elsif($sys_arch eq "cray_cray") {
+	   print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      print "Using '-g'\n";
+      $sys_opt = "-g ";
+      $sys_c_opt = "-g ";
+   }
 }
 if($opt_lev == -1) {
    $sys_opt = "-g -O0";
@@ -150,8 +169,14 @@ elsif($opt_lev == 1) {
    $sys_c_opt = "";
 }
 elsif($opt_lev == 2) {
+   if($sys_arch eq "cray_cray") {
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0 ";
+      $sys_c_opt = "";
+   }
+   else {
    $sys_opt = "-O2 ";
    $sys_c_opt = "";
+   }
 }
 elsif($opt_lev == 3) {
    $sys_opt = "-O3 ";
@@ -240,7 +265,12 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LVT_ECCODES})){
       $sys_gribapi_path = $ENV{LVT_ECCODES};
       $inc = "/include/";
-      $lib = "/lib/";
+      if ($sys_arch eq "cray_cray") {
+         $lib = "/lib64/";
+      }
+      else {
+         $lib = "/lib/";
+      }
       $inc_gribapi=$sys_gribapi_path.$inc;
       $lib_gribapi=$sys_gribapi_path.$lib;
    }
@@ -490,6 +520,13 @@ else{
    $libjpeg = "-ljpeg";
 }
 
+if(defined($ENV{LVT_RPC})){
+   $librpc = "-ltirpc";
+}
+else{
+   $librpc = "";
+}
+
 if($sys_arch eq "linux_ifc") {
    if ($use_endian == 1 ) {
       $cflags = "-c ".$sys_c_opt." -traceback -DIFC";
@@ -531,6 +568,21 @@ elsif($sys_arch eq "AIX") {
    $fflags ="-c ".$sys_opt."-c -g -qkeepparm -qsuffix=f=f:cpp=F90 -q64 -WF,-DAIX, ".$sys_par." -I\$(MOD_ESMF) ";
    $ldflags= "-q64 -bmap:map -bloadmap:lm -lmass  -L\$(LIB_ESMF) -lesmf -lstdc++ -limf -lm -lrt";
 }
+elsif($sys_arch eq "cray_cray") {
+   if($use_endian == 1) {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DCRAYFTN -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt."-ef -Ktrap=fp  ".$sys_par."-DCRAYFTN -I\$(MOD_ESMF) ";
+      $ldflags= " -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+   else {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DCRAYFTN -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt."-ef -Ktrap=fp  ".$sys_par."-DCRAYFTN -I\$(MOD_ESMF) ";
+      $ldflags= " -hbyteswapio -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+
+   $cflags = "-c ".$sys_c_opt." -DCRAYFTN";
+
+}
 
 
 
@@ -566,7 +618,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4) ";
    $fflags = $fflags." -I\$(INC_HDF4) ";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ".$librpc;
 }
 if($use_hdf5 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF5) ";

@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -96,7 +96,7 @@ subroutine noahmp401_gettws(n, LSM_State)
      soilm3(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(3)
      soilm4(t) = NOAHMP401_struc(n)%noahmp401(t)%smc(4)
      gws(t)    = NOAHMP401_struc(n)%noahmp401(t)%wa
-     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv/1000.0 ! to m
+     swe(t) = noahmp401_struc(n)%noahmp401(t)%sneqv
      snod(t) = noahmp401_struc(n)%noahmp401(t)%snowh
   enddo
 

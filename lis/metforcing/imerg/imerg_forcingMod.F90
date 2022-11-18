@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -50,6 +50,8 @@ module imerg_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
   PRIVATE
 !-----------------------------------------------------------------------------
@@ -66,7 +68,7 @@ module imerg_forcingMod
   type, public :: imerg_type_dec
      real    :: ts
      integer :: ncold, nrold     ! IMERG dimensions
-     character*100 :: imergdir   ! IMERG Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: imergdir   ! IMERG Forcing Directory
      character*5 :: imergver     ! IMERG version (V06B set as default)
      character*5 :: imergprd     ! IMERG product (early, late, final)
      real*8  :: imergtime

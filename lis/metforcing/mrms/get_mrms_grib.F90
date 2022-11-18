@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -26,7 +26,7 @@ subroutine get_mrms_grib(n, findex)
   use LIS_logMod, only      : LIS_logunit
   use LIS_timeMgrMod, only  : LIS_tick, LIS_get_nstep
   use mrms_grib_forcingMod, only : mrms_grib_struc
-
+  use LIS_constantsMod,     only : LIS_CONST_PATH_LEN
   implicit none
 ! !ARGUMENTS: 
 
@@ -73,7 +73,7 @@ subroutine get_mrms_grib(n, findex)
   integer :: order
 
   real*8  :: lis_time, mrms_grib_file_time ! Current LIS Time and end boundary time for MRMS file
-  character(150) :: file_name               ! Filename variables for precip data sources
+  character(len=LIS_CONST_PATH_LEN) :: file_name               ! Filename variables for precip data sources
 
   integer :: doy1, yr1, mo1, da1, hr1, mn1, ss1
   integer :: doy2, yr2, mo2, da2, hr2, mn2, ss2

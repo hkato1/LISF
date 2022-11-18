@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -174,8 +174,12 @@ contains
     use UASNOW_obsMod,          only : UASNOW_obsinit
     use OzFlux_obsMod,          only : OzFlux_obsinit
     use JASMINsm_obsMod,        only : JASMINsm_obsInit
+    use MCD15A2H_obsMod,        only : MCD15A2H_obsinit
     use ERA5obsMod,             only : ERA5obsinit
     use FluxSat_obsMod,         only : FluxSat_obsInit
+    use THySM_obsMod,           only : THySM_obsinit
+    use UASMAP_obsMod,          only : UASMAP_obsinit
+    use GRUNrunoff_obsMod,      only : GRUNrunoffInit 
 
     external readtemplateObs
     external readLISoutput
@@ -280,8 +284,12 @@ contains
     external readUASNOWObs
     external readOzFluxObs
     external readJASMINsmobs
+    external readMCD15A2Hobs
     external readERA5obs
     external readFluxSatobs
+    external readTHySMobs
+    external readUASMAPobs
+    external readGRUNrunoffobs
 
     call registerobsread(trim(LVT_LVTbenchmarkobsId)//char(0),&
          readLVTbenchmarkOUTobs)
@@ -700,6 +708,11 @@ contains
     call registerobsread(trim(LVT_JASMINsmobsId)//char(0),&
          readJASMINsmobs)
 
+    call registerobssetup(trim(LVT_MCD15A2HobsId)//char(0), &
+         MCD15A2H_obsinit)
+    call registerobsread(trim(LVT_MCD15A2HobsId)//char(0),&
+         readMCD15A2Hobs)
+
     call registerobssetup(trim(LVT_ERA5obsId)//char(0), &
          ERA5obsinit)
     call registerobsread(trim(LVT_ERA5obsId)//char(0),&
@@ -710,5 +723,21 @@ contains
     call registerobsread(trim(LVT_FluxSatobsId)//char(0),&
          readFluxSatobs)
 
+    call registerobssetup(trim(LVT_THySMobsId)//char(0), &
+         THySM_obsinit)
+    call registerobsread(trim(LVT_THySMobsId)//char(0),&
+         readTHySMobs)
+
+    call registerobssetup(trim(LVT_UASMAPobsId)//char(0), &
+         UASMAP_obsinit)
+    call registerobsread(trim(LVT_UASMAPobsId)//char(0),&
+         readUASMAPobs)
+    
+    call registerobssetup(trim(LVT_GRUNobsId)//char(0), &
+         GRUNrunoffinit)
+    call registerobsread(trim(LVT_GRUNobsId)//char(0),&
+         readGRUNrunoffobs)
+    
+    
   end subroutine LVT_datastream_plugin
 end module LVT_datastream_pluginMod

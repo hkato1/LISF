@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -47,7 +47,7 @@ subroutine readcrd_cmorph()
      call ESMF_ConfigGetAttribute(LIS_config,cmorph_struc(n)%nrold,rc=rc)
      
      write(LIS_logunit,*)'Using CMORPH forcing'
-     write(LIS_logunit,*) 'CMORPH forcing directory :',cmorph_struc(n)%CMORPHDIR
+     write(LIS_logunit,*) 'CMORPH forcing directory :',trim(cmorph_struc(n)%CMORPHDIR)
 !------------------------------------------------------------------------
 ! Setting global observed precip times to zero to ensure 
 ! data is read in during first time step

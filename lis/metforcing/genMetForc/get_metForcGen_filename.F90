@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -29,8 +29,8 @@
    integer, intent(in)        :: kk              ! Forecast index
    integer, intent(in)        :: findex          ! Forcing index
    integer, intent(in)        :: yr,mo,da,hr,mn  ! File timestamp
-   character*100, intent(in)  :: directory       ! File directory
-   character*140, intent(out) :: filename  
+   character(len=*), intent(in)  :: directory       ! File directory
+   character(len=*), intent(out) :: filename  
 !
 ! !DESCRIPTION:
 !   This subroutine puts together LDT generated forcing

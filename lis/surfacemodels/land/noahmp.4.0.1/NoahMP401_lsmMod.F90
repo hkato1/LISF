@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -125,6 +125,7 @@ module NoahMP401_lsmMod
 !
 ! !USES:
     use NoahMP401_module
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none
 
@@ -139,7 +140,7 @@ module NoahMP401_lsmMod
     public :: NoahMP401_struc
 !EOP
     type, public :: NoahMP401_type_dec
-        character*256      :: rfile
+        character(len=LIS_CONST_PATH_LEN) :: rfile
         character*256      :: rformat
         !-------------------------------------------------------------------------
         ! Parameter file names
@@ -289,6 +290,11 @@ contains
                 NOAHMP401_struc(n)%noahmp401(t)%wind_e = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%wind_n = 0.0
                 NOAHMP401_struc(n)%noahmp401(t)%sfcheadrt = 0.0
+
+                !ag(05Jan2021)
+                NOAHMP401_struc(n)%noahmp401(t)%rivsto = 0.0
+                NOAHMP401_struc(n)%noahmp401(t)%fldsto = 0.0
+                NOAHMP401_struc(n)%noahmp401(t)%fldfrc = 0.0
             enddo ! end of tile (t) loop
 
             !------------------------------------------------------------------------

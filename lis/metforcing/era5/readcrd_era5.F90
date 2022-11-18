@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -52,7 +52,7 @@ subroutine readcrd_era5()
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) '[INFO] Using ERA5 forcing'
      write(LIS_logunit,*) '[INFO] ERA5 forcing directory: ',&
-          era5_struc(n)%era5DIR
+          trim(era5_struc(n)%era5DIR)
 
      era5_struc(n)%era5time1 = 3000.0
      era5_struc(n)%era5time2 = 0.0

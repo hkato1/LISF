@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -41,7 +41,7 @@ subroutine readcrd_nam242()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*) 'Using NAM242 forcing'
-     write(LIS_logunit,*) 'NAM242 forcing directory :',nam242_struc(n)%NAMDIR
+     write(LIS_logunit,*) 'NAM242 forcing directory :',trim(nam242_struc(n)%NAMDIR)
      nam242_struc(n)%namtime1  = 3000.0
      nam242_struc(n)%namtime2  = 0.0
   enddo

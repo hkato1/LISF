@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -62,6 +62,7 @@ module nam242_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   implicit none
   
   PRIVATE
@@ -79,8 +80,8 @@ module nam242_forcingMod
   type, public        :: nam242_type_dec
      integer          :: ncold, nrold
      integer          :: nmif
-     character*100    :: namdir   !NAM Forcing Directory
-     character*100    :: elevfile
+     character(len=LIS_CONST_PATH_LEN) :: namdir   !NAM Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: elevfile
      real             :: ts
      real*8           :: namtime1,namtime2
      integer          :: findtime1,findtime2

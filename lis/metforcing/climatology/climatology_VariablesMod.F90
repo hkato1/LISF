@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -302,7 +302,7 @@ contains
 !
 ! !ARGUMENTS: 
    integer, intent(in) :: findex          ! Forcing index
-   character(140), intent(in) :: filename ! Forcing filename path
+   character(len=*), intent(in) :: filename ! Forcing filename path
    integer, intent(in) :: inc, inr        ! Input forcing cols, rows
    integer, intent(in) :: ntimes          ! Input number of daily time pts 
 !

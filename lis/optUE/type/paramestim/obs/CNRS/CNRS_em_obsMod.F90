@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -69,6 +69,7 @@ contains
     use LIS_timeMgrMod, only : LIS_calendar
     use LIS_logMod, only : LIS_logunit, LIS_verify, & 
          LIS_getNextUnitNumber, LIS_releaseUnitNumber
+    use LIS_constantsMod, only : LIS_CONST_PATH_LEN
 
     implicit none 
 
@@ -91,10 +92,10 @@ contains
     integer                   ::  i 
     type(ESMF_ArraySpec)      ::  realarrspec
     type(ESMF_Field)          ::  obsField
-    character*100             ::  emissivityobsdir
-    character*100             ::  emissivityobsmaskdir
+    character(len=LIS_CONST_PATH_LEN) ::  emissivityobsdir
+    character(len=LIS_CONST_PATH_LEN) ::  emissivityobsmaskdir
     character*100             ::  vname
-    character*100             ::  obsAttribFile(LIS_rc%nnest)
+    character(len=LIS_CONST_PATH_LEN) ::  obsAttribFile(LIS_rc%nnest)
     integer                   ::  ftn
     integer                   ::  numrecords, ios
     integer                   ::  jday, yr, lat, lon
@@ -531,10 +532,10 @@ contains
        
        !determine if ascending/descending & if to test for clouds
        apply_mask=.false.
-       if (or(hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_lower,hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_upper)) then
+       if ( (hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_lower) .or. (hr.eq.CNRS_em_obs_struc(n)%mask_hr_a_upper) ) then
           ipass=CNRS_em_obs_struc(n)%index_ascend
           apply_mask=.true.
-       elseif (or(hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_lower,hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_upper)) then
+       elseif ( (hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_lower) .or. (hr.eq.CNRS_em_obs_struc(n)%mask_hr_d_upper) ) then
           ipass=CNRS_em_obs_struc(n)%index_descend
           apply_mask=.true.
        end if

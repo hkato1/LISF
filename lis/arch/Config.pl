@@ -3,9 +3,9 @@
 #-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 # NASA Goddard Space Flight Center
 # Land Information System Framework (LISF)
-# Version 7.3
+# Version 7.4
 #
-# Copyright (c) 2020 United States Government as represented by the
+# Copyright (c) 2022 United States Government as represented by the
 # Administrator of the National Aeronautics and Space Administration.
 # All Rights Reserved.
 #-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -20,14 +20,26 @@ if(defined($ENV{LIS_ARCH})){
    # The Cray/Intel environment is almost identical to the Linux/Intel
    # environment.  There are two modifications that must be made to the
    # Linux/Intel configuration settings to make them work on the Cray.
-   # So reset the sys_arch variable to "intel_ifc" and set a flag to
-   # enable the cray modifications.
+   # So reset the sys_arch variable to "linux_ifc" and set a flag to
+   # enable the Cray modifications.
    if($sys_arch eq "cray_ifc"){
       $sys_arch = "linux_ifc";
       $cray_modifications = 1;
    }
    else{
       $cray_modifications = 0;
+   }
+   # The IBM/GNU environment is almost identical to the Linux/GNU
+   # environment.  There is one modification that must be made to the
+   # Linux/GNU configuration settings to make them work on the IBM Power9.
+   # So reset the sys_arch variable to "linux_gfortran" and set a flag to
+   # enable the IBM modifications.
+   if($sys_arch eq "ibm_gfortran"){
+      $sys_arch = "linux_gfortran";
+      $ibm_modifications = 1;
+   }
+   else{
+      $ibm_modifications = 0;
    }
 }
 else{
@@ -96,6 +108,8 @@ $par_table{"linux_gfortran"}{"0"}  = "-DHIDE_MPI";
 $par_table{"linux_gfortran"}{"1"}  = "";
 $par_table{"AIX"}{"0"}             = "";
 $par_table{"AIX"}{"1"}             = "";
+$par_table{"cray_cray"}{"0"}       = "-DHIDE_MPI";
+$par_table{"cray_cray"}{"1"}       = "-DUSE_INCLUDE_MPI";
 
 $sys_par_d = $par_table{$sys_arch}{$par_lev};
 
@@ -191,6 +205,12 @@ if($opt_lev == -3) {
       print "Using '-g'\n";
       $sys_opt = "-g";
    }
+    elsif($sys_arch eq "cray_cray") {
+	print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+	print "Using '-g'\n";
+	$sys_opt = "-g ";
+	$sys_c_opt = "-g ";
+    }
 }
 elsif($opt_lev == -2) {
    # Default flags for C.
@@ -239,6 +259,12 @@ elsif($opt_lev == -2) {
       print "Using '-g'\n";
       $sys_opt = "-g";
    }
+   elsif($sys_arch eq "cray_cray") {
+	   print "Optimization level $opt_lev is not defined for $sys_arch.\n";
+      print "Using '-g'\n";
+      $sys_opt = "-g ";
+      $sys_c_opt = "-g ";
+   }
 }
 elsif($opt_lev == -1) {
    $sys_opt = "-g -O0";
@@ -253,8 +279,14 @@ elsif($opt_lev == 1) {
    $sys_c_opt = "";
 }
 elsif($opt_lev == 2) {
-   $sys_opt = "-O2";
-   $sys_c_opt = "";
+   if($sys_arch eq "cray_cray") {
+      $sys_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
+      $sys_c_opt = "-O2 -h ipa2,scalar0,vector0,fp0,nofma ";
+   }
+   else {
+      $sys_opt = "-O2 ";
+      $sys_c_opt = "";
+   }
 }
 elsif($opt_lev == 3) {
    $sys_opt = "-O3";
@@ -423,7 +455,12 @@ elsif($use_gribapi == 2) {
    if(defined($ENV{LIS_ECCODES})){
       $sys_gribapi_path = $ENV{LIS_ECCODES};
       $inc = "/include/";
-      $lib = "/lib/";
+      if ($sys_arch eq "cray_cray") {
+         $lib = "/lib64/";
+      }
+      else {
+         $lib = "/lib/";
+      }
       $inc_gribapi=$sys_gribapi_path.$inc;
       $lib_gribapi=$sys_gribapi_path.$lib;
    }
@@ -812,6 +849,30 @@ if($use_mkllapack == 1) {
    }
 }
 
+print "Use PETSc? (1-yes, 0-no, default=0): ";
+$use_petsc=<stdin>;
+chomp($use_petsc);
+if($use_petsc eq ""){
+   $use_petsc=0;
+}
+
+if($use_petsc == 1) {
+   if(defined($ENV{LIS_PETSc})){
+      $sys_petsc_path = $ENV{LIS_PETSc};
+      $inc = "/include/";
+      $lib = "/lib/";
+      $inc_petsc=$sys_petsc_path.$inc;
+      $lib_petsc=$sys_petsc_path.$lib;
+   }
+   else {
+      print "--------------ERROR---------------------\n";
+      print "Please specify the PETSc path using\n";
+      print "the LIS_PETsc variable.\n";
+      print "Configuration exiting ....\n";
+      print "--------------ERROR---------------------\n";
+      exit 1;
+   }
+}
 
 if(defined($ENV{LIS_JPEG})){
    $libjpeg = "-L".$ENV{LIS_JPEG}."/lib"." -ljpeg";
@@ -833,6 +894,13 @@ if ($ENV{WRF_HYDRO} eq '1') {
 # MPDECOMP2 does not prompt user
 if ($ENV{MPDECOMP2} eq '1') {
    $use_mpdecomp2 = 1;
+}
+
+if(defined($ENV{LIS_RPC})){
+   $librpc = "-ltirpc";
+}
+else{
+   $librpc = "";
 }
 
 
@@ -884,13 +952,31 @@ elsif($sys_arch eq "AIX") {
    $lib_flags= "-lmass -lesmf -lstdc++ -limf -lm -lrt";
    $lib_paths= "-L\$(LIB_ESMF)";
 }
+elsif($sys_arch eq "cray_cray") {
+   if($use_endian == 1) {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $ldflags= " -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+   else {
+      $fflags77= "-c ".$sys_opt." ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $fflags =" -c ".$sys_opt." -ef -Ktrap=fp  ".$sys_par." -DHIDE_SHR_MSG -DNO_SHR_VMATH -DCRAYFTN -DLINUX -I\$(MOD_ESMF) ";
+      $ldflags= " -hbyteswapio -hdynamic -L\$(LIB_ESMF) -lesmf -lstdc++ -lrt";
+   }
+
+   $cflags = "-c ".$sys_c_opt." -DCRAYFTN -DLINUX ";
+
+}
 
 if($par_lev == 1) {
    if (index($sys_fc, "-mt_mpi") != -1) {
       $ldflags = $ldflags." -lmpi_mt";
    }
-   elsif ($cray_modifications == 1) {
+   elsif ($cray_modifications == 1 || $sys_arch eq "cray_cray") {
       $ldflags = $ldflags." -lmpich";
+   }
+   elsif ($ibm_modifications == 1) {
+      $ldflags = $ldflags." -lmpi_ibm_mpifh";
    }
    else{
       $ldflags = $ldflags." -lmpi";
@@ -934,7 +1020,7 @@ if($use_hdfeos == 1){
 if($use_hdf4 == 1){
    $fflags77 = $fflags77." -I\$(INC_HDF4)";
    $fflags = $fflags." -I\$(INC_HDF4)";
-   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz";
+   $ldflags = $ldflags." -L\$(LIB_HDF4) -lmfhdf -ldf ".$libjpeg." -lz ".$librpc;
    $lib_flags= $lib_flags." -lmfhdf -ldf ".$libjpeg." -lz";
    $lib_paths= $lib_paths." -L\$(LIB_HDF4)"
 }
@@ -980,6 +1066,11 @@ if($use_lapack == 1){
 if($use_mkllapack == 1){
    #Changed to be able to use mkl Wendy Sharples
    $ldflags = $ldflags." -L\$(LIB_LAPACK) -lmkl_rt";
+}
+
+if($use_petsc == 1){
+   $fflags = $fflags." -I\$(INC_PETSc)";
+   $ldflags = $ldflags." -L\$(LIB_PETSc) -Wl,-rpath,\$(LIB_PETSc) -lpetsc -lm";
 }
 
 if($use_esmf_trace == 1){
@@ -1068,6 +1159,8 @@ printf conf_file "%s%s\n","LIB_PROF_UTIL   = $lib_crtm_prof";
 printf conf_file "%s%s\n","INC_CMEM        = $inc_cmem";
 printf conf_file "%s%s\n","LIB_CMEM        = $lib_cmem";
 printf conf_file "%s%s\n","LIB_LAPACK      = $lib_lapack";
+printf conf_file "%s%s\n","INC_PETSc       = $inc_petsc";
+printf conf_file "%s%s\n","LIB_PETSc       = $lib_petsc";
 printf conf_file "%s%s\n","CFLAGS          = $cflags";
 printf conf_file "%s%s\n","FFLAGS77        = $fflags77";
 printf conf_file "%s%s\n","FFLAGS          = $fflags";
@@ -1162,6 +1255,12 @@ else{
    printf misc_file "%s\n","#undef MKL_LAPACK ";
 }
 
+if($use_petsc == 1) {
+   printf misc_file "%s\n","#define PETSc ";
+}
+else{
+   printf misc_file "%s\n","#undef PETSc ";
+}
 
 printf misc_file "%s\n","#undef INC_WATER_PTS";
 printf misc_file "%s\n","#undef COUPLED";

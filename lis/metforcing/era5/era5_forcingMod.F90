@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -59,6 +59,9 @@ module era5_forcingMod
 !  \end{description}
 !
 ! !USES:
+
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -78,8 +81,8 @@ module era5_forcingMod
      integer      :: npts
      real         :: ts
      integer      :: ncold, nrold
-     character*40 :: era5dir   !ERA5 Forcing Directory
-     character*40 :: mapfile
+     character(len=LIS_CONST_PATH_LEN) :: era5dir   !ERA5 Forcing Directory
+     character(len=LIS_CONST_PATH_LEN) :: mapfile
      real*8       :: era5time1,era5time2
      logical      :: reset_flag
      integer      :: mo1,mo2

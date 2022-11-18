@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -115,7 +115,8 @@ module LIS_histDataMod
   public :: LIS_MOC_SMFROZFRAC
   public :: LIS_MOC_SOILWET   
   public :: LIS_MOC_MATRICPOTENTIAL
-  public :: LIS_MOC_POTEVAP   
+  public :: LIS_MOC_POTEVAP
+  public :: LIS_MOC_VPD
   public :: LIS_MOC_ECANOP    
   public :: LIS_MOC_TVEG      
   public :: LIS_MOC_ESOIL     
@@ -308,6 +309,9 @@ module LIS_histDataMod
   public :: LIS_MOC_SURFWS
   public :: LIS_MOC_EWAT
   public :: LIS_MOC_EDIF
+
+  public :: LIS_MOC_DRSTO
+  public :: LIS_MOC_DROUT
 
   ! RTM
   public :: LIS_MOC_RTM_EMISSIVITY
@@ -568,6 +572,7 @@ module LIS_histDataMod
 
    ! ALMA EVAPORATION COMPONENTS
    integer :: LIS_MOC_POTEVAP    = -9999
+   integer :: LIS_MOC_VPD        = -9999   
    integer :: LIS_MOC_ECANOP     = -9999
    integer :: LIS_MOC_TVEG       = -9999
    integer :: LIS_MOC_ESOIL      = -9999
@@ -785,6 +790,11 @@ module LIS_histDataMod
    integer :: LIS_MOC_RNFDWI = -9999
    integer :: LIS_MOC_BSFDWI = -9999
    integer :: LIS_MOC_SURFWS = -9999
+
+   !Urban drainage and flood modeling
+   integer :: LIS_MOC_DRSTO = -9999
+   integer :: LIS_MOC_DROUT = -9999
+
 
    integer :: LIS_MOC_EWAT = -9999
    integer :: LIS_MOC_EDIF = -9999
@@ -1132,8 +1142,8 @@ contains
     call LIS_verify(rc,'Model output attributes file: not specified')
 
     call ESMF_ConfigGetAttribute(LIS_config,LIS_rc%outputSpecFile(n),rc=rc)
-    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File', &
-                         LIS_rc%outputSpecFile(n)
+    write(LIS_logunit,*) '[INFO] Opening Model Output Attributes File, ', &
+                         trim(LIS_rc%outputSpecFile(n))
 
     inquire(file=LIS_rc%outputSpecFile(n),exist=file_exists)
     if(.not.file_exists) then 
@@ -2065,6 +2075,19 @@ contains
             model_patch=.true.)
     endif
 
+    call ESMF_ConfigFindLabel(modelSpecConfig,"VPD:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
+         "VPD",&
+         "vapor_pressure_deficit",&
+         "vapor pressure deficit",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_VPD,&
+            LIS_histData(n)%head_lsm_list,&
+            n,1,ntiles,(/"Pa"/),&
+            1,(/"-"/),2,1,1,&
+            model_patch=.true.)
+    endif    
+    
     call ESMF_ConfigFindLabel(modelSpecConfig,"ECanop:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
          "ECanop",&
@@ -5507,17 +5530,41 @@ contains
             model_patch=.true.)
     endif
    
-    call ESMF_ConfigFindLabel(modelSpecConfig,"qtot:",rc=rc)
+    call ESMF_ConfigFindLabel(modelSpecConfig,"Qtot:",rc=rc)
     call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_lsm_list, &
-         "qtot",&
+         "Qtot",&
          "total_discharge_to_stream",&
          "total discharge to stream",rc)
     if ( rc == 1 ) then
        call register_dataEntry(LIS_MOC_LSM_COUNT,LIS_MOC_QTOT, &
             LIS_histData(n)%head_lsm_list,&
-            n,1,ntiles,(/"mm"/),1,("-"),2,1,1,&
+            n,3,ntiles,(/"mm    ","kg/m2s","kg/m2 "/),&
+            3,(/"-  ","IN ","OUT"/),2,1,1,&
             model_patch=.true.)
     endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainStor:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "UrbDrainStor",&
+         "Urban_Drainage_Water_Storage",&
+         "Urban Drainage Water Storage",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_DRSTO,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
+    call ESMF_ConfigFindLabel(modelSpecConfig,"UrbDrainDis:",rc=rc)
+    call get_moc_attributes(modelSpecConfig, LIS_histData(n)%head_routing_list,&
+         "UrbDrainDis",&
+         "Urban_Drainage_Discharge",&
+         "Urban Drainage Discharge",rc)
+    if ( rc == 1 ) then
+       call register_dataEntry(LIS_MOC_ROUTING_COUNT,LIS_MOC_DROUT,&
+            LIS_histData(n)%head_routing_list,&
+            n,1,ntiles,(/"m3/s"/),1,(/"-"/),1,1,1,model_patch=.true.)
+    endif
+
 !   <- end of AWRAL addition -> 
    
     call ESMF_ConfigDestroy(modelSpecConfig,rc=rc)
@@ -5856,7 +5903,7 @@ subroutine get_moc_attributes(modelSpecConfig, head_dataEntry, short_name, &
 !EOP
 
 ! !USES:
-   use ESMF 
+   !NONE
 
    implicit none
 
@@ -6736,7 +6783,7 @@ end subroutine LIS_diagnoseIrrigationOutputVar
      endif
 
      do while ( associated(dataEntry) )
-        if(dataEntry%selectOpt.ne.0) then 
+        if(dataEntry%selectOpt.ne.0) then
            do k=1,dataEntry%vlevels
 !#if (defined SPMD)
 !              call mpi_reduce(sum(dataEntry%count(:,k)),&

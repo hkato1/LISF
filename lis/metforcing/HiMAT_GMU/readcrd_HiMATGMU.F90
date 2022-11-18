@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -42,7 +42,7 @@ subroutine readcrd_HiMATGMU()
        call ESMF_ConfigGetAttribute(LIS_config, HiMATGMU_struc(n)%HiMATGMUdir,rc=rc)
 
        write(LIS_logunit,*) '[INFO] Using HiMAT GMU forcing'
-       write(LIS_logunit,*) '[INFO] HiMAT GMU forcing directory :', HiMATGMU_struc(n)%HIMATGMUDIR
+       write(LIS_logunit,*) '[INFO] HiMAT GMU forcing directory :', trim(HiMATGMU_struc(n)%HIMATGMUDIR)
 
     !- Setting observed precip times to zero to ensure data is read in
     !   at first time step

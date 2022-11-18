@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -54,7 +54,7 @@ subroutine read_HYMAP_baseflow_delay(n, array)
 
   inquire(file=trim(HYMAP_struc(n)%baseflowdelayfile), exist=file_exists)
   if(.not.file_exists) then 
-     write(LDT_logunit,*) '[ERR] Baseflowdelay map, ',&
+     write(LDT_logunit,*) '[ERR] HYMAP baseflow time delay map, ',&
            trim(HYMAP_struc(n)%baseflowdelayfile),', not found.'
      write(LDT_logunit,*) 'Program stopping ...'
      call LDT_endrun

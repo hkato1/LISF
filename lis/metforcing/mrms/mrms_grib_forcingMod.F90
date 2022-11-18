@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -15,10 +15,11 @@ module mrms_grib_forcingMod
 ! !DESCRIPTION: 
 !  This module contains variables and data structures that are used
 !  for the implementation of the precipitation data from the
-!  National Center for Environmental Prediction (NCEP) MRMS  
-!  (MRMS) Doppler Radar+gage product.  The MRMS is a national
-!  level product, on an hourly interval, and supplements mainly
-!  the which base forcing precipitation (e.g., NLDAS) is being used.
+!  National Center for Environmental Prediction (NCEP)
+!  Multi-Radar/Multi-Sensor (MRMS) Doppler Radar+gage product.
+!  The MRMS is a national level product, on an hourly interval,
+!  and supplements mainly the which base forcing precipitation
+!  (e.g., NLDAS) is being used.
 ! 
 !  The implementation in LIS has the derived data type {\tt mrms\_struc}
 !  that includes the variables to specify the runtime options, and 
@@ -58,6 +59,8 @@ module mrms_grib_forcingMod
 !  \end{description}
 !
 ! !USES: 
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
+
   implicit none
 
   PRIVATE
@@ -77,11 +80,11 @@ module mrms_grib_forcingMod
      real               :: ts
      integer            :: ncol                 ! Number of cols
      integer            :: nrow                 ! Number of rows
-     character*80       :: mrms_grib_dir        ! MRMS Directory
+     character(len=LIS_CONST_PATH_LEN) :: mrms_grib_dir ! MRMS Directory
      real*8             :: mrms_grib_time       ! Nearest hourly instance of incoming file
      integer            :: mrms_mask_opt        ! Flag for whether or not to use mask 1=Yes
      real*8             :: mrms_mask_thresh     ! Threshold for masking MRMS data
-     character*150      :: mrms_mask_dir        ! Directory of MRMS masks
+     character(len=LIS_CONST_PATH_LEN) :: mrms_mask_dir        ! Directory of MRMS masks
      integer            :: mi                   ! Number of points in the input grid
 
 ! == Arrays for Bilinear Interpolation option (=1)

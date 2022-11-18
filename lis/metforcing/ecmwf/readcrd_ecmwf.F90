@@ -1,9 +1,9 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.4
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2022 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
@@ -73,7 +73,7 @@ subroutine readcrd_ecmwf()
 
   do n=1,LIS_rc%nnest
      write(LIS_logunit,*)'Using ECMWF forcing'
-     write(LIS_logunit,*) 'ECMWF forcing directory :',ecmwf_struc(n)%ecmwfDIR
+     write(LIS_logunit,*) 'ECMWF forcing directory :',trim(ecmwf_struc(n)%ecmwfDIR)
 #if 0
      write(LIS_logunit,*) 'ECMWF IFS23R4 elevation map :',ecmwf_struc(n)%elevfileifs23r4
      write(LIS_logunit,*) 'ECMWF IFS25R1 elevation map :',ecmwf_struc(n)%elevfileifs25r1
