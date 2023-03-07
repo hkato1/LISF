@@ -147,6 +147,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_imergId           = "GPM IMERG"
    character*50, public,  parameter :: LIS_stg2Id            = "CPC STAGEII"
    character*50, public,  parameter :: LIS_stg4Id            = "CPC STAGEIV"
+   character*50, public,  parameter :: LIS_gpcpId            = "GPCP"
 
    character*50, public,  parameter :: LIS_narrId            = "NARR"
    character*50, public,  parameter :: LIS_RFE2DailyId       = "RFE2(daily)"

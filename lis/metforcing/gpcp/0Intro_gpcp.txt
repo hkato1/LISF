@@ -1,0 +1,25 @@
+!-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
+! NASA Goddard Space Flight Center
+! Land Information System Framework (LISF)
+! Version 7.4
+!
+! Copyright (c) 2022 United States Government as represented by the
+! Administrator of the National Aeronautics and Space Administration.
+! All Rights Reserved.
+!-------------------------END NOTICE -- DO NOT EDIT-----------------------
+!
+!BOP
+!\section{GPCP}
+!The Global Precipitation Climatology Project (GPCP) is the merged satellite
+!and gauge precipitation products, made avaiable at NOAA/National Centers for
+!Environmental Information. The Daily Precipitation Analysis Climate Data 
+!Record (CDR) is a companion to the GPCP Monthly analysis at 1x1 degree spatial
+!resolution and a daily time scale from October 1996 to present.
+!The daily data is disaggregated to 3-hourly and finer resolution using 
+!the forecast precipitation fields of the Global Data Assimilation System (GDAS)
+!weather forecast model developed at the Environmental Modeling
+!Center (EMC) of NOAA/NCEP~\cite{derber}.  
+!GDAS variables are produced on a quadratic gaussian grid, whose resolution
+!increased from T170, T254, T382, T574, to T1534. The disaggregated GPCP
+!precipitation fields change the spatial resolution accordingly.
+!EOP

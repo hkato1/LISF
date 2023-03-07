@@ -200,6 +200,10 @@ subroutine LIS_metforcing_plugin
    use cmap_forcingMod
 #endif
 
+#if ( defined MF_GPCP )
+   use gpcp_forcingMod
+#endif
+
 #if ( defined MF_NLDAS2 )
    use nldas2_forcingMod
 #endif
@@ -480,6 +484,12 @@ subroutine LIS_metforcing_plugin
    external get_cmap
    external timeinterp_cmap
    external finalize_cmap
+#endif
+
+#if ( defined MF_GPCP )
+   external get_gpcp
+   external timeinterp_gpcp
+   external finalize_gpcp
 #endif
 
 #if ( defined MF_NLDAS2 )
@@ -931,6 +941,14 @@ subroutine LIS_metforcing_plugin
    call registertimeinterpmetforc(trim(LIS_cmapId)//char(0), &
                                   timeinterp_cmap)
    call registerfinalmetforc(trim(LIS_cmapId)//char(0),finalize_cmap)
+#endif
+
+#if ( defined MF_GPCP )
+! - GPCP/GDAS disaggregated 3hr Forcing:
+    call registerinitmetforc(trim(LIS_gpcpId)//char(0),init_gpcp)
+    call registerretrievemetforc(trim(LIS_gpcpId)//char(0),get_gpcp)
+    call registertimeinterpmetforc(trim(LIS_gpcpId)//char(0),timeinterp_gpcp)
+    call registerfinalmetforc(trim(LIS_gpcpId)//char(0), finalize_gpcp)
 #endif
 
 #if ( defined MF_NLDAS2 )
