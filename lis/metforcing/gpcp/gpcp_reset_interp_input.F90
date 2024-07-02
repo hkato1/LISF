@@ -141,6 +141,23 @@ subroutine gpcp_reset_interp_input(n, findex, gridDesci)
                                        gpcp_struc(n)%mi,            &
                                        LIS_rc%lnc(n)*LIS_rc%lnr(n), &
                                        gpcp_struc(n)%n111)
+!HKB test
+      case( "budget-bilinear" )
+         allocate(gpcp_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gpcp_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+
+         call conserv_interp_input(n, gridDesci,                           &
+                 gpcp_struc(n)%n112,gpcp_struc(n)%n122,gpcp_struc(n)%n212, &
+                 gpcp_struc(n)%n222,gpcp_struc(n)%w112,gpcp_struc(n)%w122, &
+                 gpcp_struc(n)%w212,gpcp_struc(n)%w222)
+!HKB test end
+
       case default
          write(LIS_logunit,*) 'The specified spatial interpolation option '
          write(LIS_logunit,*) 'is not supported for GPCP.'

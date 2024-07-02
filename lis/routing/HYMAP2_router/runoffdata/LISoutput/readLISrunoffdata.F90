@@ -15,6 +15,7 @@
 ! !REVISION HISTORY: 
 !  7 Jan 2016: Sujay Kumar, Initial implementation
 ! 17 Mar 2016: Augusto Getirana, changes in input file name generation and surface runoff and baseflow variables - this will reduce the number of times input files are read
+! 17 Oct 2022: Hiroko Beaudoing, added handling of accumulated runoff inputs
 ! 
 ! !USES: 
 subroutine readLISrunoffdata(n,surface_runoff, baseflow)
@@ -62,6 +63,7 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
   character*100         :: filename
   logical               :: file_exists
   logical               :: check_Flag
+  real                  :: dt    ! time step length (sec) of output interval
   !create LIS filename
 
   call LIS_create_output_filename(n, &
@@ -87,27 +89,52 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
            mode=NF90_NOWRITE,ncid=nid)
       call LIS_verify(ios,'Error in readLISrunoffdata')
      
+!HKB Qs can be average or accumlation
+      LISrunoffdata_struc(n)%accum = .false.
       ios = nf90_inq_varid(nid,'Qs_tavg',qsid)
-      call LIS_verify(ios,'failed to read Qs_tavg field in readLISrunoffdata')
+      call LIS_warning(ios,'failed to inquire Qs_tavg field in readLISrunoffdata')
+      if ( ios /= 0 ) then
+       ios = nf90_inq_varid(nid,'Qs_acc',qsid)
+       call LIS_verify(ios,'failed to inquire Qs_acc field in readLISrunoffdata')
+       write(LIS_logunit,*) 'Qs in the units of accumulation'
+       LISrunoffdata_struc(n)%accum = .true.
+      endif
      
       ios = nf90_inq_varid(nid,'Qsb_tavg',qsbid)
-      call LIS_verify(ios,'failed to read Qsb_tavg field in readLISrunoffdata')
-     
+      call LIS_warning(ios,'failed to inquire Qsb_tavg field in readLISrunoffdata')
+      if ( ios /= 0 ) then
+       ios = nf90_inq_varid(nid,'Qsb_acc',qsbid)
+       call LIS_verify(ios,'failed to inquire Qsb_acc field in readLISrunoffdata')
+       write(LIS_logunit,*) 'Qsb in the units of accumulation'
+       LISrunoffdata_struc(n)%accum = .true.
+      endif
+    
       ios = nf90_inq_varid(nid,'Evap_tavg',evapid)
-      call LIS_verify(ios,'failed to read Evap_tavg field in readLISrunoffdata')
+      call LIS_verify(ios,'failed to inquire Evap_tavg field in readLISrunoffdata')
 
       if(LISrunoffdata_struc(n)%domainCheck) then 
          if(LIS_rc%wopt.eq."2d gridspace") then 
             ios = nf90_get_var(nid,qsid,LISrunoffdata_struc(n)%qs, &
                  start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
                  count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
-            call LIS_verify(ios, 'failed to read Qs_tavg field in readLISrunoffdata')
+            call LIS_verify(ios, 'failed to read Qs field in readLISrunoffdata')
             
             ios = nf90_get_var(nid,qsbid,LISrunoffdata_struc(n)%qsb,&
                  start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
                  count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
-            call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
+            call LIS_verify(ios, 'failed to read Qsb field in readLISrunoffdata')
             
+            if(LISrunoffdata_struc(n)%accum) then
+             ! convert units from kg/m2 to kg/m2/s
+             dt = LISrunoffdata_struc(n)%outInterval
+              where(LISrunoffdata_struc(n)%qs/=LIS_rc%udef)
+               LISrunoffdata_struc(n)%qs = LISrunoffdata_struc(n)%qs/dt
+              end where
+              where(LISrunoffdata_struc(n)%qsb/=LIS_rc%udef)
+               LISrunoffdata_struc(n)%qsb = LISrunoffdata_struc(n)%qsb/dt
+              end where
+            endif
+
             ios = nf90_get_var(nid,evapid,LISrunoffdata_struc(n)%evap,&
                  start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
                  count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
@@ -123,10 +150,10 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
          if(LIS_rc%wopt.eq."2d gridspace") then
             
             ios = nf90_get_var(nid,qsid,qs2d)
-            call LIS_verify(ios, 'failed to read Qs_tavg field in readLISrunoffdata')
+            call LIS_verify(ios, 'failed to read Qs field in readLISrunoffdata')
             
             ios = nf90_get_var(nid,qsbid,qsb2d)
-            call LIS_verify(ios, 'failed to read Qsb_tavg field in readLISrunoffdata')
+            call LIS_verify(ios, 'failed to read Qsb field in readLISrunoffdata')
 
 
             if(LIS_isAtAfinerResolution(n,LISrunoffdata_struc(n)%datares)) then
@@ -151,6 +178,13 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
                      LISrunoffdata_struc(n)%qs(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                     if(LISrunoffdata_struc(n)%accum) then
+                       ! convert units from kg/m2 to kg/m2/s
+                       dt = LISrunoffdata_struc(n)%outInterval
+                       if (LISrunoffdata_struc(n)%qs(c,r)/=LIS_rc%udef) then
+                         LISrunoffdata_struc(n)%qs(c,r) = LISrunoffdata_struc(n)%qs(c,r)/dt
+                       endif
+                     endif
                   enddo
                enddo
 
@@ -174,6 +208,13 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
                do r=1,LIS_rc%lnr(n)
                   do c=1,LIS_rc%lnc(n)
                      LISrunoffdata_struc(n)%qsb(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                     if(LISrunoffdata_struc(n)%accum) then
+                       ! convert units from kg/m2 to kg/m2/s
+                       dt = LISrunoffdata_struc(n)%outInterval
+                       if (LISrunoffdata_struc(n)%qsb(c,r)/=LIS_rc%udef) then
+                         LISrunoffdata_struc(n)%qsb(c,r) = LISrunoffdata_struc(n)%qsb(c,r)/dt
+                       endif
+                     endif
                   enddo
                enddo
                
@@ -199,6 +240,13 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
                 do r=1,LIS_rc%lnr(n)
                    do c=1,LIS_rc%lnc(n)
                       LISrunoffdata_struc(n)%qs(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                      if(LISrunoffdata_struc(n)%accum) then
+                        ! convert units from kg/m2 to kg/m2/s
+                        dt = LISrunoffdata_struc(n)%outInterval
+                        if (LISrunoffdata_struc(n)%qs(c,r)/=LIS_rc%udef) then
+                          LISrunoffdata_struc(n)%qs(c,r) = LISrunoffdata_struc(n)%qs(c,r)/dt
+                        endif
+                      endif
                    enddo
                 enddo
 
@@ -222,6 +270,13 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
                 do r=1,LIS_rc%lnr(n)
                    do c=1,LIS_rc%lnc(n)
                       LISrunoffdata_struc(n)%qsb(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                      if(LISrunoffdata_struc(n)%accum) then
+                        ! convert units from kg/m2 to kg/m2/s
+                        dt = LISrunoffdata_struc(n)%outInterval
+                        if (LISrunoffdata_struc(n)%qsb(c,r)/=LIS_rc%udef) then
+                          LISrunoffdata_struc(n)%qsb(c,r) = LISrunoffdata_struc(n)%qsb(c,r)/dt
+                        endif
+                      endif
                    enddo
                 enddo
                

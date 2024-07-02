@@ -20,6 +20,7 @@ module LIS_lsmrouting_pluginMod
 !  01 Jun 17    Augusto Getirana: Add HyMAP2
 !  12 Sep 19    Augusto Getirana: Add 2-way coupling
 !  17 Mar 21    Yeosang Yoon: Add RAPID
+!  30 Jan 24    Hiroko Beaudoing: Add missing modules for VIC_4_1_2
 ! 
   implicit none
   
@@ -113,6 +114,8 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_VIC_4_1_2 )
    external vic412_getrunoffs
    external vic412_getrunoffs_mm
+   external vic412_getrunoffs_hymap2
+   external vic412_getsws_hymap2
 #endif
 
 #if ( defined SM_JULES_5_0 )
@@ -307,7 +310,10 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_VIC_4_1_2 )
    call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
         trim(LIS_HYMAP2routerId)//char(0), &
-        vic412_getrunoffs_mm)
+        vic412_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_vic412Id)//"+"//&
+        trim(LIS_HYMAP2routerId)//char(0), &
+        vic412_getsws_hymap2)
 #endif
 
 #if ( defined SM_JULES_5_0 )
