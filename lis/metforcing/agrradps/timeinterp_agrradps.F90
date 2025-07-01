@@ -20,10 +20,11 @@
 subroutine timeinterp_agrradps(n,findex)
 ! !USES:
     use ESMF
-    use LIS_coreMod,         only : LIS_rc, LIS_domain
+    use LIS_coreMod,         only : LIS_rc, LIS_domain, LIS_localPet
     use LIS_FORC_AttributesMod 
     use LIS_metforcingMod,   only : LIS_FORC_Base_State, LIS_forc
-    use LIS_logMod,          only : LIS_verify
+    use LIS_constantsMod
+    use LIS_logMod
     use agrradps_forcingMod, only : agrradps_struc
 
     implicit none
@@ -84,6 +85,33 @@ subroutine timeinterp_agrradps(n,findex)
         swd(t) = &
              wt1 * agrradps_struc(n)%metdata1(1,index) +  & 
              wt2 *agrradps_struc(n)%metdata2(1,index)
+
+           if (swd(t).gt.LIS_CONST_SOLAR) then
+              write(unit=LIS_logunit,fmt=*) &
+                   '[WARN] sw radiation too high in AGRMET at tile',t
+              write(unit=LIS_logunit,fmt=*)'[WARN] it is',swd(t)
+              write(unit=LIS_logunit,fmt=*)'[WARN] data1=',&
+                   agrradps_struc(n)%metdata1(1,index) 
+              write(unit=LIS_logunit,fmt=*)'[WARN] data2=',&
+                   agrradps_struc(n)%metdata2(1,index)
+              write(unit=LIS_logunit,fmt=*)'[WARN] wt1=',wt1,'wt2=',wt2
+              swd(t) = LIS_CONST_SOLAR
+              write(unit=LIS_logunit,fmt=*)'[WARN] set to ',swd(t)
+           endif
+           if ((swd(t).ne.LIS_rc%udef).and.(swd(t).lt.0)) then
+              if (swd(t).gt.-0.00001) then
+                 swd(t) = 0.0
+              else
+                 write(LIS_logunit,*) &
+                   '[ERR] timeinterp_agrradps -- Stopping because ', &
+                   'SWdown forcing not udef but lt 0,'
+                 write(LIS_logunit,*)'[ERR] timeinterp_agrradsp -- ', &
+                   t,swd(t),agrradps_struc(n)%metdata2(1,index), &
+                   ' (',LIS_localPet,')'
+                 call LIS_endrun
+              endif
+           endif
+        
      else
         swd(t) = LIS_rc%udef
      endif
@@ -96,6 +124,16 @@ subroutine timeinterp_agrradps(n,findex)
         lwd(t) = &
              wt1 * agrradps_struc(n)%metdata1(2,index) +  & 
              wt2 * agrradps_struc(n)%metdata2(2,index)
+        ! sanity check
+        if (lwd(t).gt.750.0 .or. ((lwd(t).ne.LIS_rc%udef).and.(lwd(t).lt.0))) then
+           write(LIS_logunit,*) &
+            '[ERR] timeinterp_agrradps -- Stopping because ', &
+            'LWdown is out of expected range,'
+           write(LIS_logunit,*)'[ERR] timeinterp_agrradsp -- ', &
+             t,lwd(t),agrradps_struc(n)%metdata1(2,index), &
+             ' (',LIS_localPet,')',agrradps_struc(n)%metdata2(2,index)
+           call LIS_endrun
+        endif
      else
         lwd(t) = LIS_rc%udef
      endif
