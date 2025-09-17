@@ -316,6 +316,9 @@ subroutine LIS_metforcing_plugin
    use galwemge_forcingMod
 #endif
 
+#if ( defined MF_GALWEM_RADIATION )
+   use galwemrad_forcingMod
+#endif
 #if ( defined MF_MOGREPS_G_FORECAST )
    use mogrepsg_forcingMod
 #endif
@@ -690,6 +693,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_galwemge
    external finalize_galwemge
    external reset_galwemge
+#endif
+
+#if ( defined MF_GALWEM_FORECAST )
+   external get_galwemrad
+   external timeinterp_galwemrad
+   external finalize_galwemrad
+   external reset_galwemrad
 #endif
 
 #if ( defined MF_MOGREPS_G_FORECAST )
@@ -1254,6 +1264,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_galwemge)
    call registerfinalmetforc(trim(LIS_galwemgeId)//char(0),finalize_galwemge)
    call registerresetmetforc(trim(LIS_galwemgeId)//char(0),reset_galwemge)
+#endif
+
+#if ( defined MF_GALWEM_RADIATION)
+   call registerinitmetforc(trim(LIS_galwemradId)//char(0),init_galwemrad)
+   call registerretrievemetforc(trim(LIS_galwemradId)//char(0),get_galwemrad)
+   call registertimeinterpmetforc(trim(LIS_galwemradId)//char(0), &
+                                  timeinterp_galwemrad)
+   call registerfinalmetforc(trim(LIS_galwemradId)//char(0),finalize_galwemrad)
+   call registerresetmetforc(trim(LIS_galwemradId)//char(0),reset_galwemrad)
 #endif
 
 #if ( defined MF_MOGREPS_G_FORECAST)

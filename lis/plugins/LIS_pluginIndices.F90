@@ -178,6 +178,7 @@ module LIS_pluginIndices
    character*50, public,  parameter :: LIS_gddpId            = "GDDP"
    character*50, public,  parameter :: LIS_galwemId          = "GALWEM forecast"
    character*50, public,  parameter :: LIS_galwemgeId        = "GALWEM-GE forecast"
+   character*50, public,  parameter :: LIS_galwemradId       = "GALWEM radiation"
    character*50, public,  parameter :: LIS_mogrepsgId        = "MOGREPS-G forecast"
 
 !-------------------------------------------------------------------------

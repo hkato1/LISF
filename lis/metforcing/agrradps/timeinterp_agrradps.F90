@@ -132,7 +132,13 @@ subroutine timeinterp_agrradps(n,findex)
            write(LIS_logunit,*)'[ERR] timeinterp_agrradsp -- ', &
              t,lwd(t),agrradps_struc(n)%metdata1(2,index), &
              ' (',LIS_localPet,')',agrradps_struc(n)%metdata2(2,index)
-           call LIS_endrun
+           ! if it's not corrupt data (huge value), set to a limit
+           if ( lwd(t) .lt. 100000 ) then
+             lwd(t) = 750.0
+             write(unit=LIS_logunit,fmt=*)'[WARN] set to ',lwd(t)
+           else
+            call LIS_endrun
+           endif
         endif
      else
         lwd(t) = LIS_rc%udef
