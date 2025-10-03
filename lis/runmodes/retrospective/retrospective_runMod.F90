@@ -215,7 +215,6 @@ contains
 !EOP
     integer :: n
 
-<<<<<<< HEAD
     call LIS_ticktime
 
 ! Run each nest separately
