@@ -19,6 +19,7 @@ module LISrunoffdataMod
 ! !REVISION HISTORY: 
 !  8 Jan 2016: Sujay Kumar, initial implementation
 ! 17 Mar 2016: Augusto Getirana, Save in memory input file name and surface runoff and baseflow variables - this will reduce the number of times input files are read
+! 17 Oct 2022: Hiroko Beaudoing, added handling of accumulated runoff inputs
 ! 
 ! !USES: 
   use ESMF
@@ -50,6 +51,7 @@ module LISrunoffdataMod
      character(len=LIS_CONST_PATH_LEN)       :: previous_filename
      real                :: datares
      real, allocatable   :: qs(:,:),qsb(:,:),evap(:,:)
+     logical             :: accum   !HKB
      
   end type LISrunoffdatadec
 

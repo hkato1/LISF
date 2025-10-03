@@ -204,6 +204,10 @@ subroutine LIS_metforcing_plugin
    use cmap_forcingMod
 #endif
 
+#if ( defined MF_GPCP )
+   use gpcp_forcingMod
+#endif
+
 #if ( defined MF_NLDAS2 )
    use nldas2_forcingMod
 #endif
@@ -312,6 +316,9 @@ subroutine LIS_metforcing_plugin
    use galwemge_forcingMod
 #endif
 
+#if ( defined MF_GALWEM_RADIATION )
+   use galwemrad_forcingMod
+#endif
 #if ( defined MF_MOGREPS_G_FORECAST )
    use mogrepsg_forcingMod
 #endif
@@ -501,6 +508,12 @@ subroutine LIS_metforcing_plugin
    external finalize_cmap
 #endif
 
+#if ( defined MF_GPCP )
+   external get_gpcp
+   external timeinterp_gpcp
+   external finalize_gpcp
+#endif
+
 #if ( defined MF_NLDAS2 )
    external get_nldas2
    external timeinterp_nldas2
@@ -680,6 +693,13 @@ subroutine LIS_metforcing_plugin
    external timeinterp_galwemge
    external finalize_galwemge
    external reset_galwemge
+#endif
+
+#if ( defined MF_GALWEM_FORECAST )
+   external get_galwemrad
+   external timeinterp_galwemrad
+   external finalize_galwemrad
+   external reset_galwemrad
 #endif
 
 #if ( defined MF_MOGREPS_G_FORECAST )
@@ -980,6 +1000,14 @@ subroutine LIS_metforcing_plugin
    call registerfinalmetforc(trim(LIS_cmapId)//char(0),finalize_cmap)
 #endif
 
+#if ( defined MF_GPCP )
+! - GPCP/GDAS disaggregated 3hr Forcing:
+    call registerinitmetforc(trim(LIS_gpcpId)//char(0),init_gpcp)
+    call registerretrievemetforc(trim(LIS_gpcpId)//char(0),get_gpcp)
+    call registertimeinterpmetforc(trim(LIS_gpcpId)//char(0),timeinterp_gpcp)
+    call registerfinalmetforc(trim(LIS_gpcpId)//char(0), finalize_gpcp)
+#endif
+
 #if ( defined MF_NLDAS2 )
 ! - NLDAS2 Forcing (GRIB-1 format):
    call registerinitmetforc(trim(LIS_nldas2Id)//char(0),init_NLDAS2)
@@ -1236,6 +1264,15 @@ subroutine LIS_metforcing_plugin
                                   timeinterp_galwemge)
    call registerfinalmetforc(trim(LIS_galwemgeId)//char(0),finalize_galwemge)
    call registerresetmetforc(trim(LIS_galwemgeId)//char(0),reset_galwemge)
+#endif
+
+#if ( defined MF_GALWEM_RADIATION)
+   call registerinitmetforc(trim(LIS_galwemradId)//char(0),init_galwemrad)
+   call registerretrievemetforc(trim(LIS_galwemradId)//char(0),get_galwemrad)
+   call registertimeinterpmetforc(trim(LIS_galwemradId)//char(0), &
+                                  timeinterp_galwemrad)
+   call registerfinalmetforc(trim(LIS_galwemradId)//char(0),finalize_galwemrad)
+   call registerresetmetforc(trim(LIS_galwemradId)//char(0),reset_galwemrad)
 #endif
 
 #if ( defined MF_MOGREPS_G_FORECAST)

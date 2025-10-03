@@ -19,6 +19,7 @@ module smootherDA_runMod
 !   
 ! !REVISION HISTORY: 
 !  21Oct05    Sujay Kumar  Initial Specification
+!  10June15: Augusto Getirana; Add scaling factor
 !  25Feb25    Dan Rosen    Add Step and Reset Subroutines
 ! 
 !
@@ -54,6 +55,7 @@ contains
     use LIS_irrigationMod
     use LIS_routingMod
     use LIS_logMod
+    use LIS_LMSFMod,           only : LIS_LMSF_init
 
 ! !DESCRIPTION:
 !  This is the initialize method for LIS in a retrospective running mode. 
@@ -87,6 +89,9 @@ contains
 !EOP
     call LIS_domain_init
     call LIS_param_init
+    if ( LIS_rc%forc_scaling ) then
+     call LIS_LMSF_init
+    endif
     call LIS_perturb_init
     call LIS_surfaceModel_init
     call LIS_metforcing_init
@@ -154,6 +159,7 @@ contains
     use LIS_routingMod
     use LIS_irrigationMod
     use LIS_logMod
+    use LIS_LMSFMod,           only : LIS_LMSF_apply
 
 !
 ! !DESCRIPTION:
@@ -171,6 +177,9 @@ contains
        if(LIS_timeToRunNest(n)) then
           call LIS_setDynparams(n)
           call LIS_get_met_forcing(n)
+          if ( LIS_rc%forc_scaling ) then
+            call LIS_LMSF_apply(n)
+          endif
           call LIS_perturb_forcing(n)
           call LIS_irrigation_run(n)
           call LIS_surfaceModel_f2t(n)
@@ -258,6 +267,7 @@ contains
     use LIS_surfaceModelMod
     use LIS_paramsMod
     use LIS_metforcingMod
+    use LIS_LMSFMod,         only : LIS_LMSF_finalize
 
 
 ! !DESCRIPTION:
@@ -281,6 +291,9 @@ contains
     call LIS_surfaceModel_finalize
     call LIS_param_finalize()
     call LIS_metforcing_finalize()
+    if ( LIS_rc%forc_scaling ) then
+     call LIS_LMSF_finalize()
+    endif
 
   end subroutine lis_final_smootherDA
 end module smootherDA_runMod

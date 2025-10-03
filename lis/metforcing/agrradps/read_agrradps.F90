@@ -14,6 +14,9 @@
 !
 ! !REVISION HISTORY:
 ! 29Jul2005; Sujay Kumar, Initial Code
+! 30Mar2016; Hiroko Beaudoing, Modified to process only when all AGRMET
+!                              files (SW + 3 Clouds) are available, otherwise
+!                              use base forcing, filling gap, and check NaN
 !
 ! !INTERFACE:    
 subroutine read_agrradps(n,m,order,yr,mo,da,hr)
@@ -113,7 +116,9 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
 !
 ! Get Shortwave radiation data
 !
+  varfield = LIS_rc%udef
   error = 0
+  ferror = 0
   call agrradps_filename_sw(agrradpsfileNH,agrradpsfileSH, &
        agrradps_struc(n)%agrpsdir,yr,mo,da,hr)
   inquire(file=trim(agrradpsfileNH),exist=exists1)
@@ -123,10 +128,11 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
   call agrmet2latlon1(n,trim(agrradpsfileNH),trim(agrradpsfileSH),varfield,ferror)
   else
      error = 1
+     ferror = 1
      write(LIS_logunit,*) 'Missing AGRMET SW file NH: ',trim(agrradpsfileNH)
      write(LIS_logunit,*) 'Missing AGRMET SW file SH: ',trim(agrradpsfileSH)
   endif
-  if(ferror.eq.0 .and. error.eq.0)  then 
+
      do r=1,LIS_rc%lnr(n)
         do c=1,LIS_rc%lnc(n)
            index = LIS_domain(n)%gindex(c,r)
@@ -139,18 +145,15 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
            endif
         enddo
      enddo
-  else
-     if(order.eq.1) then 
-        agrradps_struc(n)%metdata1(1,:) = LIS_rc%udef
-     elseif(order.eq.2) then 
-        agrradps_struc(n)%metdata2(1,:) = LIS_rc%udef
-     endif
-  endif
      
 !
 ! Get Cloud amount data in 3 layers
 !  
+  cldamtH = LIS_rc%udef
+  cldamtM = LIS_rc%udef
+  cldamtL = LIS_rc%udef
   error = 0
+  ferror = 0  
   call agrradps_filename_cloud(agrradpsfileNH,agrradpsfileSH, &
        agrradps_struc(n)%agrpsdir,yr,mo,da,hr,"H")
   
@@ -162,6 +165,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
         cldamtH,ferror)
   else
      error = 1
+     ferror = 1
      write(LIS_logunit,*) 'Missing AGRMET CloudH file NH: ',trim(agrradpsfileNH)
      write(LIS_logunit,*) 'Missing AGRMET CloudH file SH: ',trim(agrradpsfileSH)
   endif
@@ -177,6 +181,7 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
        cldamtM,ferror)
   else
      error = error + 1
+     ferror = 1
      write(LIS_logunit,*) 'Missing AGRMET CloudM file NH: ',trim(agrradpsfileNH)
      write(LIS_logunit,*) 'Missing AGRMET CloudM file SH: ',trim(agrradpsfileSH)
   endif
@@ -192,27 +197,16 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
        cldamtL,ferror)
   else
      error = error + 1
+     ferror = 1
      write(LIS_logunit,*) 'Missing AGRMET CloudL file NH: ',trim(agrradpsfileNH)
      write(LIS_logunit,*) 'Missing AGRMET CloudL file SH: ',trim(agrradpsfileSH)
   endif
 
-! initialize to udef 
-  if(order.eq.1) then 
-     agrradps_struc(n)%metdata1(2,:) = LIS_rc%udef
-  elseif(order.eq.2) then 
-     agrradps_struc(n)%metdata2(2,:) = LIS_rc%udef
+  if ( ferror .ne. 0 ) then 
+    fvalid = 0     ! bad data
+  else
+    fvalid = 1     ! good data
   endif
-
-  if (ferror.eq.0 .and. error.eq.0)  then 
-
-    fvalid = 0
-    do r=1, LIS_rc%lnr(n)
-       do c=1, LIS_rc%lnc(n)
-          if (cldamtH(c,r) >= 0.0) fvalid = 1
-          if (cldamtM(c,r) >= 0.0) fvalid = 1
-          if (cldamtL(c,r) >= 0.0) fvalid = 1
-       end do
-    end do
 
     if (fvalid.ne.0) then
      do r=1,LIS_rc%lnr(n)
@@ -264,8 +258,13 @@ subroutine read_agrradps(n,m,order,yr,mo,da,hr)
         enddo
      enddo
 
+    else !(fvalid .ne. 0)
+      if(order.eq.1) then
+        agrradps_struc(n)%metdata1(2,:) = LIS_rc%udef
+      elseif(order.eq.2) then
+        agrradps_struc(n)%metdata2(2,:) = LIS_rc%udef
+      endif
     endif ! end if fvalid ne 0
-  endif ! end if error=0
 
  end subroutine read_agrradps
 
@@ -302,8 +301,8 @@ subroutine fillgaps_agrradps(n,varfield)
 !EOP
   integer      :: c,r
   logical      :: foundPt
-  integer      :: i,j,str,enr,stc,enc,kk
-  integer      :: try
+  integer      :: i,j,str,enr,stc,enc,kk,ll
+  integer      :: try,try2
 
   try = 0 
   if(agrradps_struc(n)%fillflag1) then !This will be done once 
@@ -343,13 +342,44 @@ subroutine fillgaps_agrradps(n,varfield)
               enddo
               kk = kk+1
               if(try.gt.100) then 
-                 write(LIS_logunit,*) 'AGRMET fillgaps failed, stopping..',try,kk,c,r
-                 call LIS_endrun()
-              endif
-           enddo
-        endif
-     enddo
-  enddo
+!                 write(LIS_logunit,*) 'AGRMET fillgaps failed, stopping..',try,kk,c,r
+!                 call LIS_endrun()
+!HKB: plan B crash when using proc>= 112 for 1deg DA
+!     proc 12 or 48 works, but too slow for DA and 0.25 deg
+!     so just set to undef and fill in with GDAS
+                 write(LIS_logunit,'(a32,4i5)')  &
+                  'AGRMET gap not filled..',c,r
+                       varfield(c,r) = LIS_rc%udef
+                       foundPt = .true.
+                       exit
+!                 write(LIS_logunit,'(a32,4i5)')  &
+!                  'AGRMET fillgaps failed, plan B..',try,kk,c,r
+!                 try2 = 0
+!                 ll = 0
+!                 do while(.not.foundPt)
+!                  try2 = try2 +1
+!                  str = max(r-ll,1)
+!                  enr = min(r+ll,LIS_rc%lnr(n))
+!                  stc = max(c-ll,1)
+!                  enc = min(c+ll,LIS_rc%lnc(n))
+!                  do j=str,enr
+!                   do i=stc,enc
+!                    if(varfield(i,j).ne.LIS_rc%udef) then
+!                       varfield(c,r) = varfield(i,j)
+!!                       write(LIS_logunit,*) 'AGRMET fillgaps B found..', &
+!!                        try2,ll,i,j,varfield(c,r)
+!                       foundPt = .true.
+!                       exit
+!                    endif
+!                   enddo
+!                  enddo
+!                  ll = ll+1
+!                 enddo
+              endif   ! try > 100
+           enddo    ! while not foundPt
+        endif    ! smask
+     enddo     ! c
+  enddo      ! r
      
 end subroutine fillgaps_agrradps
 
@@ -377,34 +407,24 @@ subroutine agrmet2latlon1 (n, nameNH, nameSH, varfield, ferror)
 ! one hemisphere.
 !EOP
    real    :: pdata(2,agrradps_struc(n)%imax,agrradps_struc(n)%jmax) !2D input data
-   integer :: i,j,c,r,iret,cnt
+   integer :: i,j,c,r,iret,cnt,mi
 
    integer :: openerrN=0, openerrS=0 !set to non-zero if error found
    integer :: readerrN=0, readerrS=0 !set to non-zero if error found
-   real                        :: scann, scans
+   real    :: scann, scans
+   logical :: result1, result2
 
+    mi = agrradps_struc(n)%imax*agrradps_struc(n)%jmax
     write(LIS_logunit,*) 'Reading AGRMET file ',trim(nameNH)
     open(11, file=nameNH, form="unformatted", access="direct", &
-         recl=4, status="old", iostat=openerrN)
-     cnt = 0
-     do j=1,agrradps_struc(n)%jmax
-      do i=1,agrradps_struc(n)%imax
-       cnt = cnt + 1
-       read(11,rec=cnt,iostat=readerrN) pdata(1,i,j)
-      enddo
-     enddo
+         recl=4*mi, status="old", iostat=openerrN)
+       read(11,rec=1,iostat=readerrN) pdata(1,:,:)
     close(11)
 
     write(LIS_logunit,*) 'Reading AGRMET file ',trim(nameSH)
     open(12, file=nameSH, form="unformatted", access="direct", &
-        recl=4, status="old", iostat=openerrS)
-     cnt = 0
-     do j=1,agrradps_struc(n)%jmax
-      do i=1,agrradps_struc(n)%imax
-       cnt = cnt + 1
-       read(12,rec=cnt,iostat=readerrS) pdata(2,i,j)
-      enddo
-     enddo
+        recl=4*mi, status="old", iostat=openerrS)
+       read(12,rec=1,iostat=readerrS) pdata(2,:,:)
     close(12)
 
     if ((openerrN+openerrS+readerrN+readerrS) > 0) then
@@ -415,6 +435,20 @@ subroutine agrmet2latlon1 (n, nameNH, nameSH, varfield, ferror)
     else
 
 ! scan the fields to make sure data is valid
+     do j = 1, agrradps_struc(n)%jmax
+      do i = 1, agrradps_struc(n)%imax
+        result1 = ISNAN(pdata(1,i,j))
+        result2 = ISNAN(pdata(2,i,j))
+        if ( result1 .eq. .true. ) then
+         write(LIS_logunit,*) 'NAN NH at ',i,j
+         pdata(1,i,j) = udef
+        endif
+        if ( result2 .eq. .true. ) then
+         write(LIS_logunit,*) 'NAN SH at ',i,j
+         pdata(2,i,j) = udef
+        endif
+      end do
+     end do
      scann = maxval(pdata(1,:,:))
      scans = maxval(pdata(2,:,:))
      if ( scann .ne. udef .and. scans .ne. udef ) then
@@ -427,6 +461,7 @@ subroutine agrmet2latlon1 (n, nameNH, nameSH, varfield, ferror)
 
       write(LIS_logunit,*) 'AGRMET bad file: ',scann,scans
       ferror = 1
+      varfield = LIS_rc%udef
 
      endif
 

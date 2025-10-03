@@ -153,6 +153,39 @@ subroutine gdas_reset_interp_input(n, findex, gridDesci)
                                        gdas_struc(n)%mi,            &
                                        LIS_rc%lnc(n)*LIS_rc%lnr(n), &
                                        gdas_struc(n)%n111)
+!HKB test
+      case( "budget-bilinear" )
+         allocate(gdas_struc(n)%n111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%n121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%n211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%n221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%w111(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%w121(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%w211(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+         allocate(gdas_struc(n)%w221(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+
+         call bilinear_interp_input(n,gridDesci,        &
+                 gdas_struc(n)%n111,gdas_struc(n)%n121, &
+                 gdas_struc(n)%n211,gdas_struc(n)%n221, &
+                 gdas_struc(n)%w111,gdas_struc(n)%w121, &
+                 gdas_struc(n)%w211,gdas_struc(n)%w221)
+
+         allocate(gdas_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+         allocate(gdas_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
+
+         call conserv_interp_input(n,gridDesci,         &
+                 gdas_struc(n)%n112,gdas_struc(n)%n122, &
+                 gdas_struc(n)%n212,gdas_struc(n)%n222, &
+                 gdas_struc(n)%w112,gdas_struc(n)%w122, &
+                 gdas_struc(n)%w212,gdas_struc(n)%w222)
+!HKB test end
+
       case default
          write(LIS_logunit,*) 'The specified spatial interpolation option '
          write(LIS_logunit,*) 'is not supported for GDAS.'

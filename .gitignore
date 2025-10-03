@@ -3,3 +3,15 @@
 *.d
 lis/runmodes/nuopc_cpl_mode/VERSION
 lis/runmodes/nuopc_cpl_mode/liblis_nuopc.a
+ldt/LDT*
+lis/LIS*
+lvt/LVT*
+ldt/make/LDT
+lis/make/LIS
+lvt/make/LVT
+**/**/configure*
+lis/make/Filepath
+lis/make/user.cfg
+**/make/*_NetCDF_inc.h
+**/make/*_misc.h
+lis/make/LIS_plugins.h

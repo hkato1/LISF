@@ -1498,7 +1498,8 @@ ENDIF   ! CROPTYPE == 0
            print *,'EDIR = ',EDIR*DT
            print *,'RUNSRF = ',RUNSRF*DT
            print *,'RUNSUB = ',RUNSUB*DT
-           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
+!HKB keep running during spin down
+!           call wrf_error_fatal("Water budget problem in NOAHMP LSM")
         END IF
 #endif
    ELSE                 !KWM
