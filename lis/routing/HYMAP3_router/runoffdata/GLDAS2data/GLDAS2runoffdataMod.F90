@@ -20,10 +20,12 @@ module GLDAS2runoffdataMod
 !
 ! !REVISION HISTORY: 
 ! 8 Jan 2016: Sujay Kumar, initial implementation
+! 25 Sep 2025: Hiroko Beaudoing, updated for HYMAP3
 ! 
 
 ! !USES: 
   use ESMF
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
   
@@ -41,10 +43,11 @@ module GLDAS2runoffdataMod
   type, public :: GLDAS2runoffdatadec
      
      real                    :: outInterval 
-     character*50            :: odir 
+     character(len=LIS_CONST_PATH_LEN)            :: odir 
+     character(len=LIS_CONST_PATH_LEN)            :: domfile
      
-     !ag - 31Aug2016
-     character*100       :: previous_filename
+     character(len=LIS_CONST_PATH_LEN)       :: previous_filename
+     logical             :: domaincheck
      real, allocatable   :: qs(:,:),qsb(:,:)
 
      character*20            :: model_name
@@ -63,18 +66,29 @@ contains
 ! \label{GLDAS2runoffdata_init}
 ! 
   subroutine GLDAS2runoffdata_init
-    !USES: 
-    use LIS_coreMod
-    use LIS_logMod
-    use LIS_timeMgrMod
+
+  use LIS_coreMod
+  use LIS_logMod
+  use LIS_timeMgrMod
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
+  use netcdf
+#endif
 
     integer              :: n 
     integer              :: status
+    integer              :: ftn
+    character*100        :: lis_map_proj
     character*10         :: time
+    integer              :: nc,nr
+    integer              :: ncId, nrId
+    real                 :: lat1,lat2
+    real                 :: lon1,lon2
+    real                 :: dx,dy
     real                 :: gridDesc(50)
 
     external :: neighbor_interp_input
     external :: upscaleByAveraging_input
+
 
     allocate(GLDAS2runoffdata_struc(LIS_rc%nnest))
        
@@ -116,73 +130,124 @@ contains
 
        call LIS_parseTimeString(time,GLDAS2runoffdata_struc(n)%outInterval)
     
-       gridDesc = 0.0
+    enddo
 
-       if(GLDAS2runoffdata_struc(n)%datares .eq. 0.25) then 
-          
-          GLDAS2runoffdata_struc(n)%nc = 1440
-          GLDAS2runoffdata_struc(n)%nr = 600
-          
-          gridDesc(1) = 0  
-          gridDesc(2) = GLDAS2runoffdata_struc(n)%nc
-          gridDesc(3) = GLDAS2runoffdata_struc(n)%nr
-          gridDesc(4) = -59.875
-          gridDesc(5) = -179.875
-          gridDesc(7) = 89.875
-          gridDesc(8) = 179.875
-          gridDesc(6) = 128
-          gridDesc(9) = 0.25
-          gridDesc(10) = 0.25
-          gridDesc(20) = 64
-          
-          
-       elseif(GLDAS2runoffdata_struc(n)%datares.eq. 1.0) then 
-          
-          GLDAS2runoffdata_struc(n)%nc = 360
-          GLDAS2runoffdata_struc(n)%nr = 150
-          
-          gridDesc(1) = 0  
-          gridDesc(2) = GLDAS2runoffdata_struc(n)%nc
-          gridDesc(3) = GLDAS2runoffdata_struc(n)%nr
-          gridDesc(4) = -59.5
-          gridDesc(5) = -179.5
-          gridDesc(7) = 89.5
-          gridDesc(8) = 179.5
-          gridDesc(6) = 128
-          gridDesc(9) = 1.0
-          gridDesc(10) = 1.0
-          gridDesc(20) = 64
-          
-       endif
+    call ESMF_ConfigFindLabel(LIS_config,&
+         "GLDAS2 runoff data domain file:",rc=status)
+    do n=1, LIS_rc%nnest
+       call ESMF_ConfigGetAttribute(LIS_config,&
+            GLDAS2runoffdata_struc(n)%domfile,rc=status)
+       call LIS_verify(status,&
+            "GLDAS2 runoff data domain file: not defined")
        
-       if(LIS_isAtAfinerResolution(n,GLDAS2runoffdata_struc(n)%datares)) then
-          
-          allocate(GLDAS2runoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
-          
-          call neighbor_interp_input(n,gridDesc, &
-               GLDAS2runoffdata_struc(n)%n11)
+    enddo
 
-          !ag - 31Aug2016
-          allocate(GLDAS2runoffdata_struc(n)%qs(LIS_rc%gnc(n),LIS_rc%gnr(n)))
-          allocate(GLDAS2runoffdata_struc(n)%qsb(LIS_rc%gnc(n),LIS_rc%gnr(n)))
+#if (defined USE_NETCDF3 || defined USE_NETCDF4)
 
+    do n=1,LIS_rc%nnest
+       call LIS_verify(nf90_open(path=GLDAS2runoffdata_struc(n)%domfile,&
+            mode=NF90_NOWRITE,ncid=ftn),&
+            'Error opening file '//trim(GLDAS2runoffdata_struc(n)%domfile))
+
+       call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'MAP_PROJECTION',&
+            lis_map_proj),&
+            'Error in nf90_get_att: MAP_PROJECTION')
+
+       if(lis_map_proj.eq."EQUIDISTANT CYLINDRICAL") then
+
+          call LIS_verify(nf90_inq_dimid(ftn,'east_west',ncId),&
+               'Error in nf90_inq_dimid: east_west')
+
+          call LIS_verify(nf90_inq_dimid(ftn,'north_south',nrId),&
+               'Error in nf90_inq_dimid: north_south')
+
+          call LIS_verify(nf90_inquire_dimension(ftn,ncId, &
+               len=GLDAS2runoffdata_struc(n)%nc),&
+               'Error in nf90_inquire_dimension: ncId')
+
+          call LIS_verify(nf90_inquire_dimension(ftn,nrId, &
+               len=GLDAS2runoffdata_struc(n)%nr),&
+               'Error in nf90_inquire_dimension: nrId')
+
+          GLDAS2runoffdata_struc(n)%domainCheck = .true.
+
+          if(GLDAS2runoffdata_struc(n)%nc.ne.LIS_rc%lnc(n).or.&
+               GLDAS2runoffdata_struc(n)%nr.ne.LIS_rc%lnr(n)) then
+
+             GLDAS2runoffdata_struc(n)%domainCheck = .false.
+             call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'SOUTH_WEST_CORNER_LAT',&
+                  lat1),&
+                  'Error in nf90_get_att: SOUTH_WEST_CORNER_LAT')
+
+             call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'SOUTH_WEST_CORNER_LON',&
+                  lon1),&
+                  'Error in nf90_get_att: SOUTH_WEST_CORNER_LON')
+
+             call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'DX',&
+                  dx),&
+                  'Error in nf90_get_att: DX')
+
+             call LIS_verify(nf90_get_att(ftn,NF90_GLOBAL,'DY',&
+                  dy),&
+                  'Error in nf90_get_att: DY')
+
+             gridDesc = 0.0
+
+             lat2 = (GLDAS2runoffdata_struc(n)%nr-1)*dx + lat1
+             lon2 = (GLDAS2runoffdata_struc(n)%nc-1)*dy + lon1
+          
+             gridDesc(1) = 0  
+             gridDesc(2) = GLDAS2runoffdata_struc(n)%nc
+             gridDesc(3) = GLDAS2runoffdata_struc(n)%nr
+             gridDesc(4) = lat1
+             gridDesc(5) = lon1
+             gridDesc(7) = lat2
+             gridDesc(8) = lon2
+             gridDesc(6) = 128
+             gridDesc(9) = dx
+             gridDesc(10) = dy
+             gridDesc(20) = 64
+          
+             GLDAS2runoffdata_struc(n)%datares = min(dx,dy)
+          
+       
+             if(LIS_isAtAfinerResolution(n, &
+                  GLDAS2runoffdata_struc(n)%datares)) then
+          
+                  allocate(GLDAS2runoffdata_struc(n)%n11(LIS_rc%lnc(n)*LIS_rc%lnr(n)))
+          
+                  call neighbor_interp_input(n,gridDesc, &
+                       GLDAS2runoffdata_struc(n)%n11)
+
+
+             else
+                 
+                  nc = GLDAS2runoffdata_struc(n)%nc
+                  nr = GLDAS2runoffdata_struc(n)%nr
+
+                  allocate(GLDAS2runoffdata_struc(n)%n11(nc*nr))
+                  
+                  call upscaleByAveraging_input(gridDesc,&
+                       LIS_rc%gridDesc(n,:),&
+                       nc*nr,&
+                       LIS_rc%lnc(n)*LIS_rc%lnr(n),&
+                       GLDAS2runoffdata_struc(n)%n11)
+             endif
+          endif
        else
-          allocate(GLDAS2runoffdata_struc(n)%n11(&
-               GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr))
-          call upscaleByAveraging_input(gridDesc,&
-               LIS_rc%gridDesc(n,:),&
-               GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr,&
-               LIS_rc%lnc(n)*LIS_rc%lnr(n),GLDAS2runoffdata_struc(n)%n11)
+          write(LIS_logunit,*) '[ERR] currently only LIS data in lat/lon projection'
+          write(LIS_logunit,*) '[ERR] is supported'
+          call LIS_endrun()
 
-          !ag - 31Aug2016
-          allocate(GLDAS2runoffdata_struc(n)%qs(&
-               GLDAS2runoffdata_struc(n)%nc,GLDAS2runoffdata_struc(n)%nr))
-          allocate(GLDAS2runoffdata_struc(n)%qsb(&
-               GLDAS2runoffdata_struc(n)%nc,GLDAS2runoffdata_struc(n)%nr))
        endif
+    enddo
+#endif
 
-      !ag - 31Aug2016
+    !ag - 17Mar2016
+    do n=1, LIS_rc%nnest
       GLDAS2runoffdata_struc(n)%previous_filename='none'
+      allocate(GLDAS2runoffdata_struc(n)%qs(LIS_rc%lnc(n),LIS_rc%lnr(n)))
+      allocate(GLDAS2runoffdata_struc(n)%qsb(LIS_rc%lnc(n),LIS_rc%lnr(n)))
       GLDAS2runoffdata_struc(n)%qs=LIS_rc%udef
       GLDAS2runoffdata_struc(n)%qsb=LIS_rc%udef
     enddo

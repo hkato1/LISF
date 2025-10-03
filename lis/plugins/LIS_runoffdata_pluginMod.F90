@@ -19,6 +19,7 @@ module LIS_runoffdata_pluginMod
 !
 ! !REVISION HISTORY:
 !  6 Jan 2016    Sujay Kumar  Initial Specification
+!  22Sep 2025    Hiroko Beaudoing  Enable GLDAS2 dataset
 !
 !EOP
   implicit none
@@ -46,10 +47,10 @@ subroutine LIS_runoffdata_plugin
 #endif
 #if ( defined ROUTE_HYMAP3_ROUTER )
    use HYMAP3_LISrunoffdataMod
+   use GLDAS2runoffdataMod
 #endif
 
 !   use GLDAS1runoffdataMod
-!   use GLDAS2runoffdataMod
 !   use NLDAS2runoffdataMod
 !   use MERRA2runoffdataMod
 !   use ERAILandrunoffdataMod
@@ -64,11 +65,10 @@ subroutine LIS_runoffdata_plugin
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
    external HYMAP3_readLISrunoffdata
+   external readGLDAS2runoffdata
 #endif
 
-
 !   external readGLDAS1runoffdata
-!   external readGLDAS2runoffdata
 !   external readNLDAS2runoffdata
 !   external readMERRA2runoffdata
 !   external readERAILandrunoffdata
@@ -82,21 +82,24 @@ subroutine LIS_runoffdata_plugin
 #endif
 
 #if ( defined ROUTE_HYMAP3_ROUTER )
+  #if ( defined ROUTE_HYMAP3_LISHYMAP3 )
    call registerinitrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
         HYMAP3_LISrunoffdata_init)
    call registerreadrunoffdata(trim(LIS_HYMAP3_LISrunoffdataId)//char(0), &
         HYMAP3_readLISrunoffdata)
+  #endif
+  #if ( defined ROUTE_HYMAP3_GLDAS2 )
+   call registerinitrunoffdata(trim(LIS_GLDAS2runoffdataId)//char(0), &
+        GLDAS2runoffdata_init)
+   call registerreadrunoffdata(trim(LIS_GLDAS2runoffdataId)//char(0), &
+        readGLDAS2runoffdata)
+  #endif
 #endif
 
 !   call registerinitrunoffdata(trim(LIS_GLDAS1runoffdataId)//char(0), &
 !        GLDAS1runoffdata_init)
 !   call registerreadrunoffdata(trim(LIS_GLDAS1runoffdataId)//char(0), &
 !        readGLDAS1runoffdata)
-
-!   call registerinitrunoffdata(trim(LIS_GLDAS2runoffdataId)//char(0), &
-!        GLDAS2runoffdata_init)
-!   call registerreadrunoffdata(trim(LIS_GLDAS2runoffdataId)//char(0), &
-!        readGLDAS2runoffdata)
 
 !   call registerinitrunoffdata(trim(LIS_NLDAS2runoffdataId)//char(0), &
 !        NLDAS2runoffdata_init)

@@ -16,9 +16,17 @@
 ! !REVISION HISTORY: 
 ! 30 Jan 2016: Hiroko Beaudoing, Initial implementation
 ! 31 Aug 2016: Augusto Getirana, Fix file name format
+! 25 Sep 2025: Hiroko Beaudoing, updated for HYMAP3 
 ! 
-! !USES: 
+!caveats
+! 1) assumes the LIS outputs are the same output interval as that of
+! the HYMAP model timestep. No temporal aggregation is done.
+! 2) Assumes that the units of Qs and Qsb are accumulation in kg/m2/3hr 
+! 3) Assumes that the LIS outputs are in the same grid/map projection/
+! resolution.
+! 4) LIS outputs are in NETCDF format.
 !
+! !USES: 
 !
 !EOP 
 subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
@@ -35,30 +43,34 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   implicit none
 
   integer,          intent(in) :: n
-  real                         :: surface_runoff(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: baseflow(LIS_rc%gnc(n),LIS_rc%gnr(n))
+  real                         :: surface_runoff(LIS_rc%lnc(n),LIS_rc%lnr(n))
+  real                         :: baseflow(LIS_rc%lnc(n),LIS_rc%lnr(n))
   integer                       :: nc,nr
   integer                       :: c,r
-  !real,   allocatable           :: qs(:,:)
-  !real,   allocatable           :: qsb(:,:)
+  !ag - 17Mar2016
+  real                  :: qs2d(GLDAS2runoffdata_struc(n)%nc,GLDAS2runoffdata_struc(n)%nr)
+  real                  :: qsb2d(GLDAS2runoffdata_struc(n)%nc,GLDAS2runoffdata_struc(n)%nr)
+  logical*1             :: lb(GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr)
+  real                  :: var_input(GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr)
+  logical*1             :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real                  :: var_out(LIS_rc%lnc(n)*LIS_rc%lnr(n))
   integer                       :: ios, nid,qsid,qsbid
   character*100                 :: filename
+  logical                       :: file_exists
+  logical                       :: check_Flag
+  real                          :: undef
   integer                       :: doy, yr, mo, da, hr, mn, ss, ts
   real*8                        :: time
   real                          :: gmt
-  logical                       :: file_exists
-  real                          :: undef
 
-  external :: create_GLDAS2_filename
-  external :: interp_GLDAS2runoffdata
+  external :: neighbor_interp
+  external :: upscaleByAveraging
   
   yr =LIS_rc%yr    !Next Hour
   mo =LIS_rc%mo
   da =LIS_rc%da
-!  hr =GLDAS2runoffdata_struc(n)%outInterval*((LIS_rc%hr)/&
-!       GLDAS2runoffdata_struc(n)%outInterval)
   hr=LIS_rc%hr-imod(LIS_rc%hr,int(GLDAS2runoffdata_struc(n)%outInterval/3600.))
-  print*,int(GLDAS2runoffdata_struc(n)%outInterval/3600.),LIS_rc%hr,hr
+  !print*,int(GLDAS2runoffdata_struc(n)%outInterval/3600.),LIS_rc%hr,hr
   mn =0
   ss =0
   ts =GLDAS2runoffdata_struc(n)%outInterval
@@ -75,187 +87,176 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   
     GLDAS2runoffdata_struc(n)%previous_filename=filename
 
-
-  surface_runoff = 0.0
-  baseflow       = 0.0
-
-  nc = GLDAS2runoffdata_struc(n)%nc
-  nr = GLDAS2runoffdata_struc(n)%nr
-
-!  allocate(qs(nc,nr))
-!  allocate(qsb(nc,nr))
-  
-!  qs = LIS_rc%udef
-!  qsb = LIS_rc%udef
-
-
-  inquire(file=filename, exist=file_exists)
-  if(file_exists) then 
-     write(LIS_logunit,*) 'Reading '//trim(filename)
+    inquire(file=filename, exist=file_exists)
+    if(file_exists) then 
+      write(LIS_logunit,*) '[INFO] Reading '//trim(filename)
         
-     ios = nf90_open(path=filename,&
-          mode=NF90_NOWRITE,ncid=nid)
-     call LIS_verify(ios,'Error in readGLDAS2runoffdata')
+      ios = nf90_open(path=filename,&
+           mode=NF90_NOWRITE,ncid=nid)
+      call LIS_verify(ios,'Error in readGLDAS2runoffdata')
 
-     ios = nf90_inq_varid(nid,'Qs_acc',qsid)
-     call LIS_verify(ios,'failed to inquire Qs_acc field in readGLDAS2runoffdata')
+      ios = nf90_inq_varid(nid,'Qs_acc',qsid)
+      call LIS_verify(ios,'failed to inquire Qs_acc field in readGLDAS2runoffdata')
 
-     ios = nf90_inq_varid(nid,'Qsb_acc',qsbid)
-     call LIS_verify(ios,'failed to inquire Qsb_acc field in readGLDAS2runoffdata')
+      ios = nf90_inq_varid(nid,'Qsb_acc',qsbid)
+      call LIS_verify(ios,'failed to inquire Qsb_acc field in readGLDAS2runoffdata')
 
-     ios = nf90_get_var(nid,qsid,GLDAS2runoffdata_struc(n)%qs)
-     call LIS_verify(ios, 'failed to read Qs_acc field in readGLDAS2runoffdata')
+      ios = nf90_get_att(nid,qsid,'missing_value',undef)
+      call LIS_verify(ios,'failed to read missing_value in readGLDAS2runoffdata')
 
-     ios = nf90_get_var(nid,qsbid,GLDAS2runoffdata_struc(n)%qsb)
-     call LIS_verify(ios, 'failed to read Qsb_acc field in readGLDAS2runoffdata')
+      if(GLDAS2runoffdata_struc(n)%domainCheck) then
+         if(LIS_rc%wopt.eq."2d gridspace") then
+            ios = nf90_get_var(nid,qsid,GLDAS2runoffdata_struc(n)%qs, &
+                 start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+                 count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
+            call LIS_verify(ios, 'failed to read Qs_acc field in readGLDAS2runoffdata')
 
-     ios = nf90_get_att(nid,qsid,'missing_value',undef)
-     call LIS_verify(ios,'failed to read missing_value in readGLDAS2runoffdata')
+            ios = nf90_get_var(nid,qsbid,GLDAS2runoffdata_struc(n)%qsb,&
+                 start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
+                 count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
+            call LIS_verify(ios, 'failed to read Qsb_acc field in readGLDAS2runoffdata')
+         else
+            write(LIS_logunit,*) "Stand-alone HYMAP3 is only supported for '2d gridspace' outputs currently"
+            call LIS_endrun()
+         endif
 
-     call LIS_verify(nf90_close(nid))
+         call LIS_verify(nf90_close(nid))
+
+      else
+         if(LIS_rc%wopt.eq."2d gridspace") then
+
+            ios = nf90_get_var(nid,qsid,qs2d)
+            call LIS_verify(ios, 'failed to read Qs_acc field in readGLDAS2runoffdata')
+
+            ios = nf90_get_var(nid,qsbid,qsb2d)
+            call LIS_verify(ios, 'failed to read Qsb_acc field in readGLDAS2runoffdata')
+
+
+            if(LIS_isAtAfinerResolution(n,GLDAS2runoffdata_struc(n)%datares)) then
+               lb = .true.
+               do r=1,GLDAS2runoffdata_struc(n)%nr
+                  do c=1,GLDAS2runoffdata_struc(n)%nc
+                     var_input(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = qs2d(c,r)
+                     if(qs2d(c,r).lt.0) then
+                        lb(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = .false.
+                     endif
+                  enddo
+               enddo
+
+               call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+                    lo,var_out, &
+                    GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr,&
+                    LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
+                    LIS_domain(n)%lat, LIS_domain(n)%lon,  &
+                    GLDAS2runoffdata_struc(n)%n11,     &
+                    LIS_rc%udef,ios)
+
+               do r=1,LIS_rc%lnr(n)
+                  do c=1,LIS_rc%lnc(n)
+                     GLDAS2runoffdata_struc(n)%qs(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                  enddo
+               enddo
+
+               lb = .true.
+               do r=1,GLDAS2runoffdata_struc(n)%nr
+                  do c=1,GLDAS2runoffdata_struc(n)%nc
+                     var_input(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = qsb2d(c,r)
+                     if(qsb2d(c,r).lt.0) then
+                        lb(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = .false.
+                     endif
+                  enddo
+               enddo
+
+               call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+                    lo,var_out, &
+                    GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr,&
+                    LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
+                    LIS_domain(n)%lat, LIS_domain(n)%lon,  &
+                    GLDAS2runoffdata_struc(n)%n11,     &
+                    LIS_rc%udef,ios)
+
+               do r=1,LIS_rc%lnr(n)
+                  do c=1,LIS_rc%lnc(n)
+                     GLDAS2runoffdata_struc(n)%qsb(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                  enddo
+               enddo
+
+            else
+
+               lb = .true.
+               do r=1,GLDAS2runoffdata_struc(n)%nr
+                  do c=1,GLDAS2runoffdata_struc(n)%nc
+                     var_input(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = qs2d(c,r)
+                     if(qs2d(c,r).lt.0) then
+                        lb(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = .false.
+                     endif
+                  enddo
+               enddo
+
+               call upscaleByAveraging(&
+                    GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr, &
+                    LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+                    LIS_rc%udef, &
+                    GLDAS2runoffdata_struc(n)%n11, lb, &
+                    var_input, lo, var_out)
+
+                do r=1,LIS_rc%lnr(n)
+                   do c=1,LIS_rc%lnc(n)
+                      GLDAS2runoffdata_struc(n)%qs(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                   enddo
+                enddo
+
+                lb = .true.
+                do r=1,GLDAS2runoffdata_struc(n)%nr
+                   do c=1,GLDAS2runoffdata_struc(n)%nc
+                      var_input(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = qsb2d(c,r)
+                     if(qsb2d(c,r).lt.0) then
+                        lb(c+(r-1)*GLDAS2runoffdata_struc(n)%nc) = .false.
+                     endif
+                  enddo
+               enddo
+
+               call upscaleByAveraging(&
+                    GLDAS2runoffdata_struc(n)%nc*GLDAS2runoffdata_struc(n)%nr, &
+                    LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+                    LIS_rc%udef, &
+                    GLDAS2runoffdata_struc(n)%n11, lb, &
+                    var_input, lo, var_out)
+
+                do r=1,LIS_rc%lnr(n)
+                   do c=1,LIS_rc%lnc(n)
+                      GLDAS2runoffdata_struc(n)%qsb(c,r) = var_out(c+(r-1)*LIS_rc%lnc(n))
+                   enddo
+                enddo
+
+             endif
+
+         else
+            write(LIS_logunit,*) "Stand-alone HYMAP3 is only supported for '2d gridspace' outputs currently"
+            call LIS_endrun()
+         endif
+
+         call LIS_verify(nf90_close(nid))
+      endif   ! domainCheck
+
+    else
+       write(LIS_logunit,*) 'Failed to find '//trim(filename)
+       call LIS_endrun()
+    endif   ! file_exists
+  endif
+#endif
 
 ! convert units from kg m-2 3hr-1 to kg m-2 sec-1.
-   if ( GLDAS2runoffdata_struc(n)%outInterval .eq. 10800 ) then
-    do r=1, nr
-     do c=1, nc
-        if ( GLDAS2runoffdata_struc(n)%qs(c,r) .ne. undef ) then
-          GLDAS2runoffdata_struc(n)%qs(c,r) = GLDAS2runoffdata_struc(n)%qs(c,r) / GLDAS2runoffdata_struc(n)%outInterval
-          GLDAS2runoffdata_struc(n)%qsb(c,r) = GLDAS2runoffdata_struc(n)%qsb(c,r) / GLDAS2runoffdata_struc(n)%outInterval
-        endif
-     end do
-    end do
-   else
-     write(LIS_logunit,*) 'Runoff input units conversion not supported for this output interval'
-     call LIS_endrun()
-   endif
-  else
-     write(LIS_logunit,*) 'Failed to find '//trim(filename)
-     call LIS_endrun()
-  endif
+where(GLDAS2runoffdata_struc(n)%qs/=LIS_rc%udef)
+  surface_runoff = GLDAS2runoffdata_struc(n)%qs/GLDAS2runoffdata_struc(n)%outInterval
+  baseflow = GLDAS2runoffdata_struc(n)%qsb/GLDAS2runoffdata_struc(n)%outInterval
+else where
+  surface_runoff = 0.0
+  baseflow = 0.0
+end where
 
-  call interp_GLDAS2runoffdata(n,nc,nr,GLDAS2runoffdata_struc(n)%qs,surface_runoff)
-  call interp_GLDAS2runoffdata(n,nc,nr,GLDAS2runoffdata_struc(n)%qsb,baseflow)
-
-!  deallocate(qs)
-!  deallocate(qsb)
-
-  endif  
-
-#endif
-    
 end subroutine readGLDAS2runoffdata
 
-subroutine readGLDAS2evapdata(n,evap, potevap)
-
-  use LIS_coreMod
-  use LIS_timeMgrMod
-  use LIS_logMod
-  use GLDAS2runoffdataMod
-  use LIS_fileIOMod
-  use HYMAP3_routingMod
-#if(defined USE_NETCDF3 || defined USE_NETCDF4)
-  use netcdf
-#endif
-
-  implicit none
-
-  integer,          intent(in) :: n
-  real                         :: evap(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  real                         :: potevap(LIS_rc%gnc(n),LIS_rc%gnr(n))
-  integer                       :: nc,nr
-  integer                       :: c,r
-  real,   allocatable           :: evp(:,:)
-  real,   allocatable           :: potevp(:,:)
-  integer                       :: ios, nid,evpid,potevpid
-  character*100                 :: filename
-  integer                       :: doy, yr, mo, da, hr, mn, ss, ts
-  real*8                        :: time
-  real                          :: gmt
-  logical                       :: file_exists
-  real                          :: undef
-  REAL, PARAMETER:: LIS_CONST_LATVAP = 2.501e6 ! Latent heat for evapo for water in Noah
-
-  external :: create_GLDAS2_filename
-  external :: interp_GLDAS2runoffdata
-
-  yr =LIS_rc%yr    !Next Hour
-  mo =LIS_rc%mo
-  da =LIS_rc%da
-  hr =GLDAS2runoffdata_struc(n)%outInterval*((LIS_rc%hr)/&
-       GLDAS2runoffdata_struc(n)%outInterval)
-  mn =0
-  ss =0
-  ts =GLDAS2runoffdata_struc(n)%outInterval
-
-  call LIS_tick(time,doy,gmt,yr,mo,da,hr,mn,ss,real(ts))
-
-  call create_GLDAS2_filename(GLDAS2runoffdata_struc(n)%odir,&
-       GLDAS2runoffdata_struc(n)%model_name,&
-       GLDAS2runoffdata_struc(n)%datares,&
-       yr, mo, da, doy, hr, filename)
-
-  evap = 0.0
-  potevap       = 0.0
-
-  nc = GLDAS2runoffdata_struc(n)%nc
-  nr = GLDAS2runoffdata_struc(n)%nr
-
-  allocate(evp(nc,nr))
-  allocate(potevp(nc,nr))
-  
-  evp = LIS_rc%udef
-  potevp = LIS_rc%udef
-
-#if (defined USE_NETCDF3 || defined USE_NETCDF4)
-
-  inquire(file=filename, exist=file_exists)
-  if(file_exists) then 
-     write(LIS_logunit,*) 'Reading '//trim(filename)
-        
-     ios = nf90_open(path=filename,&
-          mode=NF90_NOWRITE,ncid=nid)
-     call LIS_verify(ios,'Error in readGLDAS2evapdata')
-
-     ios = nf90_inq_varid(nid,'Evap_tavg',evpid)
-     call LIS_verify(ios,'failed to inquire Evap_tavg field in readGLDAS2evapdata')
-
-     ios = nf90_inq_varid(nid,'PotEvap_tavg',potevpid)
-     call LIS_verify(ios,'failed to inquire PotEvap_tavg field in readGLDAS2evapdata')
-
-     ios = nf90_get_var(nid,evpid,evp)
-     call LIS_verify(ios, 'failed to read Evap_tavg field in readGLDAS2evapdata')
-
-     ios = nf90_get_var(nid,potevpid,potevp)
-     call LIS_verify(ios, 'failed to read PotEvap_tavg field in readGLDAS2evapdata')
-
-     ios = nf90_get_att(nid,evpid,'missing_value',undef)
-     call LIS_verify(ios,'failed to read missing_value in readGLDAS2evapdata')
-
-     call LIS_verify(nf90_close(nid))
-
-! Convert units of Potevap from Wm-2 to kg m-2 sec-1.
-! units of evap is already in kg m-2 sec-1.
-    do r=1, nr
-     do c=1, nc
-        if ( potevp(c,r) .ne. undef ) then
-          potevp(c,r) = potevp(c,r) / LIS_CONST_LATVAP
-        endif
-     end do
-    end do
-  else
-     write(LIS_logunit,*) 'Failed to find '//trim(filename)
-     call LIS_endrun()
-  endif
-#endif
-
-  call interp_GLDAS2runoffdata(n,nc,nr,evp,evap)
-  call interp_GLDAS2runoffdata(n,nc,nr,potevp,potevap)
-
-  deallocate(evp)
-  deallocate(potevp)
-
-    
-end subroutine readGLDAS2evapdata
 !BOP
 ! 
 ! !ROUTINE: create_GLDAS2_filename
@@ -311,18 +312,14 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
   
   if(datares .eq. 0.25) then   
      !ag - 31Aug2016
-     list_name = 'ls '//trim(odir)//'/'//trim(fyr)//trim(fmo)//&
+     list_name = 'ls '//trim(odir)//'/'//trim(fyr)//'/'//trim(fyr)//trim(fmo)//&
           '/GLDAS_'//trim(model_name)//'025_3H.A'//&
           trim(fyr)//trim(fmo)//trim(fda)//'.'//trim(fhr)//&
           '*.020.nc4 > GLDAS2_file'
-     filename=trim(odir)//'/'//trim(fyr)//trim(fmo)//&
+     filename=trim(odir)//'/'//trim(fyr)//'/'//trim(fyr)//trim(fmo)//&
           '/GLDAS_'//trim(model_name)//'025_3H.A'//&
           trim(fyr)//trim(fmo)//trim(fda)//'.'//trim(fhr)//&
           '00.020.nc4'
-!     list_name = 'ls '//trim(odir)//'/'//trim(fyr)//'/'//trim(fdoy)//&
-!          '/GLDAS_'//trim(model_name)//'025_3H.A'//&
-!          trim(fyr)//trim(fmo)//trim(fda)//'.'//trim(fhr)//&
-!          '*.020.nc4 > GLDAS2_file'
   elseif(datares.eq. 1.0) then 
      list_name = 'ls '//trim(odir)//'/'//trim(fyr)//'/'//trim(fdoy)//&
           '/GLDAS_'//trim(model_name)//'10_3H.A'//&
