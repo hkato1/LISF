@@ -185,17 +185,21 @@ subroutine get_galwemrad(n, findex)
            write(LIS_logunit,*) &
                 '[WARN] Cannot find next GALWEM RAD file!'
            write(LIS_logunit,*) &
-                '[WARN] LIS will terminate early.'
+                '[WARN] on ',galwemrad_struc(n)%init_mo,galwemrad_struc(n)%init_da,galwemrad_struc(n)%init_hr
            flush(LIS_logunit)
-           lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return true
+           !HKB lrc = LIS_endofrun(.true.) ! Force LIS_endofrun to return true
            message = ''
            message(1) = '[WARN] Program: LIS'
            message(2) = ' Routine: get_galwemrad.'
            message(3) = ' Cannot find next GALWEM RAD file.'
-           message(4) = ' LIS will terminate early.'
            if (LIS_masterproc) then
               call LIS_alert( 'LIS.get_galwemrad          ', 1, message)
            end if
+           galwemrad_struc(n)%metdata1 = LIS_rc%udef
+           galwemrad_struc(n)%metdata2 = LIS_rc%udef
+           galwemrad_struc(n)%fcst_hour = next_fcsthr
+           galwemrad_struc(n)%fcsttime1 = galwemrad_struc(n)%fcsttime2
+           galwemrad_struc(n)%fcsttime2 = galwemrad_struc(n)%fcsttime3
            return
         else
            ! We have a new second bookend.  Copy the saved older bookend

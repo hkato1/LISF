@@ -401,7 +401,10 @@ subroutine LIS_lsmrouting_plugin
 #if ( defined SM_VIC_4_1_2 )
    call registerlsmroutinggetrunoff(trim(LIS_vic412Id)//"+"//&
         trim(LIS_HYMAP3routerId)//char(0), &
-        vic412_getrunoffs_mm)
+        vic412_getrunoffs_hymap2)
+   call registerlsmroutinggetsws(trim(LIS_vic412Id)//"+"//&
+        trim(LIS_HYMAP3routerId)//char(0), &
+        vic412_getsws_hymap2)
 #endif
 
 #if ( defined SM_JULES_5_0 )

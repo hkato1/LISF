@@ -35,6 +35,7 @@ subroutine HYMAP3_routing_writerst(n)
   use LIS_coreMod
   use LIS_logMod
   use LIS_fileIOMod
+  use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   use LIS_timeMgrMod
   use HYMAP3_routingMod
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)           
@@ -45,7 +46,7 @@ subroutine HYMAP3_routing_writerst(n)
   
   integer, intent(in)   :: n 
   
-  character*100         :: filename
+  character(len=LIS_CONST_PATH_LEN)         :: filename
   integer               :: ftn
   integer               :: status
   logical               :: alarmCheck
