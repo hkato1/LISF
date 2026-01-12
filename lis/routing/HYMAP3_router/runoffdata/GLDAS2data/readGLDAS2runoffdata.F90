@@ -1,19 +1,19 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 !BOP
-! 
+!
 ! !DESCRIPTION:
 ! This routine is for reading in GLDAS 2.0 data in native NetCDF format.
-! 
-! !REVISION HISTORY: 
+!
+! !REVISION HISTORY:
 ! 30 Jan 2016: Hiroko Beaudoing, Initial implementation
 ! 31 Aug 2016: Augusto Getirana, Fix file name format
 ! 25 Sep 2025: Hiroko Beaudoing, updated for HYMAP3 
@@ -31,11 +31,13 @@
 !EOP 
 subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
 
-  use LIS_coreMod
-  use LIS_timeMgrMod
-  use LIS_logMod
+! !USES:
   use GLDAS2runoffdataMod
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
+  use LIS_coreMod
   use LIS_fileIOMod
+  use LIS_logMod
+  use LIS_timeMgrMod
 #if(defined USE_NETCDF3 || defined USE_NETCDF4)
   use netcdf
 #endif
@@ -70,7 +72,6 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
   mo =LIS_rc%mo
   da =LIS_rc%da
   hr=LIS_rc%hr-imod(LIS_rc%hr,int(GLDAS2runoffdata_struc(n)%outInterval/3600.))
-  !print*,int(GLDAS2runoffdata_struc(n)%outInterval/3600.),LIS_rc%hr,hr
   mn =0
   ss =0
   ts =GLDAS2runoffdata_struc(n)%outInterval
@@ -84,8 +85,6 @@ subroutine readGLDAS2runoffdata(n,surface_runoff, baseflow)
 
 #if (defined USE_NETCDF3 || defined USE_NETCDF4)
   if(trim(GLDAS2runoffdata_struc(n)%previous_filename)/=trim(filename))then
-  
-    GLDAS2runoffdata_struc(n)%previous_filename=filename
 
     inquire(file=filename, exist=file_exists)
     if(file_exists) then 
@@ -258,37 +257,39 @@ end where
 end subroutine readGLDAS2runoffdata
 
 !BOP
-! 
+!
 ! !ROUTINE: create_GLDAS2_filename
 ! \label{create_GLDAS2_filename}
 !
-! !INTERFACE: 
-subroutine create_GLDAS2_filename(odir,model_name, datares,&
-     yr,mo,da, doy,hr,filename)
+! !INTERFACE:
+subroutine create_GLDAS2_filename(odir, model_name, datares, &
+     yr, mo, da, doy, hr, filename)
 
+!
+! !USES:
+  use LIS_constantsMod, only: LIS_CONST_PATH_LEN
   use LIS_logMod
 
-! 
-! !USES:   
   implicit none
+
 !
-! !ARGUMENTS: 
-  character(len=*)             :: odir
-  character(len=*)             :: model_name
-  real                         :: datares
-  integer                      :: yr
-  integer                      :: mo
-  integer                      :: da
-  integer                      :: doy
-  integer                      :: hr
-  character(len=*)             :: filename
+! !ARGUMENTS:
+  character(len=*), intent(in)  :: odir
+  character(len=*), intent(in)  :: model_name
+  real, intent(in)              :: datares
+  integer, intent(in)           :: yr
+  integer, intent(in)           :: mo
+  integer, intent(in)           :: da
+  integer, intent(in)           :: doy
+  integer, intent(in)           :: hr
+  character(len=*), intent(out) :: filename
 !
 ! !DESCRIPTION:
-! 
+!
 ! This routine creates a timestamped filename for the GLDAS2 data
 ! based on the given date (year, model name, month)
 !
-!  The arguments are: 
+!  The arguments are:
 !  \begin{description}
 !   \item[odir]            GLDAS2 base directory
 !   \item[model\_name]     name of the model used in the GLDAS run
@@ -296,21 +297,21 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
 !   \item[mo]              month of data
 !   \item[filename]        Name of the GLDAS2 file
 !  \end{description}
-! 
+!
 !EOP
-  
+
   character*4             :: fyr
   character*3             :: fdoy
   character*2             :: fmo, fhr, fda
-  character*100           :: list_name
+  character(LIS_CONST_PATH_LEN) :: list_name
 
   write(unit=fyr, fmt='(i4.4)') yr
   write(unit=fdoy, fmt='(i3.3)') doy
   write(unit=fmo, fmt='(i2.2)') mo
   write(unit=fda, fmt='(i2.2)') da
   write(unit=fhr, fmt='(i2.2)') hr
-  
-  if(datares .eq. 0.25) then   
+
+  if(datares .eq. 0.25) then
      !ag - 31Aug2016
      list_name = 'ls '//trim(odir)//'/'//trim(fyr)//'/'//trim(fyr)//trim(fmo)//&
           '/GLDAS_'//trim(model_name)//'025_3H.A'//&
@@ -331,17 +332,6 @@ subroutine create_GLDAS2_filename(odir,model_name, datares,&
           '00.020.nc4'
 
   endif
-  
-!  call system(trim(list_name))
-!  ftn = LIS_getNextUnitNumber()
-!  open(ftn,file='GLDAS2_file',status='old',iostat=ierr)
-!  do while(ierr.eq.0) 
-!     read(ftn,'(a)',iostat=ierr) filename
-!     if(ierr.ne.0) then 
-!        exit
-!     endif
-!  enddo
-!  call LIS_releaseUnitNumber(ftn)
 
 end subroutine create_GLDAS2_filename
 
@@ -351,13 +341,14 @@ end subroutine create_GLDAS2_filename
 !  \label{interp_GLDAS2runoffdata}
 !
 ! !INTERFACE:
-  subroutine interp_GLDAS2runoffdata(n, nc,nr,var_input,var_output)
+subroutine interp_GLDAS2runoffdata(n, nc, nr, var_input, var_output)
 !
 ! !USES:
-    use LIS_coreMod
-    use GLDAS2runoffdataMod
-      
-    implicit none
+  use GLDAS2runoffdataMod
+  use LIS_coreMod
+
+  implicit none
+
 !
 ! !INPUT PARAMETERS:
 !
@@ -385,51 +376,52 @@ end subroutine create_GLDAS2_filename
 !BOP
 !
 ! !ARGUMENTS:
-    integer            :: n
-    integer            :: nc
-    integer            :: nr
-    real               :: var_input(nc*nr)
-    logical*1          :: lb(nc*nr)
-    real               :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
-    !EOP
-    integer            :: ios
-    integer            :: c,r
-    logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
-    real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  integer, intent(in)          :: n
+  integer, intent(in)          :: nc
+  integer, intent(in)          :: nr
+  real, intent(in)             :: var_input(nc*nr)
+  real, intent(out)            :: var_output(LIS_rc%lnc(n), LIS_rc%lnr(n))
+  !EOP
 
-    external :: neighbor_interp
-    external :: upscaleByAveraging
+  logical*1          :: lb(nc*nr)
+  integer            :: ios
+  integer            :: c,r
+  logical*1          :: lo(LIS_rc%lnc(n)*LIS_rc%lnr(n))
+  real               :: go(LIS_rc%lnc(n)*LIS_rc%lnr(n))
 
-    var_output = LIS_rc%udef
-    lb = .false.
-    do r = 1,nr
-       do c = 1,nc
-          if (var_input(c+(r-1)*nc).ne.LIS_rc%udef) then
-             lb(c+(r-1)*nc) = .true.
-          endif
-       enddo
-    enddo
+  external :: neighbor_interp
+  external :: upscaleByAveraging
 
-    if(LIS_isAtAfinerResolution(n,GLDAS2runoffdata_struc(n)%datares)) then
-       call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
-            lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
-            LIS_domain(n)%lat, LIS_domain(n)%lon,  & 
-            GLDAS2runoffdata_struc(n)%n11,                         & 
-            LIS_rc%udef,ios)
-    else
-       call upscaleByAveraging(&
-            nc*nr, &
-            LIS_rc%lnc(n)*LIS_rc%lnr(n), &
-            LIS_rc%udef, &
-            GLDAS2runoffdata_struc(n)%n11, lb, &
-            var_input, lo, go)
-    endif
-    do r = 1,LIS_rc%lnr(n)
-       do c = 1,LIS_rc%lnc(n)
-          var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))
-       enddo
-    enddo
+  var_output = LIS_rc%udef
+  lb = .false.
+  do r = 1,nr
+     do c = 1,nc
+        if (var_input(c+(r-1)*nc).ne.LIS_rc%udef) then
+           lb(c+(r-1)*nc) = .true.
+        endif
+     enddo
+  enddo
 
-  end subroutine interp_GLDAS2runoffdata
+  if(LIS_isAtAfinerResolution(n,GLDAS2runoffdata_struc(n)%datares)) then
+     call neighbor_interp(LIS_rc%gridDesc,lb,var_input,  &
+          lo,go,nc*nr,LIS_rc%lnc(n)*LIS_rc%lnr(n),             &
+          LIS_domain(n)%lat, LIS_domain(n)%lon,  &
+          GLDAS2runoffdata_struc(n)%n11,                         &
+          LIS_rc%udef,ios)
+  else
+     call upscaleByAveraging(&
+          nc*nr, &
+          LIS_rc%lnc(n)*LIS_rc%lnr(n), &
+          LIS_rc%udef, &
+          GLDAS2runoffdata_struc(n)%n11, lb, &
+          var_input, lo, go)
+  endif
+  do r = 1,LIS_rc%lnr(n)
+     do c = 1,LIS_rc%lnc(n)
+        var_output(c,r) = go(c+(r-1)*LIS_rc%lnc(n))
+     enddo
+  enddo
+
+end subroutine interp_GLDAS2runoffdata
 
 

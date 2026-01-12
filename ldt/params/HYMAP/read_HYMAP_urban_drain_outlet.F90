@@ -18,16 +18,18 @@
 !
 ! !INTERFACE:
 subroutine read_HYMAP_urban_drain_outlet(n, array)
+
 ! !USES:
   use ESMF
+  use HYMAP_parmsMod
   use LDT_coreMod,      only : LDT_rc
+  use LDT_fileIOMod,    only : readLISdata
   use LDT_logMod,       only : LDT_logunit, LDT_getNextUnitNumber, &
           LDT_releaseUnitNumber, LDT_endrun
-  use LDT_fileIOMod,    only : readLISdata 
-  use HYMAP_parmsMod
 
   implicit none
-! !ARGUMENTS: 
+
+! !ARGUMENTS:
 
   integer,          intent(in) :: n
   real,          intent(inout) :: array(LDT_rc%lnc(n),LDT_rc%lnr(n),1)
@@ -38,27 +40,23 @@ subroutine read_HYMAP_urban_drain_outlet(n, array)
 
   ftn = LDT_getNextUnitNumber()
 
-  inquire(file=trim(HYMAP_struc(n)%urbandrainoutletfile), exist=file_exists)
-  if(.not.file_exists) then 
+  inquire(file=trim(HYMAP_struc(n)%urbandrainoutletfile), &
+       exist=file_exists)
+  if (.not.file_exists) then
      write(LDT_logunit,*) '[ERR] HYMAP urban drainage outlet map, ',&
            trim(HYMAP_struc(n)%urbandrainoutletfile),', not found.'
-     write(LDT_logunit,*) 'Program stopping ...'
+     write(LDT_logunit,*) '[ERR] Program stopping ...'
      call LDT_endrun
   endif
 
-print*,trim(HYMAP_struc(n)%urbandrainoutletfile)
-print*,size(array(:,1,1)),size(array(1,:,1))
-print*,LDT_rc%lnc(n),LDT_rc%lnr(n)
-
-  open(ftn, file=trim(HYMAP_struc(n)%urbandrainoutletfile), access='direct',&
+  open(ftn, file=trim(HYMAP_struc(n)%urbandrainoutletfile), &
+       access='direct', &
        status='old', form="unformatted", convert="big_endian", recl=4)
-  
+
   call readLISdata(n, ftn, HYMAP_struc(n)%hymap_proj, &
        HYMAP_struc(n)%hymap_gridtransform, &
-       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 indicates 2D layer
+       HYMAP_struc(n)%hymapparms_gridDesc(:), 1, array)  ! 1 = 2D layer
 
-print*,maxval(array)
-  
   do r=1,LDT_rc%lnr(n)
      do c=1,LDT_rc%lnc(n)
         if(array(c,r,1).lt.0) then
@@ -66,8 +64,6 @@ print*,maxval(array)
         endif
      enddo
   enddo
-
-print*,maxval(array)
 
   call LDT_releaseUnitNumber(ftn)
 

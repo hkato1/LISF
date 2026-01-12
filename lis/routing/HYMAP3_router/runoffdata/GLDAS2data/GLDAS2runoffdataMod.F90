@@ -1,34 +1,34 @@
 !-----------------------BEGIN NOTICE -- DO NOT EDIT-----------------------
 ! NASA Goddard Space Flight Center
 ! Land Information System Framework (LISF)
-! Version 7.3
+! Version 7.5
 !
-! Copyright (c) 2020 United States Government as represented by the
+! Copyright (c) 2024 United States Government as represented by the
 ! Administrator of the National Aeronautics and Space Administration.
 ! All Rights Reserved.
 !-------------------------END NOTICE -- DO NOT EDIT-----------------------
 #include "LIS_misc.h"
 module GLDAS2runoffdataMod
 !BOP
-! 
+!
 ! !MODULE: GLDAS2runoffdataMod
-! 
-! !DESCRIPTION: 
-!  This module contains the data structures and routines to handle 
+!
+! !DESCRIPTION:
+!  This module contains the data structures and routines to handle
 !  runoff data from GLDAS 2.0. This implementation handles both
 !  1 degree and 0.25 degree products from different LSMs.
 !
-! !REVISION HISTORY: 
+! !REVISION HISTORY:
 ! 8 Jan 2016: Sujay Kumar, initial implementation
 ! 25 Sep 2025: Hiroko Beaudoing, updated for HYMAP3
 ! 
 
-! !USES: 
+! !USES:
   use ESMF
   use LIS_constantsMod, only : LIS_CONST_PATH_LEN
   
   implicit none
-  
+
   PRIVATE
 !-----------------------------------------------------------------------------
 ! !PUBLIC MEMBER FUNCTIONS:
@@ -50,6 +50,14 @@ module GLDAS2runoffdataMod
      logical             :: domaincheck
      real, allocatable   :: qs(:,:),qsb(:,:)
 
+  public :: GLDAS2runoffdata_struc
+
+  type, public :: GLDAS2runoffdatadec
+     real                    :: outInterval
+     character(LIS_CONST_PATH_LEN) :: odir
+     !ag - 31Aug2016
+     character(LIS_CONST_PATH_LEN) :: previous_filename
+     real, allocatable   :: qs(:,:),qsb(:,:)
      character*20            :: model_name
      real                    :: datares
      integer                 :: nc, nr
@@ -59,12 +67,12 @@ module GLDAS2runoffdataMod
   type(GLDAS2runoffdatadec), allocatable :: GLDAS2runoffdata_struc(:)
 
 contains
- 
+
 !BOP
 !
 ! !ROUTINE: GLDAS2runoffdata_init
 ! \label{GLDAS2runoffdata_init}
-! 
+!
   subroutine GLDAS2runoffdata_init
 
   use LIS_coreMod
@@ -74,7 +82,9 @@ contains
   use netcdf
 #endif
 
-    integer              :: n 
+    implicit none
+
+    integer              :: n
     integer              :: status
     integer              :: ftn
     character*100        :: lis_map_proj
@@ -91,14 +101,14 @@ contains
 
 
     allocate(GLDAS2runoffdata_struc(LIS_rc%nnest))
-       
+
     call ESMF_ConfigFindLabel(LIS_config,&
          "GLDAS2 runoff data output directory:",rc=status)
     do n=1, LIS_rc%nnest
-       call ESMF_ConfigGetAttribute(LIS_config,GLDAS2runoffdata_struc(n)%odir,rc=status)
+       call ESMF_ConfigGetAttribute(LIS_config, &
+            GLDAS2runoffdata_struc(n)%odir,rc=status)
        call LIS_verify(status,&
             "GLDAS2 runoff data output directory: not defined")
-       
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -108,7 +118,6 @@ contains
             GLDAS2runoffdata_struc(n)%model_name,rc=status)
        call LIS_verify(status,&
             "GLDAS2 runoff data model name: not defined")
-       
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -118,7 +127,6 @@ contains
             GLDAS2runoffdata_struc(n)%datares,rc=status)
        call LIS_verify(status,&
             "GLDAS2 runoff data spatial resolution (degree): not defined")
-       
     enddo
 
     call ESMF_ConfigFindLabel(LIS_config,&
@@ -251,6 +259,6 @@ contains
       GLDAS2runoffdata_struc(n)%qs=LIS_rc%udef
       GLDAS2runoffdata_struc(n)%qsb=LIS_rc%udef
     enddo
-    
+
   end subroutine GLDAS2runoffdata_init
 end module GLDAS2runoffdataMod
