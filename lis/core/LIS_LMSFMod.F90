@@ -1017,9 +1017,9 @@ subroutine LIS_LMSF_apply(n)
     call ESMF_FieldGet(psurfField,localDE=0,farrayPtr=psurf,rc=status)
     call LIS_verify(status)
 
-!print*,pcp(1),LIS_rc%ntiles(n)
 !nc=76089
 nc=10924
+!print*,nc,swd(1),LIS_rc%ntiles(n),LIS_LMSF(n)%swd(1)
     do t=1,LIS_rc%ntiles(n)
 !print*,t
 !if(t==nc)print*,tmp(t),LIS_LMSF(n)%tmp(t)

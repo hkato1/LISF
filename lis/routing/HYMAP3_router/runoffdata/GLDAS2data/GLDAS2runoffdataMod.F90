@@ -41,23 +41,13 @@ module GLDAS2runoffdataMod
   public :: GLDAS2runoffdata_struc
   
   type, public :: GLDAS2runoffdatadec
-     
-     real                    :: outInterval 
-     character(len=LIS_CONST_PATH_LEN)            :: odir 
-     character(len=LIS_CONST_PATH_LEN)            :: domfile
-     
-     character(len=LIS_CONST_PATH_LEN)       :: previous_filename
-     logical             :: domaincheck
-     real, allocatable   :: qs(:,:),qsb(:,:)
-
-  public :: GLDAS2runoffdata_struc
-
-  type, public :: GLDAS2runoffdatadec
      real                    :: outInterval
      character(LIS_CONST_PATH_LEN) :: odir
-     !ag - 31Aug2016
+     character(LIS_CONST_PATH_LEN) :: domfile
+
      character(LIS_CONST_PATH_LEN) :: previous_filename
-     real, allocatable   :: qs(:,:),qsb(:,:)
+     logical                 :: domainCheck
+     real, allocatable       :: qs(:,:),qsb(:,:)
      character*20            :: model_name
      real                    :: datares
      integer                 :: nc, nr

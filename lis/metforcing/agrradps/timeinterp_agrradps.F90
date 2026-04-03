@@ -106,9 +106,17 @@ subroutine timeinterp_agrradps(n,findex)
                    '[ERR] timeinterp_agrradps -- Stopping because ', &
                    'SWdown forcing not udef but lt 0,'
                  write(LIS_logunit,*)'[ERR] timeinterp_agrradsp -- ', &
-                   t,swd(t),agrradps_struc(n)%metdata2(1,index), &
-                   ' (',LIS_localPet,')'
-                 call LIS_endrun
+                   t,swd(t),agrradps_struc(n)%metdata1(1,index), &
+                   agrradps_struc(n)%metdata2(1,index),wt1,wt2
+                 write(LIS_logunit,*)'at -- ',LIS_domain(n)%grid(index)%lat,&
+                   LIS_domain(n)%grid(index)%lon
+                 if ( agrradps_struc(n)%metdata2(1,index).gt.0.0) then
+                   swd(t) = agrradps_struc(n)%metdata2(1,index)
+                   write(LIS_logunit,*)'Replaced with metdata2'
+                 else
+                   call LIS_endrun
+                   write(LIS_logunit,*)'Stopping... '
+                 endif
               endif
            endif
         
