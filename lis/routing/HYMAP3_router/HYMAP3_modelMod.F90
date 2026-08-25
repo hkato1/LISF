@@ -407,15 +407,17 @@ contains
     real                 :: sfcelv_pre_down !previous step downstream water surface elevation (t-1) [m]
     real                 :: avgslp, darea
     real                 :: dflw,dout_pre,dflw_pre,dflw_imp
+    real                 :: slpmax1
 
     ! ================================================
     sfcelv=rivelv+rivdph
     sfcelv_down=rivelv_down+rivdph_down
     sfcelv_pre=rivelv+rivdph_pre
     sfcelv_pre_down=rivelv_down+rivdph_pre_down
+    slpmax1=max(slpmax,(rivelv-rivelv_down)/nxtdst)
 
     if(outlet==0)then
-       avgslp=min(max((sfcelv-sfcelv_down)/nxtdst,bckslpmax),slpmax)
+       avgslp=min(max((sfcelv-sfcelv_down)/nxtdst,bckslpmax),slpmax1)
        dflw=max(0.,max(sfcelv,sfcelv_down)-rivelv)
        darea=rivwth*dflw
        dflw_pre=max(0.,max(sfcelv_pre,sfcelv_pre_down)-rivelv)
@@ -425,9 +427,9 @@ contains
        if(dflw_imp>1e-10.and.darea>1e-10)then
           dout_pre=rivout_pre/rivwth
           if(dout_pre<0)then
-             dout_pre=max(rivout_pre,-4e5)/rivwth
+             dout_pre=max(rivout_pre,-6e5)/rivwth
           else
-             dout_pre=min(rivout_pre,4e5)/rivwth
+             dout_pre=min(rivout_pre,6e5)/rivwth
           endif
           rivout=rivwth*(dout_pre+grv*dt*dflw_imp*avgslp)/ &
                (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))
@@ -449,7 +451,7 @@ contains
 
     elseif(outlet==1)then
        !ag (20Feb2020)
-       avgslp=min(max((sfcelv-sfcelv_down)/nxtdst,-1.e-3),1.e-3)
+       avgslp=min(max((sfcelv-sfcelv_down)/nxtdst,-1.e-2),1.e-2)
        !ag(7Apr2021)
        dflw=max(0.,max(sfcelv,sfcelv_down)-rivelv)
        darea=rivwth*dflw
@@ -460,9 +462,9 @@ contains
        if(dflw_imp>1e-10.and.darea>1e-10)then
           dout_pre=rivout_pre/rivwth
           if(dout_pre<0)then
-             dout_pre=max(rivout_pre,-4e5)/rivwth
+             dout_pre=max(rivout_pre,-6e5)/rivwth
           else
-             dout_pre=min(rivout_pre,4e5)/rivwth
+             dout_pre=min(rivout_pre,6e5)/rivwth
           endif
           rivout=rivwth*(dout_pre+grv*dt*dflw_imp*avgslp)/ &
                (1.+grv*dt*manval**2.*abs(dout_pre)*dflw_imp**(-7./3))

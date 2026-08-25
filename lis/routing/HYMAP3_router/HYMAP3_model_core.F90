@@ -212,9 +212,13 @@ subroutine HYMAP3_model_core(n, it, mis, nseqall, nz, time, dt,  &
 
   !ag(8Nov2024)
   !slope constrainsts for model stability
+!  real, parameter :: rslpmax    = 1.
+!  real, parameter :: bckslpmax  = -1.e-5
+!  real, parameter :: fslpmax    = 1.e-5
+
   real, parameter :: rslpmax    = 1.
-  real, parameter :: bckslpmax  = -1.e-5
-  real, parameter :: fslpmax    = 1.e-5
+  real, parameter :: bckslpmax  = -1.e-3
+  real, parameter :: fslpmax    = 1.
 
   !ag (5Apr2025)
   real, allocatable    :: sfcelv_glb(:)
