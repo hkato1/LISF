@@ -801,7 +801,7 @@ void FTN(vic412_run)(int *LIS_TILE, int *LIS_TS, int *LIS_VT_SCHEME, int *LIS_VE
     /** LIS description: Energy of sublimation (W m-2) **/
     /*** VIC unit: W m-2 => LIS unit: W m-2 ***/
     units = "W m-2"; lenu = strlen(units);
-    direction = "UP"; lend = strlen(direction);
+    direction = "S2V"; lend = strlen(direction);
     FTN(vic412_diagnoseoutputvar)(LIS_NEST, LIS_TILE, LIS_MOC_QV, 
                                   &level1, 
                                   &(out_data[OUT_LATENT_SUB].data[0] ),

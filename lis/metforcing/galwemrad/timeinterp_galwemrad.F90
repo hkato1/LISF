@@ -161,17 +161,14 @@ subroutine timeinterp_galwemrad(n,findex)
      endif
 
      if ((swd(t).ne.LIS_rc%udef).and.(swd(t).lt.0)) then
-        if (swd(t).gt.-0.00001) then
            swd(t) = 0.0
-        else
            write(LIS_logunit,*) &
-                '[ERR] timeinterp_galwemrad -- Stopping because ', &
+                '[WARN] timeinterp_galwemrad -- ', &
                 'forcing not udef but lt 0,'
-           write(LIS_logunit,*)'[ERR] timeinterp_galwemrad -- ', &
-                t,swd(t),galwemrad_struc(n)%metdata2(1,index1), &
-                ' (',LIS_localPet,')'
-           call LIS_endrun
-        endif
+           write(LIS_logunit,*)'[WARN] timeinterp_galwemrad -- ', &
+                t,swd(t),galwemrad_struc(n)%metdata1(1,index1),&
+                galwemrad_struc(n)%metdata2(1,index1),zw1,zw2
+           !call LIS_endrun
      endif
   enddo
 
