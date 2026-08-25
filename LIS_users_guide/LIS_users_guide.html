@@ -1121,6 +1121,11 @@ The directory containing the LIS source code, <em>LISF/lis</em>, will be referre
 <td class="tableblock halign-left valign-top"><p class="tableblock">path to RPC library</p></td>
 <td class="tableblock halign-left valign-top"><p class="tableblock">optional (use system RPC library by default)</p></td>
 </tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock"><code>LIS_PIO</code></p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">path to PIO library</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">optional (only for NASA Land Coupler (NLC) and NASA Water Insight projects)</p></td>
+</tr>
 </tbody>
 </table>
 <div class="paragraph">
@@ -1213,6 +1218,7 @@ Use LIS-CMEM? (1-yes, 0-no, default=0):
 Use LIS-LAPACK? (0-no, 1-mkl, 2-lapack/blas, 3-lapack/refblas, default=0):
 Use PETSc? (1-yes, 0-no, default=0):
 Enable USAF LIS75 SM DA codes? (1-yes, 0-no, default=0):
+Use PIO? (1-yes, 0-no, default=0):
 -----------------------------------------------------
  configure.lis file generated successfully
 -----------------------------------------------------
@@ -1303,6 +1309,9 @@ select the type of LAPACK library that you have installed.  This is used with <c
 <div class="paragraph">
 <p>For example, on a Cray system using the Cray compilers, select 0 because the linker will find Cray&#8217;s LAPACK libraries.</p>
 </div>
+</li>
+<li>
+<p>for <code>Use PIO? (1-yes, 0-no, default=0):</code>, if you wish to enable PIO support, then you must either set the <code>LIS_PIO</code> environment variable or the <code>LIS_PIO_IN_ESMF</code> environment variable.  If you are using the PIO library, then set <code>LIS_PIO</code> to the path of the PIO library.  If you are using PIO included in ESMF, then set <code>LIS_PIO_IN_ESMF=1</code>.</p>
 </li>
 </ul>
 </div>
@@ -20146,6 +20155,38 @@ threshold used in the 2-way coupling mode.</p>
 </tr>
 </tbody>
 </table>
+<div class="paragraph">
+<p><code>HYMAP3 use localization update in DA:</code> specifies whether to enable the localization scheme for DA.</p>
+</div>
+<div class="paragraph">
+<p>Acceptable values are:</p>
+</div>
+<table class="tableblock frame-all grid-all stretch">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Value</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Description</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">0</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Do not use localization</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">1</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Use localization for DA</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p><code>HYMAP3 localization update window size:</code> specifies localization update window size.</p>
+</div>
+<div class="paragraph">
+<p><code>HYMAP3 localization weight map:</code> specifies the file location of the localization weight map</p>
+</div>
 <div class="literalblock">
 <div class="title">Example <em>lis.config</em> entry</div>
 <div class="content">
@@ -20169,7 +20210,10 @@ HYMAP3 routing model restart interval: "1mo"
 HYMAP3 routing model restart file: "./OL/ROUTING/197901/LIS_RST_HYMAP3_router_197901030000.d01.nc
 HYMAP3 enable 2-way coupling: 0
 HYMAP3 2-way coupling flooded fraction threshold: 0.1
-HYMAP3 runoff bias correction: 1</pre>
+HYMAP3 runoff bias correction: 1
+HYMAP3 use localization update in DA: 0
+HYMAP3 localization update window size: 10
+HYMAP3 localization weight map: ./input/localization_map/distance_map_full_ohio_010.nc</pre>
 </div>
 </div>
 </div>
@@ -25459,7 +25503,7 @@ See LIS' Developer&#8217;s Guide for more details.</p>
 <div id="footer">
 <div id="footer-text">
 Version 7.0<br>
-Last updated 2026-06-09 17:31:56 UTC
+Last updated 2026-08-25 17:58:05 UTC
 </div>
 </div>
 <script type="text/x-mathjax-config">
