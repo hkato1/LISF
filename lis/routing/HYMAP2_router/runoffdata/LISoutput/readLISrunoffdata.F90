@@ -133,10 +133,6 @@ subroutine readLISrunoffdata(n,surface_runoff, baseflow)
               end where
             endif
 
-            ios = nf90_get_var(nid,evapid,LISrunoffdata_struc(n)%evap,&
-                 start=(/LIS_ews_halo_ind(n,LIS_localPet+1),LIS_nss_halo_ind(n,LIS_localPet+1)/),&
-                 count=(/LIS_rc%lnc(n),LIS_rc%lnr(n)/))
-            call LIS_verify(ios, 'failed to read Evap_tavg field in readLISrunoffdata')
          else
             write(LIS_logunit,*) "Stand-alone HYMAP is only supported for '2d gridspace' outputs currently"
             call LIS_endrun()

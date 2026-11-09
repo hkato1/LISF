@@ -71,10 +71,12 @@ module imerg_forcingMod
      character(len=LIS_CONST_PATH_LEN) :: imergdir   ! IMERG Forcing Directory
      character*5 :: imergver     ! IMERG version (V06B set as default)
      character*5 :: imergprd     ! IMERG product (early, late, final)
+     character*50  :: met_interp
      real*8  :: imergtime
      real*8  :: griduptime1
      logical :: gridchange1
      integer :: mi
+     integer, allocatable :: n111(:)
      integer, allocatable :: n112(:,:)
      integer, allocatable :: n122(:,:)
      integer, allocatable :: n212(:,:)
@@ -97,6 +99,7 @@ contains
 ! !REVISION HISTORY: 
 ! 11Dec2003: Sujay Kumar; Initial Specification
 ! 06Jan2006: Yudong Tian; modification for LISv4.2
+! 11Sep2026: Hiroko Beaudoing; add other interpolation mothods 
 ! 
 ! !INTERFACE:
   subroutine init_imerg(findex)
@@ -149,6 +152,7 @@ contains
 
        imerg_struc(n)%ncold = 3600
        imerg_struc(n)%nrold = 1800
+       imerg_struc(n)%mi = imerg_struc(n)%ncold*imerg_struc(n)%nrold
     enddo
     
     LIS_rc%met_nf(findex) = 2
@@ -208,21 +212,6 @@ contains
        imerg_struc(n)%metdata1 = 0
        imerg_struc(n)%metdata2 = 0
 
-       allocate(imerg_struc(n)%n112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%n122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%n212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%n222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%w112(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%w122(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%w212(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       allocate(imerg_struc(n)%w222(LIS_rc%lnc(n)*LIS_rc%lnr(n),25))
-       
-       call conserv_interp_input( n, gridDesci, &
-            imerg_struc(n)%n112,imerg_struc(n)%n122,&
-            imerg_struc(n)%n212,imerg_struc(n)%n222,&
-            imerg_struc(n)%w112,imerg_struc(n)%w122,&
-            imerg_struc(n)%w212,imerg_struc(n)%w222)
-       
        yr1 = 2012     !grid update time
        mo1 = 10
        da1 = 29
@@ -231,6 +220,9 @@ contains
        call LIS_date2time(imerg_struc(n)%griduptime1,&
             updoy,upgmt,yr1,mo1,da1,hr1,mn1,ss1 )
        imerg_struc(n)%gridchange1 = .true.
+
+       ! Setting up weights for Interpolation
+       call imerg_reset_interp_input(n, findex, gridDesci)
     enddo
   end subroutine init_imerg
 

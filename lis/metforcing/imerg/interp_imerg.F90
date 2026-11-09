@@ -12,6 +12,9 @@
 ! !ROUTINE: interp_imerg
 ! \label{interp_imerg}
 !
+! !REVISION HISTORY:
+!  14 Sep 2026: Hiroko Beaudoing; allow downscaling and upscaling 
+!                                 
 !
 ! !INTERFACE: 
 subroutine interp_imerg(n, nx, ny, finput, lis_gds, nc, nr, varfield)
@@ -19,16 +22,17 @@ subroutine interp_imerg(n, nx, ny, finput, lis_gds, nc, nr, varfield)
 ! !USES:
   use LIS_coreMod,      only : LIS_rc, LIS_domain
   use imerg_forcingMod, only : imerg_struc
+  use LIS_logMod, only : LIS_logunit, LIS_endrun
 
   implicit none
 ! !ARGUMENTS: 
   integer, intent(in) :: n 
-  integer             :: nx
-  integer             :: ny
-  integer             :: nc
-  integer             :: nr
-  real, dimension(nx,ny) :: finput
-  real, dimension(nc,nr) :: varfield
+  integer, intent(in) :: nx
+  integer, intent(in) :: ny
+  integer, intent(in) :: nc
+  integer, intent(in) :: nr
+  real, intent(in), dimension(nx,ny) :: finput
+  real, intent(out), dimension(nc,nr) :: varfield
 !
 ! !DESCRIPTION:
 !   This subroutine interpolates a given IMERG field 
@@ -64,8 +68,8 @@ subroutine interp_imerg(n, nx, ny, finput, lis_gds, nc, nr, varfield)
   logical*1, dimension(nx*ny)  :: lb
   logical*1, dimension(nc*nr)  :: lo
   real, dimension(nx*ny) :: f
-  integer             :: ngdas
 
+  integer :: nimerg
   integer :: iret
   integer :: mo
   integer :: count1,i,j,v
@@ -79,7 +83,7 @@ subroutine interp_imerg(n, nx, ny, finput, lis_gds, nc, nr, varfield)
 ! (needed for soil moisture and temperature only)
 ! Use budget bilinear (ip=3) for precip forcing fields
 !--------------------------------------------------------------------
-  ngdas = nx * ny
+  nimerg = nx*ny
   mo = nc*nr
 
   v = 0
@@ -93,20 +97,28 @@ subroutine interp_imerg(n, nx, ny, finput, lis_gds, nc, nr, varfield)
 !--------------------------------------------------------------------
 ! Initialize output bitmap. Important for soil moisture and temp.
 !--------------------------------------------------------------------
-  lb = .true.
+  lb = .false.
+  do v=1,nimerg
+     if(f(v).ne.-9999.9) lb(v) = .true.
+  enddo
   lo = .true.
 
-
-  imerg_struc(n)%mi = ngdas
-
-  call conserv_interp(lis_gds,lb,f,lo,lis1d,imerg_struc(n)%mi,mo,&
-!       imerg_struc(n)%rlat2, imerg_struc(n)%rlon2, &
-       LIS_domain(n)%lat, LIS_domain(n)%lon,&
-       imerg_struc(n)%w112, imerg_struc(n)%w122,&
-       imerg_struc(n)%w212, imerg_struc(n)%w222,&
-       imerg_struc(n)%n112, imerg_struc(n)%n122,&
-!       imerg_struc(n)%n212, imerg_struc(n)%n222,-9999.9, iret)
-       imerg_struc(n)%n212, imerg_struc(n)%n222, LIS_rc%udef, iret)
+  if ( imerg_struc(n)%met_interp == "budget-bilinear" ) then
+     call conserv_interp(lis_gds,lb,f,lo,lis1d,imerg_struc(n)%mi,mo,&
+          LIS_domain(n)%lat, LIS_domain(n)%lon,&
+          imerg_struc(n)%w112, imerg_struc(n)%w122,&
+          imerg_struc(n)%w212, imerg_struc(n)%w222,&
+          imerg_struc(n)%n112, imerg_struc(n)%n122,&
+          imerg_struc(n)%n212, imerg_struc(n)%n222, LIS_rc%udef, iret)
+  elseif ( imerg_struc(n)%met_interp == "average" ) then
+    call upscaleByAveraging(imerg_struc(n)%mi, mo, LIS_rc%udef, &
+         imerg_struc(n)%n111, lb, f, lo, lis1d)
+  else
+     write(LIS_logunit,*) '[ERR] The specified spatial interpolation option '
+     write(LIS_logunit,*) '[ERR] is not supported for IMERG.'
+     write(LIS_logunit,*) '[ERR] LIS is stopping.'
+     call LIS_endrun()
+  endif
 
 !--------------------------------------------------------------------
 ! Create 2D array for main program. Also define a "soil" mask
